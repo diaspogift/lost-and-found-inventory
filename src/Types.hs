@@ -2,6 +2,8 @@ module Types where
 
 
 import qualified Data.Map as M
+import Data.Set
+
 
 
 regLostItem1 :: RegisteredLostItem
@@ -79,7 +81,7 @@ data RegisteredLostItem = RegisteredLostItem {
     ,   liDescription :: Description
     ,   liLostDate :: String
     ,   liAttributes :: [Attribute]
-    } deriving (Show)
+    } deriving (Eq, Ord, Show)
 
 
 data DeclaredFoundItem = DeclaredFoundItem {
@@ -90,7 +92,7 @@ data DeclaredFoundItem = DeclaredFoundItem {
     ,   fiDescription :: Description
     ,   fiFoundDate :: String
     ,   fiAttributes :: [Attribute]
-    } deriving Show
+    } deriving (Eq, Ord, Show)
 
 data ClaimedFoundItem = ClaimedFoundItem {
         clIdentifier :: Identifier
@@ -102,48 +104,53 @@ data ClaimedFoundItem = ClaimedFoundItem {
     ,   clAttributes :: [Attribute]
 
     ,   claimedDate :: String
-    } deriving Show   
+    } deriving (Eq, Ord, Show)   
 
 
 newtype Identifier = 
     Identifier String deriving (Eq, Ord, Show)
 
 newtype Name = 
-    Name String deriving Show
+    Name String deriving (Eq, Ord, Show)
 
 
 data Category = Category {
         categoryIdentifier :: CategoryIdentifier
+    ,   parentalStatus :: ParentalStatus
     ,   categoryDetails :: CategoryDetails
-    ,   subCategories :: [Category]   
-} deriving Show
+    ,   subCategories :: Set Category   
+} deriving (Eq, Ord, Show)
 
 
 data CategoryIdentifier = 
-    CategoryIdentifier Identifier CategoryType deriving Show
+    CategoryIdentifier Identifier CategoryType deriving (Eq, Ord, Show)
 
+data ParentalStatus =
+      Parent
+    | Sub
+    deriving (Eq, Ord, Show)
 
 data CategoryType = 
       Humans 
     | Documents 
     | Electronics 
     | PersonalItems
-    deriving Show
+    deriving (Eq, Ord, Show)
 
 data CategoryDetails = CategoryDetails {
         categoryCode :: CategoryCode
     ,   categoryName :: CategoryName
     ,   categoryDescription :: CategoryDescription
-} deriving Show
+} deriving (Eq, Ord, Show)
 
 newtype CategoryCode =
-    CategoryCode String deriving Show
+    CategoryCode String deriving (Eq, Ord, Show)
 
 newtype CategoryName =
-    CategoryName String deriving Show
+    CategoryName String deriving (Eq, Ord, Show)
 
 newtype CategoryDescription =
-    CategoryDescription String deriving Show
+    CategoryDescription String deriving (Eq, Ord, Show)
 
 
 
@@ -154,7 +161,7 @@ data Location = Location {
     ,   city :: City
     ,   neighborhood :: Neighborhood
     ,   address :: Address
-} deriving Show
+} deriving (Eq, Ord, Show)
 
 
 data Region 
@@ -168,11 +175,11 @@ data Region
     | ExtremeNorth
     | Adamaoua
     | Littoral
-    deriving Show
+    deriving (Eq, Ord, Show)
 
 
 data Department = 
-    Department DepartmentCode Region deriving Show
+    Department DepartmentCode Region deriving (Eq, Ord, Show)
 
 
 data DepartmentCode 
@@ -181,37 +188,35 @@ data DepartmentCode
     | MayoBanyo String
     | Mbere String
     | Vina String
-    deriving Show
+    deriving (Eq, Ord, Show)
 
     
-
-
 
 data SubDivision = SubDivision {
         subDivisionCode :: SubDivisionCode 
     ,   departementCode :: Department
     ,   regionCode :: Region
-} deriving Show
+} deriving (Eq, Ord, Show)
 
 
 data SubDivisionCode 
     = Gouandal String
     | Tibatie String
-    deriving Show
+    deriving (Eq, Ord, Show)
 
 
 newtype City = 
-    City String deriving Show
+    City String deriving (Eq, Ord, Show)
 
 newtype Neighborhood = 
-    Neighborhood String deriving Show
+    Neighborhood String deriving (Eq, Ord, Show)
 
 newtype Address = 
-     Address String deriving Show
+     Address String deriving (Eq, Ord, Show)
 
 
 newtype Description = 
-    Description String deriving Show
+    Description String deriving (Eq, Ord, Show)
 
 
 
@@ -224,19 +229,19 @@ data Attribute =
     | Weight Float
     | Manufacturer Name
     | Issuer Name
-    deriving Show
+    deriving (Eq, Ord, Show)
 
 
 
 
 newtype AttributeCode = 
-    AttributeCode String deriving Show
+    AttributeCode String deriving (Eq, Ord, Show)
 newtype AttributeName = 
-    AttributeName String deriving Show
+    AttributeName String deriving (Eq, Ord, Show)
 newtype AttributeValue = 
-    AttributeValue String deriving Show
+    AttributeValue String deriving (Eq, Ord, Show)
 newtype AttributeUnit = 
-    AttributeUnit String deriving Show
+    AttributeUnit String deriving (Eq, Ord, Show)
 
 
 

@@ -144,7 +144,7 @@
 #endif /* MIN_TOOL_VERSION_runghc */
 
 #ifndef CURRENT_COMPONENT_ID
-#define CURRENT_COMPONENT_ID "Inventory-0.1.0.0-CAznhXVVdst5IRV4Lf63dw-Inventory-exe"
+#define CURRENT_COMPONENT_ID "Inventory-0.1.0.0-FnTd4XBjoTS9hevzonwtpk-Inventory-exe"
 #endif /* CURRENT_COMPONENT_ID */
 #ifndef CURRENT_PACKAGE_VERSION
 #define CURRENT_PACKAGE_VERSION "0.1.0.0"

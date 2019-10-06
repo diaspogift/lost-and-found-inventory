@@ -1,8 +1,12 @@
-module Types where
+module DomainTypes where
 
+
+
+import DomainCommonTypes
 
 import qualified Data.Map as M
 import Data.Set
+import Data.Time
 
 
 
@@ -16,13 +20,12 @@ data Item =
 data RegisteredLostItem = RegisteredLostItem {
         liIdentifier :: Identifier
     ,   liName :: Name
-    ,   liCategoryId :: CategoryIdentifier
+    ,   liCategoryId :: Identifier
     ,   lostLocation :: Location
     ,   liDescription :: Description
-    ,   liLostDate :: String
+    ,   liLostDate :: UTCTime
     ,   liAttributes :: [Attribute]
     ,   liOwner :: Person
-
     } deriving (Eq, Ord, Show)
 
 
@@ -32,9 +35,12 @@ data DeclaredFoundItem = DeclaredFoundItem {
     ,   fiCategoryId :: CategoryIdentifier
     ,   foundLocation :: Location
     ,   fiDescription :: Description
-    ,   fiFoundDate :: String
+    ,   fiFoundDate :: UTCTime
     ,   fiAttributes :: [Attribute]
     ,   fiDeclarant :: Person
+    ,   fiStoker :: Tenant
+
+    ,   chalenges :: [Challenge]
     } deriving (Eq, Ord, Show)
 
 
@@ -49,64 +55,39 @@ data ClaimedFoundItem = ClaimedFoundItem {
         clIdentifier :: Identifier
     ,   clRegisteredLostItem :: RegisteredLostItem
     ,   clDeclaredFoundItem :: DeclaredFoundItem
-    ,   matchedId :: Maybe Identifier
-    ,   claimedDate :: String
+    ,   matchedId :: Identifier
+    ,   claimedDate :: UTCTime
     ,   clClaimer :: Person
+
+    , chalengeAnswers :: [ChallengeAnser]
     } deriving (Eq, Ord, Show)   
 
-
-newtype Identifier = 
-    Identifier String deriving (Eq, Ord, Show)
-
-newtype Name = 
-    Name String deriving (Eq, Ord, Show)
-
-
+-- Revoir 
 data Category = Category {
         categoryIdentifier :: CategoryIdentifier
+    ,   categoryType :: CategoryType
     ,   parentalStatus :: ParentalStatus
-    ,   categoryDetails :: CategoryDetails
+    ,   categoryDescription :: CategoryDescription
     ,   subCategories :: Set Category   
-} deriving (Eq, Ord, Show)
-
-
-data CategoryIdentifier = 
-    CategoryIdentifier Identifier CategoryType deriving (Eq, Ord, Show)
+    } deriving (Eq, Ord, Show)
 
 
 data ParentalStatus =
       Parent
-    | Sub
+    | Sub 
     deriving (Eq, Ord, Show)
 
-
+-- Revoir
 data CategoryType = 
-      Humans 
-    | Documents 
+      Humans
+    | Documents
     | Electronics 
     | PersonalItems
     deriving (Eq, Ord, Show)
 
 
-data CategoryDetails = CategoryDetails {
-        categoryCode :: CategoryCode
-    ,   categoryName :: CategoryName
-    ,   categoryDescription :: CategoryDescription
-} deriving (Eq, Ord, Show)
-
-
-newtype CategoryCode =
-    CategoryCode String deriving (Eq, Ord, Show)
-
-
-newtype CategoryName =
-    CategoryName String deriving (Eq, Ord, Show)
-
-
-newtype CategoryDescription =
-    CategoryDescription String deriving (Eq, Ord, Show)
-
-
+-- Revoir les disctricts
+-- Etudier l'éventualité d'un module support independant pour les donnees de localisations
 data Location = Location {
         region :: Region
     ,   division :: Division
@@ -115,7 +96,7 @@ data Location = Location {
     ,   village :: Village
     ,   neighborhood :: Neighborhood
     ,   loAddress :: Address
-} deriving (Eq, Ord, Show)
+    } deriving (Eq, Ord, Show)
 
 
 data Region 
@@ -418,7 +399,6 @@ data SubDivision
     | Kolofata
     | Mora
     | Tokombere
-
 -- MayoTsanaga 
     | Bourrha
     | Hina
@@ -687,78 +667,62 @@ data SubDivision
 
 
 
-newtype City = 
-    City String deriving (Eq, Ord, Show)
-
-newtype Village = 
-    Village String deriving (Eq, Ord, Show)
-
-newtype Neighborhood = 
-    Neighborhood String deriving (Eq, Ord, Show)
-
-newtype Address = 
-     Address String deriving (Eq, Ord, Show)
 
 
-newtype Description = 
-    Description String deriving (Eq, Ord, Show)
-
-
-data Attribute = 
-      Color String
-    | Brand String
-    | Model String
-    | Size String
-    | Height Float
-    | Weight Float
-    | Manufacturer Name
-    | Issuer Name
-    deriving (Eq, Ord, Show)
+-- Definir les attributs relativement aux Categories 
+data Attribute = Attribute {
+        attrCode :: AttributeCode
+      , attrName :: AttributeName
+      , attrDescription :: Description
+      , attrValue :: Maybe AttributeValue
+      , attrUnit ::   Maybe AttributeUnit
+      , relatedCategory :: CategoryIdentifier
+      , relatedCategoryType :: CategoryType
+    } deriving (Eq, Ord, Show)
 
 
 data Person = Person {
+    -- Revoir si user est optionelle
       user :: Identifier
     , contact :: ContactInformation
     , name :: FullName
-} deriving (Eq, Ord, Show)
+    } deriving (Eq, Ord, Show)
 
 
 data ContactInformation = ContactInformation {
+      -- Tel required, email optional
       email :: EmailAddress
     , address :: PostalAddress
     , primaryTel :: Telephone
     , secondaryTel :: Telephone
-} deriving (Eq, Ord, Show)
+    } deriving (Eq, Ord, Show)
+
 
 data FullName = FullName {
       first :: FirstName
     , middle :: Maybe Middle
     , last :: LastName
-} deriving (Eq, Ord, Show)
+    } deriving (Eq, Ord, Show)
 
-newtype FirstName = 
-    FirstName String deriving (Eq, Ord, Show)
 
-newtype Middle = 
-    Middle String deriving (Eq, Ord, Show)
 
-newtype LastName = 
-    LastName String deriving (Eq, Ord, Show)
 
-newtype EmailAddress = 
-    EmailAddress String deriving (Eq, Ord, Show)
-newtype PostalAddress = 
-    PostalAddress String deriving (Eq, Ord, Show)
-newtype Telephone = 
-    Telephone String deriving (Eq, Ord, Show)
-newtype AttributeCode = 
-    AttributeCode String deriving (Eq, Ord, Show)
-newtype AttributeName = 
-    AttributeName String deriving (Eq, Ord, Show)
-newtype AttributeValue = 
-    AttributeValue String deriving (Eq, Ord, Show)
-newtype AttributeUnit = 
-    AttributeUnit String deriving (Eq, Ord, Show)
+
+data Tenant = Tenant {
+      tenantId :: Identifier 
+    , tenantName :: Name
+    , tenantDescription :: Description
+    , tenantContactAddress :: ContactInformation
+    } deriving (Eq, Show, Ord)
+
+
+
+
+
+data Challenge = Question deriving (Eq, Show, Ord) 
+data ChallengeAnser = 
+    ChallengeAnser (Question, Answer) deriving (Eq, Show, Ord)
+
 
 
 

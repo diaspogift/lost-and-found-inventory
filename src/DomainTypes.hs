@@ -19,7 +19,7 @@ data Item =
 
 data LostItem = LostItem {
         lostItemId          :: LostItemId
-    ,   lostItemName        :: Name
+    ,   lostItemName        :: ItemName
     ,   lostItemCategoryId  :: CategoryId
     ,   lostItemLocation    :: Location
     ,   lostItemDesc        :: LongDescription
@@ -31,7 +31,7 @@ data LostItem = LostItem {
 
 data FoundItem = FoundItem {
         foundItemId         :: FoundItemId
-    ,   foundItemName       :: Name
+    ,   foundItemName       :: ItemName
     ,   foundItemCategoryId :: CategoryId
     ,   foundItemLocation   :: Location
     ,   foundItemDesc       :: LongDescription
@@ -652,7 +652,7 @@ data FullName = FullName {
 
 data Tenant = Tenant {
       tenantId              :: TenantId
-    , tenantName            :: Name
+    , tenantName            :: TenantName
     , tenantDescription     :: LongDescription
     , tenantContactAddress  :: ContactInformation
     } deriving (Eq, Show, Ord)

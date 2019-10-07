@@ -3,7 +3,7 @@ module DomainCommonTypes (
     , MatchedItemId, ClaimedItemId
     , UserId, TenantId
     , CategoryId, ShortDescription, LongDescription
-    , Name, City, Village, Neighborhood, Address
+    , TenantName, ItemName, City, Village, Neighborhood, Address
     , AttributeCode, AttributeName, AttributeValue, AttributeUnit
     , EmailAddress, PostalAddress, Telephone
     , FirstName, Middle, LastName
@@ -12,7 +12,7 @@ module DomainCommonTypes (
     , cretateMatchedItemId, createClaimedItemId
     , createUserId, createTenantId, createCategoryId
     , createShortDescription, createLongDescription
-    , createName, createCity, createVillage, createNeighborhood, createAddress
+    , createTenantName, createItemName, createCity, createVillage, createNeighborhood, createAddress
     , createAttributeCode, createAttributeName, createAttributeValue, createAttributeUnit
     , createEmailAddress, createPostalAddress, createTelephone
     , createFirstName, createMiddle, createLastName
@@ -43,8 +43,10 @@ newtype TenantId =
     TenantId String deriving (Eq, Ord, Show)
 newtype CategoryId = 
     CategoryId String deriving (Eq, Ord, Show)
-newtype Name = 
-    Name String deriving (Eq, Ord, Show)
+newtype TenantName = 
+    TenantName String deriving (Eq, Ord, Show)
+newtype ItemName = 
+    ItemName String deriving (Eq, Ord, Show)
 newtype CategoryCode =
     CategoryCode String deriving (Eq, Ord, Show)
 newtype CategoryName =
@@ -254,9 +256,13 @@ createLongDescription =
     createString "Long Description: " LongDescription 5000
 
     
-createName :: String -> Either ErrorMessage Name
-createName = 
-    createString "Name: " Name 100
+createTenantName :: String -> Either ErrorMessage TenantName
+createTenantName = 
+    createString "Tenant Name: " TenantName 100
+
+createItemName :: String -> Either ErrorMessage ItemName
+createItemName = 
+    createString "Item Name: " ItemName 500
 
 createCity :: String -> Either ErrorMessage City
 createCity = 

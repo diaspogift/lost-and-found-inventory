@@ -11,63 +11,63 @@ import Data.Time
 
 
 data Item = 
-      Lost RegisteredLostItem
-    | Found DeclaredFoundItem
-    | Matched LostAndFoundItem
-    | Claimed ClaimedFoundItem
+      Lost LostItem
+    | Found FoundItem
+    | Matched MatchedItem
+    | Claimed ClaimedItem
 
 
-data RegisteredLostItem = RegisteredLostItem {
-        liIdentifier :: RegisteredLostItemIdentifier
-    ,   liName :: Name
-    ,   liCategoryId :: CategoryIdentifier
-    ,   lostLocation :: Location
-    ,   liDescription :: LongDescription
-    ,   liLostDate :: UTCTime
-    ,   liAttributes :: [Attribute]
-    ,   liOwner :: Person
+data LostItem = LostItem {
+        lostItemId          :: LostItemId
+    ,   lostItemName        :: Name
+    ,   lostItemCategoryId  :: CategoryId
+    ,   lostItemLocation    :: Location
+    ,   lostItemDesc        :: LongDescription
+    ,   lostItemLostDate    :: UTCTime
+    ,   lostItemAttributes  :: [Attribute]
+    ,   lostItemOwner       :: Person
     } deriving (Eq, Ord, Show)
 
 
-data DeclaredFoundItem = DeclaredFoundItem {
-        fiIdentifier :: DeclaredFoundItemIdentifier
-    ,   fiName :: Name
-    ,   fiCategoryId :: CategoryIdentifier
-    ,   foundLocation :: Location
-    ,   fiDescription :: LongDescription
-    ,   fiFoundDate :: UTCTime
-    ,   fiAttributes :: [Attribute]
-    ,   fiDeclarant :: Person
-    ,   fiStoker :: Tenant
+data FoundItem = FoundItem {
+        foundItemId         :: FoundItemId
+    ,   foundItemName       :: Name
+    ,   foundItemCategoryId :: CategoryId
+    ,   foundItemLocation   :: Location
+    ,   foundItemDesc       :: LongDescription
+    ,   foundItemFoundDate  :: UTCTime
+    ,   foundItemAttributes :: [Attribute]
+    ,   foundItemDeclarant  :: Person
+    ,   foundItemTenant     :: Tenant
 
     ,   chalenges :: [Challenge]
     } deriving (Eq, Ord, Show)
 
 
-data LostAndFoundItem = LostAndFoundItem {
-        lfiIdentifier :: LostAndFoundItemIdentifier
-    ,   registeredLostItem :: RegisteredLostItem
-    ,   declaredFoundItems :: [DeclaredFoundItem]
+data MatchedItem = MatchedItem {
+        matchedItemId       :: MatchedItemId
+    ,   matchedFromLostItem :: LostItem
+    ,   declaredFoundItems  :: Set FoundItem
     } deriving (Eq, Ord, Show)  
 
 
-data ClaimedFoundItem = ClaimedFoundItem {
-        clIdentifier :: ClaimedFoundItemIdentifier
-    ,   clRegisteredLostItem :: RegisteredLostItem
-    ,   clDeclaredFoundItem :: DeclaredFoundItem
-    ,   matchedId :: LostAndFoundItemIdentifier
-    ,   claimedDate :: UTCTime
-    ,   clClaimer :: Person
+data ClaimedItem = ClaimedItem {
+        claimedItemId       :: ClaimedItemId
+    ,   claimedFromLostItem :: LostItem
+    ,   claimFromFoundItem  :: FoundItem
+    ,   matchedId           :: MatchedItemId
+    ,   claimedDate         :: UTCTime
+    ,   claimant            :: Person
 
     , chalengeAnswers :: [ChallengeAnser]
     } deriving (Eq, Ord, Show)   
 
 -- Revoir 
 data Category = Category {
-        categoryIdentifier :: CategoryIdentifier
-    ,   categoryType :: CategoryType
-    ,   parentalStatus :: ParentalStatus
-    ,   categoryDescription :: LongDescription
+        categoryId          :: CategoryId
+    ,   categoryType        :: CategoryType
+    ,   parentalStatus      :: ParentalStatus
+    ,   categoryDesc        :: LongDescription
     ,   subCategories :: Set Category   
     } deriving (Eq, Ord, Show)
 
@@ -77,7 +77,7 @@ data ParentalStatus =
     | Sub 
     deriving (Eq, Ord, Show)
 
--- Revoir
+
 data CategoryType = 
       Humans
     | Documents
@@ -85,9 +85,7 @@ data CategoryType =
     | PersonalItems
     deriving (Eq, Ord, Show)
 
-
--- Revoir les disctricts
--- Etudier l'éventualité d'un module support independant pour les donnees de localisations
+-- Etudier l'éventualité d'un module support independant pour les données de localisations
 data Location = Location {
         region :: Region
     ,   division :: Division
@@ -95,7 +93,7 @@ data Location = Location {
     ,   city :: City
     ,   village :: Village
     ,   neighborhood :: Neighborhood
-    ,   loAddress :: Address
+    ,   locationAddress :: Address
     } deriving (Eq, Ord, Show)
 
 
@@ -120,7 +118,6 @@ data Division
     | MayoBanyo String
     | Mbere String
     | Vina String
-
 --    Centre
     | HauteSanaga String
     | Lekie String
@@ -132,13 +129,11 @@ data Division
     | NyongEtKelle String
     | NyongEtMfoumou String
     | NyongEtSoo String
-
 --    Est
     | BoumbaEtNgoko String
     | HautNyong String
     | Kadey String
     | LomEtDjerem String
-
 --    Far North
     | Diamare String
     | LogoneEtChari String
@@ -146,20 +141,17 @@ data Division
     | MayoKani String
     | MayoSava String
     | MayoTsanaga String
-
 --    Littoral
     | Moungo String
     | Nkam String
     | SanagaMaritime String
     | Wouri String
-
 --    North
 
     | Benoue String
     | Faro String
     | MayoLouti String
     | MayoRey String
-
 --    NorthWest
     | Boyo String
     | Bui String
@@ -168,13 +160,11 @@ data Division
     | Mezam String
     | Momo String
     | Ngoketunjia String
-
 --    South
     | DjaEtLobo String
     | Mvila String
     | Ocean String
     | ValleeDuNtem String
-
 --    SouthWest
     | Fako String
     | KoupeManengouba String
@@ -182,7 +172,6 @@ data Division
     | Manyu String
     | Meme String
     | Ndian String
-
 --    West
     | Bamboutos String
     | HautNkam String
@@ -195,11 +184,8 @@ data Division
     deriving (Eq, Ord, Show)
 
     
-
-
 data SubDivision
--- ADAMAOUA
-
+-- ADAMAOUA --
 --  Djerem
     = Gouandal String
     | Tibati String
@@ -225,11 +211,7 @@ data SubDivision
     | NgaoundereIIIe
     | Nyambaka
     | Martap
-
-
--- CENTRE 
-
-
+-- CENTRE --
 -- Haute Sanaga
     | Bibey
     | LembeYezoum
@@ -309,9 +291,7 @@ data SubDivision
     | Mengueme
     | Ngomedzap
     | Nkolmetet
-
--- EST
-
+-- EST --
 -- BoumbaEtNgoko 
     | GariGombo
     | Moloundou
@@ -349,9 +329,7 @@ data SubDivision
     | GarouaBoulaï
     | Mandjou
     | Ngoura
-
--- FAR NORTH
-
+-- FAR NORTH --
 -- Diamare 
     | Bogo
     | Dargala
@@ -385,7 +363,6 @@ data SubDivision
     | TchatiBali
     | Wina
     | Yagoua
-
 -- MayoKani 
     | Dziguilao -- ??? Commune ou arrondiseement ???
     | Taibong
@@ -407,9 +384,7 @@ data SubDivision
     | Mokolo
     | Mozogo
     | SouledeRoua
-
--- LITTORAL
-
+-- LITTORAL --
 -- Moungo 
     | BareBakem
     | Bonalea
@@ -449,11 +424,7 @@ data SubDivision
     | DoualaVe
     | DoualaVIe
     | Manoka
-
-
--- NORTH
-
-
+-- NORTH --
 -- Benoue 
     | Bibemi
     | Dembo
@@ -478,11 +449,7 @@ data SubDivision
     | ReyBouba
     | Tchollire
     | Touboro
- 
-
--- NORTH WEST
-
-
+-- NORTH WEST --
 -- Boyo
     | Belo
     | Fonfuka
@@ -525,12 +492,7 @@ data SubDivision
     | Babessi
     | Balikumbat
     | Ndop
-
-
-
 -- SOUTH 
-
-
 -- DjaEtLobo 
     | Bengbis
     | Djoum
@@ -564,12 +526,7 @@ data SubDivision
     | KyeOssi
     | Maan
     | Olamze
-
-
-
--- SOUTH WEST
-
-
+-- SOUTH WEST --
 -- Fako
     | Buea
     | LimbeIer
@@ -605,14 +562,7 @@ data SubDivision
     | KomboAbedimo
     | KomboItindi
     | Mundemba
-
-
-
-
--- WEST
-
-
-
+-- WEST -- 
 -- Bamboutos
     | Babadjou
     | Batcham
@@ -664,59 +614,48 @@ data SubDivision
     | Njimom
     deriving (Eq, Ord, Show)
 
-
-
-
-
-
--- Definir les attributs relativement aux Categories 
+-- Definir les attributs relativement aux Categories "Didier"
 data Attribute = Attribute {
-        attrCode :: AttributeCode
-      , attrName :: AttributeName
-      , attrDescription :: ShortDescription
-      , attrValue :: Maybe AttributeValue
-      , attrUnit ::   Maybe AttributeUnit
-      , relatedCategory :: CategoryIdentifier
-      , relatedCategoryType :: CategoryType
+      attrCode             :: AttributeCode
+    , attrName             :: AttributeName
+    , attrDescription      :: ShortDescription
+    , attrValue            :: Maybe AttributeValue
+    , attrUnit             ::   Maybe AttributeUnit
+    , relatedCategory      :: CategoryId
+    , relatedCategoryType  :: CategoryType
     } deriving (Eq, Ord, Show)
 
 
 data Person = Person {
     -- Revoir si user est optionelle
-      user :: UserIdentifier
-    , contact :: ContactInformation
-    , name :: FullName
+      userId   :: UserId
+    , contact  :: ContactInformation
+    , name     :: FullName
     } deriving (Eq, Ord, Show)
 
 
 data ContactInformation = ContactInformation {
       -- Tel required, email optional
-      email :: EmailAddress
-    , address :: PostalAddress
-    , primaryTel :: Telephone
-    , secondaryTel :: Telephone
+      email         :: EmailAddress
+    , address       :: PostalAddress
+    , primaryTel    :: Telephone
+    , secondaryTel  :: Telephone
     } deriving (Eq, Ord, Show)
 
 
 data FullName = FullName {
-      first :: FirstName
-    , middle :: Maybe Middle
-    , last :: LastName
+      first     :: FirstName
+    , middle    :: Maybe Middle
+    , last      :: LastName
     } deriving (Eq, Ord, Show)
 
 
-
-
-
 data Tenant = Tenant {
-      tenantId :: TenantIdentifier 
-    , tenantName :: Name
-    , tenantDescription :: LongDescription
-    , tenantContactAddress :: ContactInformation
+      tenantId              :: TenantId
+    , tenantName            :: Name
+    , tenantDescription     :: LongDescription
+    , tenantContactAddress  :: ContactInformation
     } deriving (Eq, Show, Ord)
-
-
-
 
 
 data Challenge = Question deriving (Eq, Show, Ord) 

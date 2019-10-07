@@ -18,6 +18,7 @@ library
   exposed-modules:     Lib
                      , DomainCommonTypes
                      , DomainTypes
+                     , RegisterLostItemWorkflow
 
   build-depends:       base >= 4.7 && < 5
                      , containers

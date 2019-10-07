@@ -1,15 +1,15 @@
 module DomainCommonTypes (
-      RegisteredLostItemIdentifier, DeclaredFoundItemIdentifier
-    , LostAndFoundItemIdentifier, ClaimedFoundItemIdentifier
-    , UserIdentifier, TenantIdentifier
-    , CategoryIdentifier, ShortDescription, LongDescription
+      LostItemId, FoundItemId
+    , MatchedItemId, ClaimedItemId
+    , UserId, TenantId
+    , CategoryId, ShortDescription, LongDescription
     , Name, City, Village, Neighborhood, Address
     , AttributeCode, AttributeName, AttributeValue, AttributeUnit
     , EmailAddress, PostalAddress, Telephone
     , FirstName, Middle, LastName
     , Question, Answer
-    , createDeclaredFoundItemId, createRegisteredLostItemId
-    , cretateMatchedItemId, createClaimedFoundItemId
+    , createFoundItemId, createLostItemId
+    , cretateMatchedItemId, createClaimedItemId
     , createUserId, createTenantId, createCategoryId
     , createShortDescription, createLongDescription
     , createName, createCity, createVillage, createNeighborhood, createAddress
@@ -25,20 +25,24 @@ import qualified Text.Email.Validate as EmailVal
 import qualified Data.ByteString.Char8 as Char8
 
 
-newtype RegisteredLostItemIdentifier = 
-    RegisteredLostItemIdentifier String deriving (Eq, Ord, Show)
-newtype DeclaredFoundItemIdentifier = 
-    DeclaredFoundItemIdentifier String deriving (Eq, Ord, Show)
-newtype LostAndFoundItemIdentifier = 
-    LostAndFoundItemIdentifier String deriving (Eq, Ord, Show)
-newtype ClaimedFoundItemIdentifier = 
-    ClaimedFoundItemIdentifier String deriving (Eq, Ord, Show)
-newtype UserIdentifier = 
-    UserIdentifier String deriving (Eq, Ord, Show)
-newtype TenantIdentifier = 
-    TenantIdentifier String deriving (Eq, Ord, Show)
-newtype CategoryIdentifier = 
-    CategoryIdentifier String deriving (Eq, Ord, Show)
+--- Common types wrappers
+--- 
+---
+
+newtype LostItemId = 
+    LostItemId String deriving (Eq, Ord, Show)
+newtype FoundItemId = 
+    FoundItemId String deriving (Eq, Ord, Show)
+newtype MatchedItemId = 
+    MatchedItemId String deriving (Eq, Ord, Show)
+newtype ClaimedItemId = 
+    ClaimedItemId String deriving (Eq, Ord, Show)
+newtype UserId = 
+    UserId String deriving (Eq, Ord, Show)
+newtype TenantId = 
+    TenantId String deriving (Eq, Ord, Show)
+newtype CategoryId = 
+    CategoryId String deriving (Eq, Ord, Show)
 newtype Name = 
     Name String deriving (Eq, Ord, Show)
 newtype CategoryCode =
@@ -83,25 +87,13 @@ newtype Question =
     Question String deriving (Eq, Ord, Show)
 newtype Answer = 
     Answer String deriving (Eq, Ord, Show)
+type ErrorMessage = String
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
--- CONSTRAINED TYPES COMMON FUNCTIONS
-
-
+--- Common types constraints
+--- 
+---
 
 createString :: String 
                 -> (String -> a) 
@@ -217,42 +209,39 @@ createEmail fieldName  ctor  str
                 Left errorMsg -> Left errorMsg
 
 
-type ErrorMessage = String
 
+--- Common types constructors
+--- 
+---
 
+createLostItemId :: String -> Either ErrorMessage LostItemId
+createLostItemId = 
+    createStringControlledLength "Lost Item Identifier: " LostItemId 36 36 
 
--- COMMON TYPES FUNCTIONS
+createFoundItemId :: String -> Either ErrorMessage FoundItemId
+createFoundItemId = 
+    createStringControlledLength "Found Item Identifier: " FoundItemId 36 36
 
-
-
-createRegisteredLostItemId :: String -> Either ErrorMessage RegisteredLostItemIdentifier
-createRegisteredLostItemId = 
-    createStringControlledLength "Lost Item Identifier: " RegisteredLostItemIdentifier 36 36 
-
-createDeclaredFoundItemId :: String -> Either ErrorMessage DeclaredFoundItemIdentifier
-createDeclaredFoundItemId = 
-    createStringControlledLength "Found Item Identifier: " DeclaredFoundItemIdentifier 36 36
-
-cretateMatchedItemId :: String -> Either ErrorMessage LostAndFoundItemIdentifier
+cretateMatchedItemId :: String -> Either ErrorMessage MatchedItemId
 cretateMatchedItemId = 
-    createStringControlledLength "Matched Item Identifier: " LostAndFoundItemIdentifier 36 36
+    createStringControlledLength "Matched Item Identifier: " MatchedItemId 36 36
 
-createClaimedFoundItemId :: String -> Either ErrorMessage ClaimedFoundItemIdentifier
-createClaimedFoundItemId = 
-    createStringControlledLength "Claimed Item Identifier: " ClaimedFoundItemIdentifier 36 36
+createClaimedItemId :: String -> Either ErrorMessage ClaimedItemId
+createClaimedItemId = 
+    createStringControlledLength "Claimed Item Identifier: " ClaimedItemId 36 36
 
 
-createUserId :: String -> Either ErrorMessage UserIdentifier
+createUserId :: String -> Either ErrorMessage UserId
 createUserId = 
-    createStringControlledLength "User Identifier: " UserIdentifier 36 36
+    createStringControlledLength "User Identifier: " UserId 36 36
 
-createTenantId :: String -> Either ErrorMessage TenantIdentifier
+createTenantId :: String -> Either ErrorMessage TenantId
 createTenantId = 
-    createStringControlledLength "Tenant Identifier: " TenantIdentifier 36 36
+    createStringControlledLength "Tenant Identifier: " TenantId 36 36
 
-createCategoryId :: String -> Either ErrorMessage CategoryIdentifier
+createCategoryId :: String -> Either ErrorMessage CategoryId
 createCategoryId = 
-    createStringControlledLength "Category Identifier: " CategoryIdentifier 36 36
+    createStringControlledLength "Category Identifier: " CategoryId 36 36
 
 
 

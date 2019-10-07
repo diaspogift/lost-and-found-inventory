@@ -17,13 +17,13 @@ library
   hs-source-dirs:      src
   exposed-modules:     Lib
                      , DomainCommonTypes
-                     , DomainCommonTypesFunctions
                      , DomainTypes
-                     , DomainTypesFunctions
 
   build-depends:       base >= 4.7 && < 5
                      , containers
                      , time
+                     , email-validate
+                     , bytestring
 
                      , aeson
                      , servant-server

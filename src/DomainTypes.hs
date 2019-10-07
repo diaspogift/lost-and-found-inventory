@@ -18,11 +18,11 @@ data Item =
 
 
 data RegisteredLostItem = RegisteredLostItem {
-        liIdentifier :: Identifier
+        liIdentifier :: RegisteredLostItemIdentifier
     ,   liName :: Name
-    ,   liCategoryId :: Identifier
+    ,   liCategoryId :: CategoryIdentifier
     ,   lostLocation :: Location
-    ,   liDescription :: Description
+    ,   liDescription :: LongDescription
     ,   liLostDate :: UTCTime
     ,   liAttributes :: [Attribute]
     ,   liOwner :: Person
@@ -30,11 +30,11 @@ data RegisteredLostItem = RegisteredLostItem {
 
 
 data DeclaredFoundItem = DeclaredFoundItem {
-        fiIdentifier :: Identifier
+        fiIdentifier :: DeclaredFoundItemIdentifier
     ,   fiName :: Name
     ,   fiCategoryId :: CategoryIdentifier
     ,   foundLocation :: Location
-    ,   fiDescription :: Description
+    ,   fiDescription :: LongDescription
     ,   fiFoundDate :: UTCTime
     ,   fiAttributes :: [Attribute]
     ,   fiDeclarant :: Person
@@ -45,17 +45,17 @@ data DeclaredFoundItem = DeclaredFoundItem {
 
 
 data LostAndFoundItem = LostAndFoundItem {
-        lfiIdentifier :: Identifier
+        lfiIdentifier :: LostAndFoundItemIdentifier
     ,   registeredLostItem :: RegisteredLostItem
     ,   declaredFoundItems :: [DeclaredFoundItem]
     } deriving (Eq, Ord, Show)  
 
 
 data ClaimedFoundItem = ClaimedFoundItem {
-        clIdentifier :: Identifier
+        clIdentifier :: ClaimedFoundItemIdentifier
     ,   clRegisteredLostItem :: RegisteredLostItem
     ,   clDeclaredFoundItem :: DeclaredFoundItem
-    ,   matchedId :: Identifier
+    ,   matchedId :: LostAndFoundItemIdentifier
     ,   claimedDate :: UTCTime
     ,   clClaimer :: Person
 
@@ -67,7 +67,7 @@ data Category = Category {
         categoryIdentifier :: CategoryIdentifier
     ,   categoryType :: CategoryType
     ,   parentalStatus :: ParentalStatus
-    ,   categoryDescription :: CategoryDescription
+    ,   categoryDescription :: LongDescription
     ,   subCategories :: Set Category   
     } deriving (Eq, Ord, Show)
 
@@ -673,7 +673,7 @@ data SubDivision
 data Attribute = Attribute {
         attrCode :: AttributeCode
       , attrName :: AttributeName
-      , attrDescription :: Description
+      , attrDescription :: ShortDescription
       , attrValue :: Maybe AttributeValue
       , attrUnit ::   Maybe AttributeUnit
       , relatedCategory :: CategoryIdentifier
@@ -683,7 +683,7 @@ data Attribute = Attribute {
 
 data Person = Person {
     -- Revoir si user est optionelle
-      user :: Identifier
+      user :: UserIdentifier
     , contact :: ContactInformation
     , name :: FullName
     } deriving (Eq, Ord, Show)
@@ -709,9 +709,9 @@ data FullName = FullName {
 
 
 data Tenant = Tenant {
-      tenantId :: Identifier 
+      tenantId :: TenantIdentifier 
     , tenantName :: Name
-    , tenantDescription :: Description
+    , tenantDescription :: LongDescription
     , tenantContactAddress :: ContactInformation
     } deriving (Eq, Show, Ord)
 
@@ -727,6 +727,22 @@ data ChallengeAnser =
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 
 
 

@@ -7,9 +7,9 @@ module DomainCommonTypes (
     , AttributeCode, AttributeName, AttributeValue, AttributeUnit
     , EmailAddress, PostalAddress, Telephone
     , FirstName, Middle, LastName
-    , Question, Answer
+    , Question, Answer, ErrorMessage
     , createFoundItemId, createLostItemId
-    , cretateMatchedItemId, createClaimedItemId
+    , createMatchedItemId, createClaimedItemId
     , createUserId, createTenantId, createCategoryId
     , createShortDescription, createLongDescription
     , createTenantName, createItemName, createCity, createVillage, createNeighborhood, createAddress
@@ -17,6 +17,16 @@ module DomainCommonTypes (
     , createEmailAddress, createPostalAddress, createTelephone
     , createFirstName, createMiddle, createLastName
     , createQuestion, createAnswer
+    
+    , unwrapFoundItemId, unwrapLostItemId
+    , unwrapMatchedItemId, unwrapClaimedItemId
+    , unwrapUserId, unwrapTenantId, unwrapCategoryId
+    , unwrapShortDescription, unwrapLongDescription
+    , unwrapTenantName, unwrapItemName, unwrapCity, unwrapVillage, unwrapNeighborhood, unwrapAddress
+    , unwrapAttributeCode, unwrapAttributeName, unwrapAttributeValue, unwrapAttributeUnit
+    , unwrapEmailAddress, unwrapPostalAddress, unwrapTelephone
+    , unwrapFirstName, unwrapMiddle, unwrapLastName
+    , unwrapQuestion, unwrapAnswer
     ) where 
 
 
@@ -212,7 +222,7 @@ createEmail fieldName  ctor  str
 
 
 
---- Common types constructors
+--- Common types constructors and unwrappers
 --- 
 ---
 
@@ -220,116 +230,244 @@ createLostItemId :: String -> Either ErrorMessage LostItemId
 createLostItemId = 
     createStringControlledLength "Lost Item Identifier: " LostItemId 36 36 
 
+unwrapLostItemId :: LostItemId -> String
+unwrapLostItemId (LostItemId str) = str
+
 createFoundItemId :: String -> Either ErrorMessage FoundItemId
 createFoundItemId = 
     createStringControlledLength "Found Item Identifier: " FoundItemId 36 36
 
-cretateMatchedItemId :: String -> Either ErrorMessage MatchedItemId
-cretateMatchedItemId = 
+unwrapFoundItemId :: FoundItemId -> String
+unwrapFoundItemId (FoundItemId str) = str
+
+createMatchedItemId :: String -> Either ErrorMessage MatchedItemId
+createMatchedItemId = 
     createStringControlledLength "Matched Item Identifier: " MatchedItemId 36 36
+
+unwrapMatchedItemId :: MatchedItemId -> String
+unwrapMatchedItemId (MatchedItemId str) = str
 
 createClaimedItemId :: String -> Either ErrorMessage ClaimedItemId
 createClaimedItemId = 
     createStringControlledLength "Claimed Item Identifier: " ClaimedItemId 36 36
 
+unwrapClaimedItemId :: ClaimedItemId -> String
+unwrapClaimedItemId (ClaimedItemId str) = str
 
 createUserId :: String -> Either ErrorMessage UserId
 createUserId = 
     createStringControlledLength "User Identifier: " UserId 36 36
 
+unwrapUserId :: UserId -> String
+unwrapUserId (UserId str) = str
+
 createTenantId :: String -> Either ErrorMessage TenantId
 createTenantId = 
     createStringControlledLength "Tenant Identifier: " TenantId 36 36
+
+unwrapTenantId :: TenantId -> String
+unwrapTenantId (TenantId str) = str
+
 
 createCategoryId :: String -> Either ErrorMessage CategoryId
 createCategoryId = 
     createStringControlledLength "Category Identifier: " CategoryId 36 36
 
 
+unwrapCategoryId :: CategoryId -> String
+unwrapCategoryId (CategoryId str) = str
 
 createShortDescription :: String -> Either ErrorMessage ShortDescription
 createShortDescription = 
     createString "Short Description: " ShortDescription 250
 
+unwrapShortDescription:: ShortDescription -> String
+unwrapShortDescription (ShortDescription str) = str
+
 createLongDescription :: String -> Either ErrorMessage LongDescription
 createLongDescription = 
     createString "Long Description: " LongDescription 5000
 
+unwrapLongDescription:: LongDescription -> String
+unwrapLongDescription (LongDescription str) = str
     
 createTenantName :: String -> Either ErrorMessage TenantName
 createTenantName = 
     createString "Tenant Name: " TenantName 100
 
+unwrapTenantName :: TenantName -> String
+unwrapTenantName (TenantName str) = str
+
 createItemName :: String -> Either ErrorMessage ItemName
 createItemName = 
     createString "Item Name: " ItemName 500
+
+unwrapItemName :: ItemName -> String
+unwrapItemName (ItemName str) = str
 
 createCity :: String -> Either ErrorMessage City
 createCity = 
     createString "City: " City 100
 
+
+unwrapCity:: City -> String
+unwrapCity (City str) = str
+
+
 createVillage :: String -> Either ErrorMessage Village
 createVillage = 
     createString "Village: " Village 100
+
+
+unwrapVillage :: Village -> String
+unwrapVillage (Village str) = str
 
 createNeighborhood :: String -> Either ErrorMessage Neighborhood
 createNeighborhood = 
     createString "Neighborhood: " Neighborhood 500
 
+
+unwrapNeighborhood :: Neighborhood -> String
+unwrapNeighborhood (Neighborhood str) = str
+
+
 createAddress :: String -> Either ErrorMessage Address
 createAddress = 
     createString "Address: " Address 500
+
+unwrapAddress :: Address -> String
+unwrapAddress (Address str) = str
 
 createAttributeCode :: String -> Either ErrorMessage AttributeCode
 createAttributeCode = 
     createString "Attribute Code: " AttributeCode 50
 
+unwrapAttributeCode :: AttributeCode -> String
+unwrapAttributeCode (AttributeCode str) = str
+
 createAttributeName :: String -> Either ErrorMessage AttributeName
 createAttributeName = 
     createString "Attribute Code: " AttributeName 50
+
+unwrapAttributeName :: AttributeName -> String
+unwrapAttributeName (AttributeName str) = str
 
 createAttributeValue :: String -> Either ErrorMessage AttributeValue
 createAttributeValue = 
     createString "Attribute Value: " AttributeValue 50
 
+unwrapAttributeValue :: Maybe AttributeValue -> String
+unwrapAttributeValue (Just (AttributeValue str)) = str
+unwrapAttributeValue Nothing = ""
+
 createAttributeUnit :: String -> Either ErrorMessage AttributeUnit
 createAttributeUnit = 
     createString "Attribute Unit: " AttributeUnit 50
+
+unwrapAttributeUnit :: Maybe AttributeUnit -> String
+unwrapAttributeUnit (Just (AttributeUnit str)) = str
+unwrapAttributeUnit Nothing = ""
 
 createEmailAddress :: String -> Either ErrorMessage EmailAddress
 createEmailAddress = 
     createEmail "Email Address : " EmailAddress
 
+unwrapEmailAddress :: EmailAddress -> String
+unwrapEmailAddress (EmailAddress str) = str
+
 createPostalAddress :: String -> Either ErrorMessage PostalAddress
 createPostalAddress = 
     createString "Postal Address: " PostalAddress 500
 
+unwrapPostalAddress :: PostalAddress -> String
+unwrapPostalAddress (PostalAddress str) = str
+
 createTelephone :: String -> Either ErrorMessage Telephone
 createTelephone = 
-    createString "Telephone: " Telephone 50   
+    createString "Telephone: " Telephone 50  
+    
+unwrapTelephone :: Telephone -> String
+unwrapTelephone (Telephone str) = str
     
 createFirstName :: String -> Either ErrorMessage FirstName
 createFirstName = 
     createString "First Name : " FirstName 100
 
+unwrapFirstName:: FirstName -> String
+unwrapFirstName (FirstName str) = str
+
 createMiddle :: String -> Either ErrorMessage (Maybe Middle)
 createMiddle = 
     createStringOption "Middle Name : " Middle 100
+
+unwrapMiddle :: Maybe Middle -> String
+unwrapMiddle (Just (Middle str)) = str
+unwrapMiddle Nothing = ""
 
 createLastName :: String -> Either ErrorMessage LastName
 createLastName = 
     createString "Last Name : " LastName 100
 
+unwrapLastName :: LastName -> String
+unwrapLastName (LastName str) = str
+
 createQuestion :: String -> Either ErrorMessage Question
 createQuestion = 
     createString "Question : " Question 1000
+
+unwrapQuestion :: Question -> String
+unwrapQuestion (Question str) = str
 
 createAnswer :: String -> Either ErrorMessage Answer
 createAnswer = 
     createString "Answer : " Answer 1000
 
+unwrapAnswer :: Answer -> String
+unwrapAnswer (Answer str) = str
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--- TO DO 
+
+
+createStringNew :: String 
+                -> Int 
+                -> String 
+                -> Either ErrorMessage String
+createStringNew fieldName maxLen str  
+    | null str =
+        let errorMsg =  
+                fieldName 
+                <> " must not be null or empty" 
+        in Left errorMsg
+    | length str > maxLen =
+        let errorMsg = 
+                fieldName 
+                <> " must not be more than "
+                <> show maxLen  
+                <> " chars"
+        in Left errorMsg
+    | otherwise =
+        Right str
+
+createNameNew str = fmap TenantName $ createStringNew "Name" 50 str
 
 
 

@@ -7,6 +7,7 @@ import DomainCommonTypes
 import qualified Data.Map as M
 import Data.Set
 import Data.Time
+import Data.Char
 
 
 
@@ -113,82 +114,82 @@ data Region
 
 data Division
 --    Adamaoua 
-    = Djerem String
-    | FaroEtDeo String
-    | MayoBanyo String
-    | Mbere String
-    | Vina String
+    = Djerem 
+    | FaroEtDeo 
+    | MayoBanyo 
+    | Mbere 
+    | Vina 
 --    Centre
-    | HauteSanaga String
-    | Lekie String
-    | MbamEtInoubou String
-    | MbamEtKim String
-    | MefouEtAfamba String
-    | MefouEtAkono String
-    | Mfoundi String
-    | NyongEtKelle String
-    | NyongEtMfoumou String
-    | NyongEtSoo String
+    | HauteSanaga 
+    | Lekie 
+    | MbamEtInoubou 
+    | MbamEtKim 
+    | MefouEtAfamba 
+    | MefouEtAkono 
+    | Mfoundi 
+    | NyongEtKelle 
+    | NyongEtMfoumou 
+    | NyongEtSoo 
 --    Est
-    | BoumbaEtNgoko String
-    | HautNyong String
-    | Kadey String
-    | LomEtDjerem String
+    | BoumbaEtNgoko 
+    | HautNyong 
+    | Kadey 
+    | LomEtDjerem 
 --    Far North
-    | Diamare String
-    | LogoneEtChari String
-    | MayoDanay String
-    | MayoKani String
-    | MayoSava String
-    | MayoTsanaga String
+    | Diamare 
+    | LogoneEtChari 
+    | MayoDanay 
+    | MayoKani 
+    | MayoSava 
+    | MayoTsanaga 
 --    Littoral
-    | Moungo String
-    | Nkam String
-    | SanagaMaritime String
-    | Wouri String
+    | Moungo 
+    | Nkam 
+    | SanagaMaritime 
+    | Wouri 
 --    North
 
-    | Benoue String
-    | Faro String
-    | MayoLouti String
-    | MayoRey String
+    | Benoue 
+    | Faro 
+    | MayoLouti 
+    | MayoRey 
 --    NorthWest
-    | Boyo String
-    | Bui String
-    | DongaMantung String
-    | Menchum String
-    | Mezam String
-    | Momo String
-    | Ngoketunjia String
+    | Boyo 
+    | Bui 
+    | DongaMantung 
+    | Menchum 
+    | Mezam 
+    | Momo 
+    | Ngoketunjia 
 --    South
-    | DjaEtLobo String
-    | Mvila String
-    | Ocean String
-    | ValleeDuNtem String
+    | DjaEtLobo 
+    | Mvila 
+    | Ocean 
+    | ValleeDuNtem 
 --    SouthWest
-    | Fako String
-    | KoupeManengouba String
-    | Lebialem String
-    | Manyu String
-    | Meme String
-    | Ndian String
+    | Fako 
+    | KoupeManengouba 
+    | Lebialem 
+    | Manyu 
+    | Meme 
+    | Ndian 
 --    West
-    | Bamboutos String
-    | HautNkam String
-    | HautsPlateaux String
-    | KoungKhi String
-    | Menoua String
-    | Mifi String
-    | Nde String
-    | Noun String
+    | Bamboutos 
+    | HautNkam 
+    | HautsPlateaux 
+    | KoungKhi 
+    | Menoua 
+    | Mifi 
+    | Nde 
+    | Noun 
     deriving (Eq, Ord, Show)
 
     
 data SubDivision
 -- ADAMAOUA --
 --  Djerem
-    = Gouandal String
-    | Tibati String
+    = Gouandal 
+    | Tibati 
 --  Faro et Deo 
     | GalimTignere
     | MayoBaleo 
@@ -652,7 +653,7 @@ data FullName = FullName {
 
 data Tenant = Tenant {
       tenantId              :: TenantId
-    , tenantName            :: TenantName
+    , tenantName            ::  TenantName
     , tenantDescription     :: LongDescription
     , tenantContactAddress  :: ContactInformation
     } deriving (Eq, Show, Ord)
@@ -667,6 +668,111 @@ data ChallengeAnser =
 
 
 
+--- Helper functions
+---
+---
+
+
+--- Location helper
+toRegion :: String -> Either ErrorMessage Region
+toRegion str  
+    | "adamaoua" == lowerStr = Right Adamaoua
+    | "centre" == lowerStr = Right Centre
+    | "est" == lowerStr = Right Est
+    | "farnorth" == lowerStr = Right FarNorth
+    | "littoral" == lowerStr = Right Littoral
+    | "north" == lowerStr = Right North
+    | "northwest" == lowerStr = Right NorthWest
+    | "south" == lowerStr = Right South
+    | "southwest" == lowerStr = Right SouthWest
+    | "west" == lowerStr = Right West
+    | otherwise  = Left $ str <> ": is an invalid region code"
+    where lowerStr = fmap toLower str
+
+fromRegion :: Region -> String
+fromRegion region = 
+    case region of
+        Adamaoua -> "Adamaoua"
+        Centre -> "Centre"
+        Est -> "Est"
+        FarNorth -> "FarNorth"
+        Littoral -> "Littoral"
+        North -> "North"
+        NorthWest -> "NorthWest"
+        South -> "South"
+        SouthWest -> "SouthWest"
+        West -> "West"
+   
+
+
+toDivision :: String -> Either ErrorMessage Division
+toDivision str
+    | "faroetdeo" == lowerStr = Right FaroEtDeo 
+    | "mayobanyo" == lowerStr = Right MayoBanyo 
+    | "mbere" == lowerStr = Right Mbere 
+    | "vina" == lowerStr = Right Vina 
+    | otherwise = Left $ str <> ": is an invalid division code"
+    -- TODO FINISH  ALL CASES
+    where lowerStr = fmap toLower str
+
+
+fromDivision :: Division -> String
+fromDivision division = 
+    case division of
+        FaroEtDeo -> "FaroEtDeo"
+        MayoBanyo -> "MayoBanyo"
+        Mbere -> "Mbere"
+        Vina -> "Vina"
+        _ -> error "NOT IMPLEMENTED YET"
+
+
+toSubDivision :: String -> Either ErrorMessage SubDivision
+toSubDivision str  
+    | "gouandal" == lowerStr = Right Gouandal
+    | "tibati" == lowerStr = Right Tibati
+    | otherwise  = Left $ str <> ": is an invalid sub division code"
+    -- TODO FINISH  ALL CASES
+    where lowerStr = fmap toLower str
+   
+--- Attribute data ???? should it be here???
+
+fromSubDivision :: SubDivision -> String
+fromSubDivision subdivision = 
+    case subdivision of
+        Gouandal -> "Gouandal"
+        Tibati -> "Tibati"
+        _ -> error "NOT IMPLEMENTED YET"
+
+--- Category helper
+
+toCategoryType :: String -> Either ErrorMessage CategoryType
+toCategoryType str
+    | "humans" == lowerStr = Right Humans
+    | "documents" == lowerStr = Right Documents
+    | "electronics" == lowerStr = Right Electronics
+    | "personalitems" == lowerStr = Right PersonalItems
+    | otherwise  = Left $ str <> ": is an invalid sub division code"
+    where lowerStr = fmap toLower str
+
+
+fromCategoryType :: CategoryType -> String
+fromCategoryType cat = 
+    case cat of 
+        Humans -> "Humans"
+        Documents -> "Documents"
+        Electronics -> "Electronics"
+        PersonalItems -> "PersonalItems"
+
+--- Item helpers
+
+itemTypeToString :: Item -> String
+itemTypeToString item = 
+    case item of
+        Lost li -> "Lost"
+        Found fi -> "Found"
+        Matched mi -> "Matched"
+        Claimed ci -> "Claimed"
+        
 
 
 
@@ -677,75 +783,9 @@ data ChallengeAnser =
 
 
 
+--- Helpers 
 
 
 
 
-    
-
-
-
-
----------- TESTING ---------
-{-- 
-regLostItem1 :: Item 
-regLostItem1 = Lost RegisteredLostItem {
-      liIdentifier = Identifier "regLostItem1"
-    , liName = Name "Car keys"
-    , liCategoryId = CategoryIdentifier (Identifier "category1")  PersonalItems
-    , lostLocation = Location { 
-           region = Adamaoua
-        ,  division = Djerem "Djerem"
-        ,  subdivision = Gouandal "Gouandal" 
-        ,  city = City "Ngaoundere"
-        ,  village = Village "Ngaoundere"
-        ,  neighborhood = Neighborhood "Chefferie"
-        ,  loAddress = Address "Rond point 3 morts"
-        }
-    , liDescription = 
-        Description "Mes cles sont attachees a un ruban rouge et la marque de ma voiture c'est toyota"
-    , liLostDate = "21/01/1985"
-    , liAttributes = [Color "red", Brand "Toyota", Size  "smal"] 
-}
-regLostItem2 :: Item
-regLostItem2 = Lost RegisteredLostItem {
-      liIdentifier = Identifier "regLostItem2"
-    , liName = Name "National Identity Card"
-    , liCategoryId = CategoryIdentifier (Identifier "category2") PersonalItems
-    , lostLocation = Location { 
-           region = Adamaoua
-        ,  division = Djerem "Djerem" 
-        ,  subdivision = Gouandal "Gouandal"
-        ,  city = City "Ngaoundere"
-        ,  village = Village "Ngaoundere"
-        ,  neighborhood = Neighborhood "Chefferie"
-        ,  loAddress = Address "Carrefour 3 bléssés"
-        }
-    , liDescription = 
-        Description "Ma carte nationale d'identité est encore l'acien format"
-    , liLostDate = "22/01/1985"
-    , liAttributes = [] 
-}
-
-getItemIdentifier :: Item -> Identifier
-getItemIdentifier elem =
-    case elem of
-        Lost item -> liIdentifier item
-        Found item -> fiIdentifier item
-        Matched item -> lfiIdentifier item
-        Claimed item -> clIdentifier item
-
-
-regLostItems :: M.Map Identifier Item
-regLostItems = M.fromList [
-    (getItemIdentifier regLostItem1, regLostItem1), 
-    (getItemIdentifier regLostItem2, regLostItem2)
-    ]
---}
-
-
-
-
-
-
-
+ 

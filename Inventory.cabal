@@ -15,16 +15,18 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib
-                     , DomainCommonTypes
-                     , DomainTypes
-                     , RegisterLostItemWorkflow
+  exposed-modules:     InventoryApplication
+                     , CommonSimpleTypes
+                     , CommonCompoundTypes
+                     , DeclaredLostItemPublicTypes
+                     , DeclareLostItemImplementation
 
   build-depends:       base >= 4.7 && < 5
                      , containers
                      , time
                      , email-validate
                      , bytestring
+                     , mtl
 
                      , aeson
                      , servant-server

@@ -30,7 +30,7 @@ version = Version [0,1,0,0] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/Users/felicienfotiomanfo/Real-Projects/Inventory/.stack-work/install/x86_64-osx/a088cff8f9f00240c0ba66afa166bfc92fbf40efb4a048999c17a13468295ee4/8.6.5/bin"
-libdir     = "/Users/felicienfotiomanfo/Real-Projects/Inventory/.stack-work/install/x86_64-osx/a088cff8f9f00240c0ba66afa166bfc92fbf40efb4a048999c17a13468295ee4/8.6.5/lib/x86_64-osx-ghc-8.6.5/Inventory-0.1.0.0-GDPEgdAZdvUDeQP7DY95xg"
+libdir     = "/Users/felicienfotiomanfo/Real-Projects/Inventory/.stack-work/install/x86_64-osx/a088cff8f9f00240c0ba66afa166bfc92fbf40efb4a048999c17a13468295ee4/8.6.5/lib/x86_64-osx-ghc-8.6.5/Inventory-0.1.0.0-3JfxB44Hj7FF24tf9TByaW"
 dynlibdir  = "/Users/felicienfotiomanfo/Real-Projects/Inventory/.stack-work/install/x86_64-osx/a088cff8f9f00240c0ba66afa166bfc92fbf40efb4a048999c17a13468295ee4/8.6.5/lib/x86_64-osx-ghc-8.6.5"
 datadir    = "/Users/felicienfotiomanfo/Real-Projects/Inventory/.stack-work/install/x86_64-osx/a088cff8f9f00240c0ba66afa166bfc92fbf40efb4a048999c17a13468295ee4/8.6.5/share/x86_64-osx-ghc-8.6.5/Inventory-0.1.0.0"
 libexecdir = "/Users/felicienfotiomanfo/Real-Projects/Inventory/.stack-work/install/x86_64-osx/a088cff8f9f00240c0ba66afa166bfc92fbf40efb4a048999c17a13468295ee4/8.6.5/libexec/x86_64-osx-ghc-8.6.5/Inventory-0.1.0.0"

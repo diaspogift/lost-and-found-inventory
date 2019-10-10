@@ -1,7 +1,7 @@
 module RegisterLostItemWorkflow where
 
-import DomainCommonTypes
-import DomainTypes
+import CommonSimpleTypes
+import CommonCompoundTypes
 
 
 import Data.Time

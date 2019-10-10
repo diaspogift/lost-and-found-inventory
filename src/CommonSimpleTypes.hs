@@ -1,7 +1,8 @@
-module DomainCommonTypes (
+module CommonSimpleTypes (
       LostItemId, FoundItemId
     , MatchedItemId, ClaimedItemId
     , UserId, TenantId
+    , RegionName, DivisionName, SubDivisionName
     , CategoryId, ShortDescription, LongDescription
     , TenantName, ItemName, City, Village, Neighborhood, Address
     , AttributeCode, AttributeName, AttributeValue, AttributeUnit
@@ -38,6 +39,13 @@ import qualified Data.ByteString.Char8 as Char8
 --- Common types wrappers
 --- 
 ---
+type RegionName =  String
+    --RegionName String deriving (Eq, Ord, Show)
+type DivisionName = String
+    --DivisionName String deriving (Eq, Ord, Show)
+type SubDivisionName = String
+    --SubDivisionName String deriving (Eq, Ord, Show)
+
 
 newtype LostItemId = 
     LostItemId String deriving (Eq, Ord, Show)
@@ -99,7 +107,8 @@ newtype Question =
     Question String deriving (Eq, Ord, Show)
 newtype Answer = 
     Answer String deriving (Eq, Ord, Show)
-type ErrorMessage = String
+type ErrorMessage 
+    = String
 
 
 
@@ -220,11 +229,6 @@ createEmail fieldName  ctor  str
                 Right emailAddress -> Right $ ctor str
                 Left errorMsg -> Left errorMsg
 
-
-
---- Common types constructors and unwrappers
---- 
----
 
 createLostItemId :: String -> Either ErrorMessage LostItemId
 createLostItemId = 
@@ -424,56 +428,3 @@ createAnswer =
 
 unwrapAnswer :: Answer -> String
 unwrapAnswer (Answer str) = str
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---- TO DO 
-
-
-createStringNew :: String 
-                -> Int 
-                -> String 
-                -> Either ErrorMessage String
-createStringNew fieldName maxLen str  
-    | null str =
-        let errorMsg =  
-                fieldName 
-                <> " must not be null or empty" 
-        in Left errorMsg
-    | length str > maxLen =
-        let errorMsg = 
-                fieldName 
-                <> " must not be more than "
-                <> show maxLen  
-                <> " chars"
-        in Left errorMsg
-    | otherwise =
-        Right str
-
-createNameNew str = fmap TenantName $ createStringNew "Name" 50 str
-
-
-
-
-
-
-
-
-

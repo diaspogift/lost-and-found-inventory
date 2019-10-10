@@ -8,13 +8,14 @@ import Data.Set
 import Data.Time
 
 
--- // ==================================
--- // This file contains the definitions of PUBLIC types (exposed at the boundary of the bounded context )
--- // related to the RegisterLostItem workflow 
--- // ==================================
+-- ==========================================================================
+-- This file contains the definitions of PUBLIC types 
+-- (exposed at the boundary of the bounded context )
+-- related to the Declare LostItem workflow 
+-- ==========================================================================
 
--- // ------------------------------------
--- // inputs to the workflow
+-- --------------------------------------------------------------------------
+-- inputs to the workflow
 
 
 data UnvalidateLocation = UnvalidateLocation {
@@ -67,20 +68,21 @@ data UnvalidatedLostItem = UnvalidatedLostItem {
     } deriving (Eq, Ord, Show)
 
 
--- // ------------------------------------
--- // outputs from the workflow (success case)
+-- --------------------------------------------------------------------------
+-- outputs from the workflow (success case)
 
--- /// Event will be created if the Acknowledgment was successfully posted
+
+-- Event will be created if the Acknowledgment was successfully posted
 data DeclarationAcknowledgmentSent = DeclarationAcknowledgmentSent {
         declaredLostItemId :: LostItemId
     ,   ownerContactInfo :: ContactInformation 
     }
 
--- /// Event to send to search context
+-- Event to send to search context
 type LostItemDeclared = DeclaredLostItem
 
 
--- // created state            
+-- Declared state            
 
 
 data DeclaredLostItem = DeclaredLostItem {
@@ -96,19 +98,19 @@ data DeclaredLostItem = DeclaredLostItem {
 
 
 
--- /// The possible events resulting from the PlaceOrder workflow
--- /// Not all events will occur, depending on the logic of the workflow
+-- The possible events resulting from the PlaceOrder workflow
+-- Not all events will occur, depending on the logic of the workflow
 data DeclareLostItemEvent = 
-      SearchableLostItemDeclared LostItemDeclared 
-    | Acknowledgment DeclarationAcknowledgmentSent
+      SearchableItemDeclared LostItemDeclared 
+    | AcknowledgmentSent DeclarationAcknowledgmentSent
 
 
 
--- // ------------------------------------
--- // error outputs 
+-- --------------------------------------------------------------------------
+-- error outputs 
 
 
--- /// All the things that can go wrong in this workflow
+-- All the things that can go wrong in this workflow
 newtype ValidationError = ValidationError String
 
 
@@ -127,7 +129,7 @@ data DeclareLostItemError =
     | Remote RemoteServiceError
 
 
--- // ------------------------------------
+-- --------------------------------------------------------------------------
 -- // the workflow itself
 
 type DeclareLostItem = 

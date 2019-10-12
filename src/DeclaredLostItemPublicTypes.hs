@@ -18,7 +18,7 @@ import Data.Time
 -- inputs to the workflow
 
 
-data UnvalidateLocation = UnvalidateLocation {
+data UnvalidatedLocation = UnvalidatedLocation {
         uregion :: String
     ,   udivision :: String
     ,   usubdivision :: String
@@ -58,11 +58,10 @@ data UnvalidatedFullName = UnvalidatedFullName {
     } deriving (Eq, Ord, Show)
 
 data UnvalidatedLostItem = UnvalidatedLostItem {
-        uliId :: String
-    ,   uliName :: String
+        uliName :: String
     ,   uliCategoryId :: String
     ,   uliDescription :: String
-    ,   ulocation :: UnvalidateLocation
+    ,   ulocation :: UnvalidatedLocation
     ,   uliattributes :: [UnvalidatedAttribute]
     ,   uowner :: UnvalidatedPerson   
     } deriving (Eq, Ord, Show)
@@ -100,8 +99,9 @@ data DeclaredLostItem = DeclaredLostItem {
 
 -- The possible events resulting from the PlaceOrder workflow
 -- Not all events will occur, depending on the logic of the workflow
-data DeclareLostItemEvent = 
-      SearchableItemDeclared LostItemDeclared 
+data DeclareLostItemEvent =
+      LostItemDeclared LostItemDeclared
+    | SearchableItemDeclared LostItemDeclared 
     | AcknowledgmentSent DeclarationAcknowledgmentSent
 
 

@@ -20,6 +20,7 @@ library
                      , CommonCompoundTypes
                      , DeclaredLostItemPublicTypes
                      , DeclareLostItemImplementation
+                     , DeclareLostItemDto
 
   build-depends:       base >= 4.7 && < 5
                      , containers
@@ -27,6 +28,8 @@ library
                      , email-validate
                      , bytestring
                      , mtl
+                     , ghc
+                     , either
 
                      , aeson
                      , servant-server

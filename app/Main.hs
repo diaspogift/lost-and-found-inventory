@@ -1,6 +1,6 @@
 module Main where
 
-import InventoryApplication
+import InventorySystemApplication
 
 main :: IO ()
 main = startApp

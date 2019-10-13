@@ -13,6 +13,9 @@ import Data.Set hiding (singleton)
 import Util
 import Data.Either.Combinators
 
+import Data.UUID
+
+
 -- ==========================================================================================
 -- This file contains the the handlers for all workflows in the Lost |&| Found Inventary 
 -- subsystem 
@@ -23,13 +26,13 @@ import Data.Either.Combinators
 
 
 -- =============================================================================
--- Types
+-- Commands
 -- =============================================================================
     
 
 data InventoryCommand d = Command d UTCTime String
 
-type RegisterLostItemCmd = InventoryCommand UnvalidatedLostItem 
+type DeclareLostItemCmd = InventoryCommand UnvalidatedLostItem 
 type DeclareFoundItemCmd = InventoryCommand UnvalidatedLostItem
 type ClaimFoundItemCmd = InventoryCommand UnvalidatedLostItem
 type MatchFoundItemCmd = InventoryCommand UnvalidatedLostItem
@@ -37,15 +40,18 @@ type MatchFoundItemCmd = InventoryCommand UnvalidatedLostItem
 
 
 data LostAndFoundInventoryCmd = 
-      Register RegisterLostItemCmd
+      Register DeclareLostItemCmd
     | Declare DeclareFoundItemCmd
     | Claim ClaimFoundItemCmd
     | Match MatchFoundItemCmd 
 
+data Event = 
+   LostItem DeclareLostItemEvent
+
 
 
 -- =============================================================================
--- Handler Implementation
+-- Handlers Implementation
 -- =============================================================================
 
 

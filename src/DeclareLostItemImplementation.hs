@@ -586,7 +586,16 @@ createSearchableLostItemDeclaredEvent declaredLostItem = declaredLostItem
                          -- Overall workflow --
 -- ---------------------------------------------------------------------------- ---
 -- ---------------------------------------------------------------------------- ---
-
+declareLostItem ::
+  CheckAdministrativeAreaInfoValid
+  -> CheckAttributeInfoValid
+  -> CheckContactInfoValid
+  -> CreateDeclarationAcknowledgment
+  -> SendAcknowledgment
+  -> UnvalidatedLostItem
+  -> UTCTime
+  -> String
+  -> Either DeclareLostItemError [DeclareLostItemEvent]
 declareLostItem 
   checkAdministrativeAreaInfoValid  -- Dependency
   checkAttributeInfoValid           -- Dependency
@@ -599,13 +608,15 @@ declareLostItem
       do  
           -- Validation step
           validatedLostItem 
-              <- validateUnvalidatedLostItem
-                    checkAdministrativeAreaInfoValid
-                    checkContactInfoValid
-                    checkAttributeInfoValid
-                    unvalidatedLostItem
-                    lostItemCreationTime
-                    lostItemUuid
+              <- mapLeft 
+                  Validation $
+                    validateUnvalidatedLostItem
+                      checkAdministrativeAreaInfoValid
+                      checkContactInfoValid
+                      checkAttributeInfoValid
+                      unvalidatedLostItem
+                      lostItemCreationTime
+                      lostItemUuid
 
           -- Creation step
           createdLostItem 

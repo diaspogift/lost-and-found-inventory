@@ -22,7 +22,7 @@ data Category = Category {
 
 data ParentalStatus =
       Parent
-    | Sub CategoryId CategoryType
+    | Sub ParentId CategoryType
     deriving (Eq, Ord, Show)
 
 

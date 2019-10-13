@@ -114,6 +114,9 @@ data DeclareLostItemEvent =
 newtype ValidationError = ValidationError String
 
 
+newtype DbError = DbError String
+
+
 data ServiceInfo = ServiceInfo {
         serviceName :: String
     ,   endpoint :: String
@@ -127,11 +130,12 @@ data RemoteServiceError = RemoteServiceError {
 data DeclareLostItemError =
       Validation ValidationError 
     | Remote RemoteServiceError
+    | Db DbError 
 
 
 -- --------------------------------------------------------------------------
 -- // the workflow itself
 
 type DeclareLostItem = 
-    UnvalidatedLostItem -> Either [DeclareLostItemEvent] DeclareLostItemError
+    UnvalidatedLostItem -> Either DeclareLostItemError [DeclareLostItemEvent]
 

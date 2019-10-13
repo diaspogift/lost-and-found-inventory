@@ -32,7 +32,7 @@ import Data.Either.Combinators
 -- IO Dependencies
 -- =============================================================================
 
---- Dependencies 
+--- Dependencies
 
 type LookupOneCategory = 
     String -> IO (Either DbError Category)
@@ -42,6 +42,11 @@ type LockupAttributes =
 
 type SaveOneCategory = 
     Category -> IO (Either DbError ())
+
+type LoadAdministrativeAreaMap =
+    String -> IO (Either DbError AdministrativeMap)
+
+
 
 
 
@@ -90,6 +95,11 @@ lookupOneCategory catId =
 lockupAttributes :: LockupAttributes
 lockupAttributes [(acode, catId, catTy)] = return $ Right []
 
+loadAdministrativeAreaMap :: LoadAdministrativeAreaMap
+loadAdministrativeAreaMap country = 
+    return $ Right camerounAdministrativeMap
+
+
 -- =============================================================================
 -- Handlers Implementation
 -- =============================================================================
@@ -107,10 +117,12 @@ declareLostItemHandler
     saveOneCategory
     (Command unvalidatedLostItem curTime userId) = 
      
-    do  -- retrieve referenced category
-        refCategory <- return $ fmap (mapLeft Db) $ lookupOneCategory $ uliCategoryId unvalidatedLostItem
+    do  -- retrieve adminitrative map area
+        adminAreaMap <- loadAdministrativeAreaMap "Cameroun"
+        -- retrieve referenced category
+        refCategory <- lookupOneCategory $ uliCategoryId unvalidatedLostItem
         -- retrieve referenced attribute
-        refAttributes <- return $ fmap (mapLeft Db) $ lockupAttributes $ fmap toAttributeAndCategoryInfo $ uliattributes unvalidatedLostItem
+        refAttributes <- lockupAttributes $ fmap toAttributeAndCategoryInfo $ uliattributes unvalidatedLostItem
         -- get creation time
         declarationTime <- getCurrentTime
         -- get randon uuid 
@@ -139,4 +151,9 @@ toAttributeAndCategoryInfo u =
 
 
 
+
+
+data EitherIO e a = EitherIO {
+    runEitherIO :: IO (Either e a)
+}
 

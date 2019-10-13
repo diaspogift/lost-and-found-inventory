@@ -39,6 +39,7 @@ import qualified Data.ByteString.Char8 as Char8
 --- Common types wrappers
 --- 
 ---
+type Country = String
 type RegionName =  String
     --RegionName String deriving (Eq, Ord, Show)
 type DivisionName = String

@@ -35,13 +35,13 @@ import Data.Either.Combinators
 --- Dependencies 
 
 type LookupOneCategory = 
-    String -> Either DbError Category
+    String -> IO (Either DbError Category)
 
 type LockupAttributes = 
-    [(String, String, String)] -> Either DbError [Attribute]
+    [(String, String, String)] -> IO (Either DbError [Attribute])
 
 type SaveOneCategory = 
-    Category -> Either DbError ()
+    Category -> IO (Either DbError ())
 
 
 
@@ -71,18 +71,25 @@ sendAcknowledgment declarationAcknowledgment =
 
 lookupOneCategory :: LookupOneCategory 
 lookupOneCategory catId = 
-    do  catid <- mapLeft DbError $ createCategoryId "AAAAAA-HHHHH-JJJJJ-KKKKK-MMMMMM-LLLLL-XXXXX"
-        catdesc <- mapLeft DbError $ createLongDescription "Human Category: It captures anything related humans"
-        return  Category {
-                    categoryId = catid
-                ,   categoryType = Humans
-                ,   parentalStatus = Parent
-                ,   categoryDesc = catdesc
-                ,   subCategories = fromList []  
-                }
+    do  catid <- return $ mapLeft DbError $ createCategoryId "AAAAAA-HHHHH-JJJJJ-KKKKK-MMMMMM-LLLLL-XXXXX"
+        catdesc <- return $ mapLeft DbError $ createLongDescription "Human Category: It captures anything related humans"
+        case catid of
+            Left errorMsg -> return $ Left errorMsg
+            Right id ->
+                case catdesc of
+                    Left errorMsg1 -> return $ Left errorMsg1
+                    Right desc -> 
+                        return $
+                            Right Category {
+                                        categoryId = id
+                                    ,   categoryType = Humans
+                                    ,   parentalStatus = Parent
+                                    ,   categoryDesc = desc
+                                    ,   subCategories = fromList []  
+                                    }
 
 lockupAttributes :: LockupAttributes
-lockupAttributes [(acode, catId, catTy)] = Right []
+lockupAttributes [(acode, catId, catTy)] = return $ Right []
 
 -- =============================================================================
 -- Handlers Implementation
@@ -93,47 +100,37 @@ declareLostItemHandler ::
     -> LockupAttributes
     -> SaveOneCategory
     -> DeclareLostItemCmd 
-    -> UTCTime
-    -> UUID
-    -> Either DeclareLostItemError [DeclareLostItemEvent]
+    -> IO (Either DeclareLostItemError [DeclareLostItemEvent])
     
 declareLostItemHandler 
     lookupOneCategory
     lockupAttributes
     saveOneCategory
-    (Command unvalidatedLostItem curTime userId) 
-    declarationTime 
-    lostItemUuid = 
+    (Command unvalidatedLostItem curTime userId) = 
      
     do  -- retrieve referenced category
-        refCategory <- mapLeft Db $ lookupOneCategory $ uliCategoryId unvalidatedLostItem 
+        refCategory <- return $ fmap (mapLeft Db) $ lookupOneCategory $ uliCategoryId unvalidatedLostItem
         -- retrieve referenced attribute
-        refAttributes <- mapLeft Db $ lockupAttributes $ fmap toAttributeAndCategoryInfo $ uliattributes unvalidatedLostItem
+        refAttributes <- return $ fmap (mapLeft Db) $ lockupAttributes $ fmap toAttributeAndCategoryInfo $ uliattributes unvalidatedLostItem
         -- get creation time
-        -- Monad transformer here :) declarationTime <- getCurrentTime
+        declarationTime <- getCurrentTime
         -- get randon uuid 
-        -- Another Monad transformer here :) lostItemUuid <- nextRandom
+        lostItemUuid <- nextRandom
         -- call workflow
-        events <- declareLostItem 
-                    checkAdministrativeAreaInfoValid  -- Dependency
-                    checkAttributeInfoValid           -- Dependency
-                    checkContactInfoValid             -- Dependency
-                    createDeclarationAcknowledgment   -- Dependency
-                    sendAcknowledgment                -- Dependency
-                    unvalidatedLostItem               -- Input
-                    declarationTime                   -- Input
-                    (toString lostItemUuid)
+        events <- return $
+                     declareLostItem 
+                        checkAdministrativeAreaInfoValid  -- Dependency
+                        checkAttributeInfoValid           -- Dependency
+                        checkContactInfoValid             -- Dependency
+                        createDeclarationAcknowledgment   -- Dependency
+                        sendAcknowledgment                -- Dependency
+                        unvalidatedLostItem               -- Input
+                        declarationTime                   -- Input
+                        (toString lostItemUuid)
         return events
 
         
-
-
-  
-  
-  
-  
-  
-  
+   
 --- Helpers 
 
 toAttributeAndCategoryInfo :: UnvalidatedAttribute -> (String, String, String)

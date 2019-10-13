@@ -68,7 +68,6 @@ sendAcknowledgment :: SendAcknowledgment
 sendAcknowledgment declarationAcknowledgment = 
     Sent  -- DeclarationAcknowledgment -> SendResult             
                       
-
 lookupOneCategory :: LookupOneCategory 
 lookupOneCategory catId = 
     do  catid <- return $ mapLeft DbError $ createCategoryId "AAAAAA-HHHHH-JJJJJ-KKKKK-MMMMMM-LLLLL-XXXXX"

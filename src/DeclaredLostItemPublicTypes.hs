@@ -6,6 +6,9 @@ import CommonCompoundTypes
 import Control.Exception.Base
 import Data.Set
 import Data.Time
+import Data.Dates
+
+
 
 
 -- ==========================================================================
@@ -34,8 +37,7 @@ data UnvalidatedAttribute = UnvalidatedAttribute {
       , uattrDescription :: String
       , uattrValue :: String
       , uattrUnit ::   String
-      , urelatedCategory :: String
-      , urelatedCategoryType :: String
+      , urelatedCategories :: [(String, String)]
     } deriving (Eq, Ord, Show)
 
 data UnvalidatedPerson = UnvalidatedPerson {
@@ -61,7 +63,8 @@ data UnvalidatedLostItem = UnvalidatedLostItem {
         uliName :: String
     ,   uliCategoryId :: String
     ,   uliDescription :: String
-    ,   ulocation :: UnvalidatedLocation
+    ,   uliDateAndTimeSpan :: (String, String)
+    ,   ulocations :: [UnvalidatedLocation]
     ,   uliattributes :: [UnvalidatedAttribute]
     ,   uowner :: UnvalidatedPerson   
     } deriving (Eq, Ord, Show)
@@ -85,14 +88,15 @@ type LostItemDeclared = DeclaredLostItem
 
 
 data DeclaredLostItem = DeclaredLostItem {
-        lostItemId          :: LostItemId
-    ,   lostItemName        :: ItemName
-    ,   lostItemCategoryId  :: CategoryId
-    ,   lostItemLocation    :: Location
-    ,   lostItemDesc        :: LongDescription
-    ,   lostItemLostDate    :: UTCTime
-    ,   lostItemAttributes  :: Set Attribute
-    ,   lostItemOwner       :: Person
+        lostItemId                  :: LostItemId
+    ,   lostItemName                :: ItemName
+    ,   lostItemCategoryId          :: CategoryId
+    ,   lostItemLocation            :: Set Location
+    ,   lostItemDesc                :: LongDescription
+    ,   lostItemRegistrationTime    :: UTCTime
+    ,   lostItemDateAndTimeSpan     :: DateTimeSpan
+    ,   lostItemAttributes          :: Set Attribute
+    ,   lostItemOwner               :: Person
     } deriving (Eq, Ord, Show)
 
 

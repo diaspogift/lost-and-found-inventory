@@ -101,8 +101,7 @@ data AttributeDto = AttributeDto {
     , dtoattrDescription      :: String
     , dtoattrValue            :: String
     , dtoattrUnit             :: String
-    , dtorelatedCategory      :: String
-    , dtorelatedCategoryType  :: String
+    , dtorelatedCategories    :: [(String, String)] 
     } deriving (Eq, Ord, Show)
 
 
@@ -116,8 +115,7 @@ toUnvalidatedAttribute dto =
     , uattrDescription = dtoattrDescription dto
     , uattrValue = dtoattrValue dto
     , uattrUnit = dtoattrUnit dto
-    , urelatedCategory = dtorelatedCategory dto
-    , urelatedCategoryType = dtorelatedCategoryType dto
+    , urelatedCategories = dtorelatedCategories dto
     }
 
 toAttribute :: AttributeDto -> Either ErrorMessage Attribute
@@ -127,8 +125,7 @@ toAttribute dto =
         desc <- createShortDescription $ dtoattrDescription dto
         val <- createAttributeValue $ dtoattrValue dto
         unit <- createAttributeUnit $ dtoattrUnit dto
-        catId <- createCategoryId $ dtorelatedCategory dto
-        catType <- toCategoryType $ dtorelatedCategoryType dto
+        catIds <- sequence $ fmap toCatIdCatTypePair $ dtorelatedCategories dto
 
         return  Attribute {
                   attrCode = code
@@ -136,9 +133,13 @@ toAttribute dto =
                 , attrDescription = desc
                 , attrValue = Just val
                 , attrUnit = Just unit
-                , relatedCategory = catId
-                , relatedCategoryType = catType
+                , relatedCategories = catIds
                 }
+        where 
+            toCatIdCatTypePair (strCatId, strCatType) =
+                do  catId <- createCategoryId strCatId
+                    catType <- toCategoryType strCatType
+                    return (catId, catType)
 
 fromAttribute :: Attribute -> AttributeDto
 fromAttribute domain = 
@@ -148,9 +149,12 @@ fromAttribute domain =
     , dtoattrDescription = unwrapShortDescription $ attrDescription domain
     , dtoattrValue = unwrapAttributeValue $ attrValue domain
     , dtoattrUnit = unwrapAttributeUnit $ attrUnit domain
-    , dtorelatedCategory = unwrapCategoryId $ relatedCategory domain
-    , dtorelatedCategoryType = fromCategoryType $ relatedCategoryType domain
+    , dtorelatedCategories = fmap fromCategoryIdAndCategoryType $ relatedCategories domain
     }
+    where fromCategoryIdAndCategoryType (catId, catType) =
+            (unwrapCategoryId catId, fromCategoryType catType)
+
+
 
 
 -- ----------------------------------------------------------------------------
@@ -289,7 +293,8 @@ data DeclareLostItemForm = DeclareLostItemForm {
         fname :: String
     ,   fcategoryId :: String
     ,   fdescription :: String
-    ,   flocation :: LocationDto
+    ,   flocations :: [LocationDto]
+    ,   fDateAndTimeSpan :: (String, String)
     ,   fattributes :: [AttributeDto]
     ,   fowner :: PersonDto   
     }
@@ -305,7 +310,8 @@ toUnvalidatedLostItem dtoForm =
         uliName = fname dtoForm
     ,   uliCategoryId = fcategoryId dtoForm
     ,   uliDescription = fdescription dtoForm
-    ,   ulocation = toUnvalidatedLocation $ flocation dtoForm
+    ,   ulocations = fmap toUnvalidatedLocation $ flocations dtoForm
+    ,   uliDateAndTimeSpan = fDateAndTimeSpan dtoForm
     ,   uliattributes = fmap toUnvalidatedAttribute $ fattributes dtoForm
     ,   uowner = toUnvalidatedPerson $ fowner dtoForm   
     }
@@ -320,8 +326,9 @@ data LostItemDeclaredDto = LostItemDeclaredDto {
     ,   dtoname :: String
     ,   dtocategoryId :: String
     ,   dtoescription :: String
-    ,   dtolocation :: LocationDto
-    ,   dtotimeDeclared :: UTCTime
+    ,   dtolocations :: [LocationDto]
+    ,   dtotimeRegistered :: UTCTime
+    ,   dtodatetimeSpan :: DateTimeSpan
     ,   dtoattributes :: [AttributeDto]
     ,   dtoowner :: PersonDto 
     }
@@ -336,13 +343,12 @@ fromLostItemDeclared domain =
     ,   dtoname = unwrapItemName $ lostItemName domain
     ,   dtocategoryId = unwrapCategoryId $ lostItemCategoryId domain
     ,   dtoescription = unwrapLongDescription $ lostItemDesc domain
-    ,   dtolocation = fromLocation $ lostItemLocation domain
-    ,   dtotimeDeclared = lostItemLostDate domain
+    ,   dtolocations = (fmap fromLocation) $ toList $ lostItemLocation domain
+    ,   dtotimeRegistered = lostItemRegistrationTime domain
+    ,   dtodatetimeSpan = lostItemDateAndTimeSpan domain
     ,   dtoattributes =  fmap fromAttribute $ toList $ lostItemAttributes domain
     ,   dtoowner = fromPerson $ lostItemOwner domain 
     }
-
-
 
 
 -- ----------------------------------------------------------------------------

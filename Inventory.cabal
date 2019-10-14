@@ -27,12 +27,14 @@ library
   build-depends:       base >= 4.7 && < 5
                      , containers
                      , time
+                     , dates
                      , email-validate
                      , bytestring
                      , mtl
                      , ghc
                      , either
                      , uuid
+                     , split
 
                      , aeson
                      , servant-server

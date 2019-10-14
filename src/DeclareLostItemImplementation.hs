@@ -62,7 +62,9 @@ type AttributeValidationError = String
 
 
 type CheckAttributeInfoValid = 
-  (AttributeCode, CategoryId, CategoryType) -> Either AttributeValidationError (AttributeCode, CategoryId, CategoryType) 
+  UnvalidatedAttribute 
+    -> UnvalidatedLostItem 
+    -> Either AttributeValidationError ValidatedAttribute
 
 -- ----------------------------------------------------------------------------
 -- Validated LostItem
@@ -84,8 +86,7 @@ data ValidatedAttribute = ValidatedAttribute {
     , vattrDescription      :: ShortDescription
     , vattrValue            :: Maybe AttributeValue
     , vattrUnit             :: Maybe AttributeUnit
-    , vrelatedCategory      :: CategoryId
-    , vrelatedCategoryType  :: CategoryType
+    , vrelatedCategories    :: [(CategoryId, CategoryType)]
     } deriving (Eq, Ord, Show)
 
 data ValidatedPerson = ValidatedPerson {
@@ -104,14 +105,15 @@ data ValidatedContactInformation = ValidatedContactInformation {
     } deriving (Eq, Ord, Show)
 
 data ValidatedLostItem = ValidatedLostItem {
-      vlostItemId          :: LostItemId
-  ,   vlostItemName        :: ItemName
-  ,   vlostItemCategoryId  :: CategoryId
-  ,   vlostItemDesc        :: LongDescription
-  ,   vlostItemLocation    :: ValidatedLocation
-  ,   vlostItemLostDate    :: UTCTime
-  ,   vlostItemAttributes  :: Set ValidatedAttribute
-  ,   vlostItemOwner       :: ValidatedPerson
+      vlostItemId               :: LostItemId
+  ,   vlostItemName             :: ItemName
+  ,   vlostItemCategoryId       :: CategoryId
+  ,   vlostItemDesc             :: LongDescription
+  ,   vlostItemLocation         :: Set ValidatedLocation
+  ,   vlostItemRegistrationTime :: UTCTime
+  ,   vlostItemDateAndTimeSpan  :: DateTimeSpan
+  ,   vlostItemAttributes       :: Set ValidatedAttribute
+  ,   vlostItemOwner            :: ValidatedPerson
   }
 
 type ValidateUnvalidatedLostItem =
@@ -223,23 +225,30 @@ validateUnvalidatedLostItem
        name <- toLostItemName $ uliName unvalidatedLostItem
        catId <- toCategoryId $ uliCategoryId unvalidatedLostItem
        descpt <- toLostItemDescription $ uliDescription unvalidatedLostItem
-       location <- toLostItemLocation checkAdministrativeAreaInfoValid $ ulocation unvalidatedLostItem
-       attributes <- sequence $ fmap (toValidatedAttribute checkAttributeInfoValid) $ uliattributes unvalidatedLostItem
+       locations <- sequence $ fmap (toLostItemLocation checkAdministrativeAreaInfoValid) $ ulocations unvalidatedLostItem
+       dateAndTimeSpan <- toDateTimeSpan $ uliDateAndTimeSpan unvalidatedLostItem
+       attributes <- sequence $ fmap (toValidatedAttribute checkAttributeInfoValid unvalidatedLostItem) $ uliattributes unvalidatedLostItem
        owner <- toOwner checkContactInfoValid $ uowner unvalidatedLostItem
        return ValidatedLostItem {
                     vlostItemId = id
                 ,   vlostItemName = name
                 ,   vlostItemCategoryId = catId
                 ,   vlostItemDesc = descpt
-                ,   vlostItemLocation = location
-                ,   vlostItemLostDate = decalrationTime 
+                ,   vlostItemLocation = fromList locations
+                ,   vlostItemRegistrationTime = decalrationTime 
+                ,   vlostItemDateAndTimeSpan = dateAndTimeSpan 
                 ,   vlostItemAttributes = fromList attributes
                 ,   vlostItemOwner = owner
                 }
 
-
   
 --- Helper functions for valodateUnvalidatedLostItem
+
+
+toDateTimeSpan :: (String, String) -> Either ValidationError DateTimeSpan
+toDateTimeSpan (startDate, endDate) = 
+  mapLeft ValidationError $ creatDateTimeSpan startDate endDate " "
+
 toOwner :: CheckContactInfoValid -> UnvalidatedPerson -> Either ValidationError ValidatedPerson
 toOwner checkContactInfoValid uperson =
   do id <- toUserId $ uuserId uperson
@@ -317,31 +326,13 @@ toLast str =
 
 toValidatedAttribute :: 
   CheckAttributeInfoValid 
+  -> UnvalidatedLostItem
   -> UnvalidatedAttribute
   -> Either ValidationError ValidatedAttribute
-toValidatedAttribute checkAttributeInfoValid uattr  =
-  do  ( validAttCode, 
-       validAttrCatId, 
-       validAttrCatType) <- toCheckedAttributeInfo 
-                              (uattrCode uattr,  
-                              urelatedCategory uattr, 
-                              urelatedCategoryType uattr) 
-                              checkAttributeInfoValid
-      attrName <- toAttributeName $ uattrName uattr
-      attrDescpt <- toAttributeDescpt $ uattrDescription uattr
-      attrValue <- toAttributeValue $ uattrValue uattr
-      attrUnit <- toAttributeUnit $ uattrUnit uattr
-     
-      let validAttribute = ValidatedAttribute {
-            vattrCode = validAttCode     
-          , vattrName = attrName   
-          , vattrDescription = attrDescpt 
-          , vattrValue = Just attrValue  
-          , vattrUnit = Just attrUnit      
-          , vrelatedCategory = validAttrCatId   
-          , vrelatedCategoryType = validAttrCatType
-          }
-      return validAttribute
+toValidatedAttribute 
+  checkAttributeInfoValid ulostitem uattr  =
+  mapLeft ValidationError $ checkAttributeInfoValid uattr ulostitem 
+      
      
 toLostItemId :: String -> Either ValidationError LostItemId
 toLostItemId str = 
@@ -374,19 +365,20 @@ toCheckedValidAdminArea (r, d, s) checkAdministrativeAreaInfoValid =
      let resultCheck = checkAdministrativeAreaInfoValid (reg, div, sub)
      valTrio <-  mapLeft ValidationError resultCheck 
      return valTrio
-
+{--
 toCheckedAttributeInfo :: 
-  (String, String, String)  
+  UnvalidatedLostItem
+    -> UnvalidatedAttribute  
     -> CheckAttributeInfoValid
-    -> Either ValidationError (AttributeCode, CategoryId, CategoryType) 
-toCheckedAttributeInfo (acode, cid, ctype) checkAttributeInfoValid =
-  do attrCode <- mapLeft ValidationError $ createAttributeCode acode
-     catId <- mapLeft ValidationError $ createCategoryId cid
-     catType <- mapLeft ValidationError $ toCategoryType ctype
+    -> Either ValidationError ValidatedAttribute 
+toCheckedAttributeInfo uvAttribute checkAttributeInfoValid =
+  do attrCode <- mapLeft ValidationError $ createAttributeCode $ uvAttribute
+     catId <- mapLeft ValidationError $ createCategoryId $ uvAttribute
+     catType <- mapLeft ValidationError $ toCategoryType $ uvAttribute
      let resultCheck = checkAttributeInfoValid (attrCode, catId, catType)
      valTrio <-  mapLeft ValidationError resultCheck 
      return valTrio
-                  
+  --}                
 toCity :: String -> Either ValidationError City
 toCity str = 
   mapLeft ValidationError $ createCity str
@@ -461,8 +453,9 @@ createLostItem validatedLostItem =
         ,   lostItemName = vlostItemName validatedLostItem
         ,   lostItemCategoryId = vlostItemCategoryId validatedLostItem
         ,   lostItemDesc = vlostItemDesc validatedLostItem
-        ,   lostItemLocation = toLocation $ vlostItemLocation validatedLostItem
-        ,   lostItemLostDate = vlostItemLostDate validatedLostItem
+        ,   lostItemLocation = fromList $ fmap toLocation $ toList $ vlostItemLocation validatedLostItem
+        ,   lostItemDateAndTimeSpan = vlostItemDateAndTimeSpan validatedLostItem
+        ,   lostItemRegistrationTime = vlostItemRegistrationTime validatedLostItem
         ,   lostItemAttributes = fromList $ fmap toAttribute $ toList $ vlostItemAttributes validatedLostItem
         ,   lostItemOwner = toPerson $ vlostItemOwner validatedLostItem
         }
@@ -495,8 +488,7 @@ toAttribute valAttr =
     , attrDescription = vattrDescription valAttr
     , attrValue = vattrValue valAttr  
     , attrUnit = vattrUnit valAttr    
-    , relatedCategory = vrelatedCategory valAttr
-    , relatedCategoryType = vrelatedCategoryType valAttr
+    , relatedCategories = vrelatedCategories valAttr
     }
 
 

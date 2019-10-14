@@ -22,7 +22,7 @@ data Category = Category {
 
 data ParentalStatus =
       Parent
-    | Sub ParentId CategoryType
+    | Sub ParentCategoryId CategoryType
     deriving (Eq, Ord, Show)
 
 
@@ -581,13 +581,11 @@ data Attribute = Attribute {
     , attrDescription      :: ShortDescription
     , attrValue            :: Maybe AttributeValue
     , attrUnit             :: Maybe AttributeUnit
-    , relatedCategory      :: CategoryId
-    , relatedCategoryType  :: CategoryType
+    , relatedCategories    :: [(CategoryId, CategoryType)]
     } deriving (Eq, Ord, Show)
 
 
 data Person = Person {
-    -- Revoir si user est optionelle
       userId   :: UserId
     , contact  :: ContactInformation
     , name     :: FullName

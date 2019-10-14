@@ -1,9 +1,9 @@
 module CommonSimpleTypes (
-      LostItemId, FoundItemId
+      LostItemId, FoundItemId, DateTimeSpan
     , MatchedItemId, ClaimedItemId
     , UserId, TenantId
     , RegionName, DivisionName, SubDivisionName
-    , CategoryId, ParentId, ShortDescription, LongDescription
+    , CategoryId, ParentCategoryId, ShortDescription, LongDescription
     , TenantName, ItemName, City, Village, Neighborhood, Address
     , AttributeCode, AttributeName, AttributeValue, AttributeUnit
     , EmailAddress, PostalAddress, Telephone
@@ -17,7 +17,7 @@ module CommonSimpleTypes (
     , createAttributeCode, createAttributeName, createAttributeValue, createAttributeUnit
     , createEmailAddress, createPostalAddress, createTelephone
     , createFirstName, createMiddle, createLastName
-    , createQuestion, createAnswer
+    , createQuestion, createAnswer, creatDateTimeSpan
     
     , unwrapFoundItemId, unwrapLostItemId
     , unwrapMatchedItemId, unwrapClaimedItemId
@@ -34,6 +34,9 @@ module CommonSimpleTypes (
 import Data.Monoid
 import qualified Text.Email.Validate as EmailVal
 import qualified Data.ByteString.Char8 as Char8
+import Data.Dates
+import Data.List.Split
+
 
 
 --- Common types wrappers
@@ -47,7 +50,8 @@ type DivisionName = String
 type SubDivisionName = String
     --SubDivisionName String deriving (Eq, Ord, Show)
 
-
+newtype DateTimeSpan = 
+    DateTimeSpan (DateTime, DateTime) deriving (Eq, Ord, Show)
 newtype LostItemId = 
     LostItemId String deriving (Eq, Ord, Show)
 newtype FoundItemId = 
@@ -62,7 +66,7 @@ newtype TenantId =
     TenantId String deriving (Eq, Ord, Show)
 newtype CategoryId = 
     CategoryId String deriving (Eq, Ord, Show)
-type ParentId = CategoryId
+type ParentCategoryId = CategoryId
 newtype TenantName = 
     TenantName String deriving (Eq, Ord, Show)
 newtype ItemName = 
@@ -430,3 +434,26 @@ createAnswer =
 
 unwrapAnswer :: Answer -> String
 unwrapAnswer (Answer str) = str
+
+
+
+--- TODO NEED LOTS OF IMPROVEMENTS
+--- TODO NEED LOTS OF IMPROVEMENTS
+--- TODO NEED LOTS OF IMPROVEMENTS
+--- TODO NEED LOTS OF IMPROVEMENTS
+creatDateTimeSpan :: String -> String -> String -> Either ErrorMessage DateTimeSpan
+creatDateTimeSpan strdtStart strdtEnd separator =
+    let                 
+        dtstart = fmap (read) $ splitOn separator strdtStart  
+        dtend = fmap (read) $ splitOn separator strdtEnd  
+    
+    in  if ((length dtstart == 6) && (length dtend == 6))
+        then  
+            let  
+                d1 = DateTime (dtstart!!0) (dtstart!!1) (dtstart!!2) (dtstart!!3) (dtstart!!4) (dtstart!!5)
+                d2 = DateTime (dtend!!0) (dtend!!1) (dtend!!2) (dtend!!3) (dtend!!4) (dtend!!5)    
+            in 
+                Right $ DateTimeSpan (d1, d2)
+        else Left "Invalid date format"
+                
+                

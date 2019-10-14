@@ -61,8 +61,7 @@ checkAdministrativeAreaInfoValid (r, d, s) =
     return (r, d, s)
 
 checkAttributeInfoValid :: CheckAttributeInfoValid   
-checkAttributeInfoValid (aco, aca, ct)  =
-    return (aco, aca, ct)  
+checkAttributeInfoValid = undefined 
 
 checkContactInfoValid :: CheckContactInfoValid 
 checkContactInfoValid t = return t           
@@ -124,7 +123,7 @@ declareLostItemHandler
         -- retrieve referenced category
         refCategory <- lookupOneCategory $ uliCategoryId unvalidatedLostItem
         -- retrieve referenced attribute
-        refAttributes <- lockupAttributes $ fmap toAttributeAndCategoryInfo $ uliattributes unvalidatedLostItem
+        -- refAttributes <- lockupAttributes $ fmap toAttributeAndCategoryInfo $ uliattributes unvalidatedLostItem
         -- get creation time
         declarationTime <- getCurrentTime
         -- get randon uuid 
@@ -146,9 +145,6 @@ declareLostItemHandler
    
 --- Helpers 
 
-toAttributeAndCategoryInfo :: UnvalidatedAttribute -> (String, String, String)
-toAttributeAndCategoryInfo u = 
-    (uattrCode u, urelatedCategory u, urelatedCategoryType u)
 
 
 

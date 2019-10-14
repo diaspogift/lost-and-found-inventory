@@ -162,13 +162,13 @@ createString fieldName ctor maxLen str
         Right $ ctor str
 
 
-createStringControlledLength :: String 
+createStringWithBoundedLength :: String 
                 -> (String -> a) 
                 -> Int 
                 -> Int
                 -> String 
                 -> Either ErrorMessage a
-createStringControlledLength fieldName ctor minLen maxLen str       
+createStringWithBoundedLength fieldName ctor minLen maxLen str       
     | minLen > maxLen = 
         let errorMsg = 
                 "incoherent max and min length"
@@ -256,42 +256,42 @@ createEmail fieldName  ctor  str
 
 createLostItemId :: String -> Either ErrorMessage LostItemId
 createLostItemId = 
-    createStringControlledLength "Lost Item Identifier: " LostItemId 36 36 
+    createStringWithBoundedLength "Lost Item Identifier: " LostItemId 36 36 
 
 unwrapLostItemId :: LostItemId -> String
 unwrapLostItemId (LostItemId str) = str
 
 createFoundItemId :: String -> Either ErrorMessage FoundItemId
 createFoundItemId = 
-    createStringControlledLength "Found Item Identifier: " FoundItemId 36 36
+    createStringWithBoundedLength "Found Item Identifier: " FoundItemId 36 36
 
 unwrapFoundItemId :: FoundItemId -> String
 unwrapFoundItemId (FoundItemId str) = str
 
 createMatchedItemId :: String -> Either ErrorMessage MatchedItemId
 createMatchedItemId = 
-    createStringControlledLength "Matched Item Identifier: " MatchedItemId 36 36
+    createStringWithBoundedLength "Matched Item Identifier: " MatchedItemId 36 36
 
 unwrapMatchedItemId :: MatchedItemId -> String
 unwrapMatchedItemId (MatchedItemId str) = str
 
 createClaimedItemId :: String -> Either ErrorMessage ClaimedItemId
 createClaimedItemId = 
-    createStringControlledLength "Claimed Item Identifier: " ClaimedItemId 36 36
+    createStringWithBoundedLength "Claimed Item Identifier: " ClaimedItemId 36 36
 
 unwrapClaimedItemId :: ClaimedItemId -> String
 unwrapClaimedItemId (ClaimedItemId str) = str
 
 createUserId :: String -> Either ErrorMessage UserId
 createUserId = 
-    createStringControlledLength "User Identifier: " UserId 36 36
+    createStringWithBoundedLength "User Identifier: " UserId 36 36
 
 unwrapUserId :: UserId -> String
 unwrapUserId (UserId str) = str
 
 createTenantId :: String -> Either ErrorMessage TenantId
 createTenantId = 
-    createStringControlledLength "Tenant Identifier: " TenantId 36 36
+    createStringWithBoundedLength "Tenant Identifier: " TenantId 36 36
 
 unwrapTenantId :: TenantId -> String
 unwrapTenantId (TenantId str) = str
@@ -299,7 +299,7 @@ unwrapTenantId (TenantId str) = str
 
 createCategoryId :: String -> Either ErrorMessage CategoryId
 createCategoryId = 
-    createStringControlledLength "Category Identifier: " CategoryId 36 36
+    createStringWithBoundedLength "Category Identifier: " CategoryId 36 36
 
 unwrapCategoryId :: CategoryId -> String
 unwrapCategoryId (CategoryId str) = str

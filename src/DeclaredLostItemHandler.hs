@@ -102,8 +102,10 @@ loadAdministrativeAreaMap country =
 
 
 -- =============================================================================
--- Handlers Implementation
+-- Declare / Register Lost Item Command Handler Implementation
 -- =============================================================================
+
+---- TODO: NEEDS LOTS OF IMPROVEMENTS
 
 declareLostItemHandler :: 
     LookupOneCategory 
@@ -138,18 +140,17 @@ declareLostItemHandler
                         sendAcknowledgment                -- Dependency
                         unvalidatedLostItem               -- Input
                         declarationTime                   -- Input
-                        (toString lostItemUuid)
+                        lostItemUuid
         return events
 
         
    
---- Helpers 
 
 
 
+---- TODO: Transform     IO (Either e a)  into EitherIO e a  
 
-
--- Helpers
+-- Getting thereeee :) - This is Monad trasformer LANDDDD!!!  
 
 
 

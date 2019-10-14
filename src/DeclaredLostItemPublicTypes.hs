@@ -13,12 +13,13 @@ import Data.Dates
 
 -- ==========================================================================
 -- This file contains the definitions of PUBLIC types 
--- (exposed at the boundary of the bounded context )
--- related to the Declare LostItem workflow 
+-- (exposed at the boundary of the bounded context)
+-- related to the DeclareLostItem workflow 
 -- ==========================================================================
 
 -- --------------------------------------------------------------------------
 -- inputs to the workflow
+-- --------------------------------------------------------------------------
 
 
 data UnvalidatedLocation = UnvalidatedLocation {
@@ -72,6 +73,7 @@ data UnvalidatedLostItem = UnvalidatedLostItem {
 
 -- --------------------------------------------------------------------------
 -- outputs from the workflow (success case)
+-- --------------------------------------------------------------------------
 
 
 -- Event will be created if the Acknowledgment was successfully posted
@@ -84,9 +86,7 @@ data DeclarationAcknowledgmentSent = DeclarationAcknowledgmentSent {
 type LostItemDeclared = DeclaredLostItem
 
 
--- Declared state            
-
-
+-- Declare / Register Lost Item state            
 data DeclaredLostItem = DeclaredLostItem {
         lostItemId                  :: LostItemId
     ,   lostItemName                :: ItemName
@@ -100,9 +100,7 @@ data DeclaredLostItem = DeclaredLostItem {
     } deriving (Eq, Ord, Show)
 
 
-
--- The possible events resulting from the PlaceOrder workflow
--- Not all events will occur, depending on the logic of the workflow
+-- The possible events resulting from the Declare/Register Lost Item workflow
 data DeclareLostItemEvent =
       LostItemDeclared LostItemDeclared
     | SearchableItemDeclared LostItemDeclared 
@@ -112,6 +110,7 @@ data DeclareLostItemEvent =
 
 -- --------------------------------------------------------------------------
 -- error outputs 
+-- --------------------------------------------------------------------------
 
 
 -- All the things that can go wrong in this workflow
@@ -138,7 +137,8 @@ data DeclareLostItemError =
 
 
 -- --------------------------------------------------------------------------
--- // the workflow itself
+-- the workflow itself
+-- --------------------------------------------------------------------------
 
 type DeclareLostItem = 
     UnvalidatedLostItem -> Either DeclareLostItemError [DeclareLostItemEvent]

@@ -12,14 +12,17 @@ import Data.Set hiding (singleton)
 import Util
 import Data.Either.Combinators
 
+import Data.UUID.V4
+import Data.UUID  -- Internal
+
 -- ==========================================================================================
--- This file contains the final implementation for the declareLostItem workflow
+-- This file contains the initial implementation for the declareLostItem workflow
 --
 --
 -- There are two parts:
 -- * the first section contains the (type-only) definitions for each step
 -- * the second section contains the implementations for each step
---   and the implementation of the overall workflow
+--   and then the implementation of the overall workflow
 -- ==========================================================================================
 
 
@@ -60,15 +63,13 @@ type CheckContactInfoValid =
 type AttributeValidationError = String
     
 
-
 type CheckAttributeInfoValid = 
   UnvalidatedAttribute 
     -> UnvalidatedLostItem 
     -> Either AttributeValidationError ValidatedAttribute
 
--- ----------------------------------------------------------------------------
+
 -- Validated LostItem
--- ----------------------------------------------------------------------------
 
 data ValidatedLocation = ValidatedLocation {
         vregion :: Region
@@ -90,14 +91,14 @@ data ValidatedAttribute = ValidatedAttribute {
     } deriving (Eq, Ord, Show)
 
 data ValidatedPerson = ValidatedPerson {
-    -- Revoir si user est optionelle
+    -- Revoir si l'attribut userId est optionel
       vuserId   :: UserId
     , vcontact  :: ValidatedContactInformation
     , vname     :: FullName
     } deriving (Eq, Ord, Show)
 
 data ValidatedContactInformation = ValidatedContactInformation {
-      -- Tel required, email optional
+      -- Maybe Tel required, Email optional ????
       vemail         :: EmailAddress
     , vaddress       :: PostalAddress
     , vprimaryTel    :: Telephone
@@ -122,8 +123,8 @@ type ValidateUnvalidatedLostItem =
   -> CheckAttributeInfoValid                  -- Dependancy
   -> UnvalidatedLostItem                      -- Input
   -> UTCTime                                  -- Input
-  -> String                                   -- Input
-  -> Either ValidationError ValidatedLostItem
+  -> UUID                                     -- Input
+  -> Either ValidationError ValidatedLostItem -- Output
 
 
 
@@ -158,7 +159,7 @@ data DeclarationAcknowledgment = DeclarationAcknowledgment {
 type CreateDeclarationAcknowledgment = 
   DeclaredLostItem -> HtmlString
 
--- Send the lost declaration acknoledgment to the declarant
+-- Send a lost item declaration / registration acknoledgment to the declarant
 -- Note that this does not generate an Either type 
 -- because on faillure, we will continue anyway.
 -- On success, we will generate a DeclarationAcknowledgmentSent event
@@ -221,7 +222,7 @@ validateUnvalidatedLostItem
   decalrationTime
   assignUuid = 
 
-    do id <- toLostItemId assignUuid
+    do id <- toLostItemId $ toString assignUuid
        name <- toLostItemName $ uliName unvalidatedLostItem
        catId <- toCategoryId $ uliCategoryId unvalidatedLostItem
        descpt <- toLostItemDescription $ uliDescription unvalidatedLostItem
@@ -586,7 +587,7 @@ declareLostItem ::
   -> SendAcknowledgment
   -> UnvalidatedLostItem
   -> UTCTime
-  -> String
+  -> UUID
   -> Either DeclareLostItemError [DeclareLostItemEvent]
 declareLostItem 
   checkAdministrativeAreaInfoValid  -- Dependency

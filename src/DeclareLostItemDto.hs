@@ -14,8 +14,9 @@ import Data.Set
 -- ==========================================================================================
 -- This file contains the the logic for working with data transfer objects (DTOs)
 --
--- Each type of DTO is defined using primitives, serializable types and there are 
--- toDomain and fromDomain functions defined for each DTO.
+-- Each type of DTO is defined using primitive, serializable types and there are 
+-- toUnvlidated, toDomain and fromDomain functions defined for each of them.
+--
 -- ==========================================================================================
 
 
@@ -45,17 +46,19 @@ data LocationDto = LocationDto {
 -- Helper functions for converting from / to domain as well as to other states
 
 toUnvalidatedLocation :: LocationDto -> UnvalidatedLocation
-toUnvalidatedLocation dto =
-    UnvalidatedLocation {
-        uregion = dtoregion dto
-    ,   udivision = dtodivision dto
-    ,   usubdivision = dtosubdivision dto
-    ,   ucity = dtocity dto
-    ,   uvillage = dtovillage dto
-    ,   uneighborhood = dtoneighborhood dto
-    ,   uloaddress = dtolocationAddress dto
-    }
+toUnvalidatedLocation  =
+    UnvalidatedLocation 
+        <$> dtoregion 
+        <*> dtodivision 
+        <*> dtosubdivision
+        <*> dtocity
+        <*> dtovillage 
+        <*> dtoneighborhood 
+        <*> dtolocationAddress
+        
 
+
+---- TODO:  I think applicative might be welcome here and in many other places :) 
 toLocation :: LocationDto -> Either ErrorMessage Location
 toLocation dto = 
     do  reg <- toRegion $ dtoregion dto
@@ -76,16 +79,16 @@ toLocation dto =
                 }
 
 fromLocation :: Location -> LocationDto
-fromLocation domain = 
-    LocationDto {
-        dtoregion = fromRegion $ region domain
-    ,   dtodivision = fromDivision $ division domain
-    ,   dtosubdivision = fromSubDivision $ subdivision domain
-    ,   dtocity = unwrapCity $ city domain
-    ,   dtovillage = unwrapVillage $ village domain
-    ,   dtoneighborhood = unwrapNeighborhood $ neighborhood domain
-    ,   dtolocationAddress = unwrapAddress $ locationAddress domain
-    }
+fromLocation = 
+    LocationDto  
+        <$> (fromRegion . region) 
+        <*> (fromDivision . division) 
+        <*> (fromSubDivision . subdivision)
+        <*> (unwrapCity . city)
+        <*> (unwrapVillage . village) 
+        <*> (unwrapNeighborhood . neighborhood) 
+        <*> (unwrapAddress . locationAddress) 
+
 
 
 
@@ -108,15 +111,15 @@ data AttributeDto = AttributeDto {
 -- Helper functions for converting from / to domain as well as to other states
 
 toUnvalidatedAttribute :: AttributeDto -> UnvalidatedAttribute 
-toUnvalidatedAttribute dto = 
-    UnvalidatedAttribute {
-      uattrCode = dtoattrCode dto
-    , uattrName = dtoattrName dto
-    , uattrDescription = dtoattrDescription dto
-    , uattrValue = dtoattrValue dto
-    , uattrUnit = dtoattrUnit dto
-    , urelatedCategories = dtorelatedCategories dto
-    }
+toUnvalidatedAttribute = 
+    UnvalidatedAttribute 
+        <$> dtoattrCode 
+        <*> dtoattrName 
+        <*> dtoattrDescription 
+        <*> dtoattrValue 
+        <*> dtoattrUnit 
+        <*> dtorelatedCategories 
+    
 
 toAttribute :: AttributeDto -> Either ErrorMessage Attribute
 toAttribute dto = 
@@ -142,15 +145,15 @@ toAttribute dto =
                     return (catId, catType)
 
 fromAttribute :: Attribute -> AttributeDto
-fromAttribute domain = 
-    AttributeDto {
-      dtoattrCode = unwrapAttributeCode $ attrCode domain
-    , dtoattrName = unwrapAttributeName $ attrName domain
-    , dtoattrDescription = unwrapShortDescription $ attrDescription domain
-    , dtoattrValue = unwrapAttributeValue $ attrValue domain
-    , dtoattrUnit = unwrapAttributeUnit $ attrUnit domain
-    , dtorelatedCategories = fmap fromCategoryIdAndCategoryType $ relatedCategories domain
-    }
+fromAttribute  = 
+    AttributeDto 
+        <$> unwrapAttributeCode . attrCode 
+        <*> unwrapAttributeName . attrName 
+        <*> unwrapShortDescription . attrDescription 
+        <*> unwrapAttributeValue . attrValue 
+        <*> unwrapAttributeUnit . attrUnit 
+        <*> fmap fromCategoryIdAndCategoryType . relatedCategories 
+    
     where fromCategoryIdAndCategoryType (catId, catType) =
             (unwrapCategoryId catId, fromCategoryType catType)
 
@@ -172,19 +175,20 @@ data PersonDto = PersonDto {
 
 
 toUnvalidatedPerson :: PersonDto -> UnvalidatedPerson
-toUnvalidatedPerson dto = 
-    UnvalidatedPerson {
-        uuserId = dtouserId dto
-    ,   ucontact = toUnvalidatedContactInformation $ dtocontact dto
-    ,   ufullname = toUnvalidatedFullName $ dtofullname dto
-    }
+toUnvalidatedPerson = 
+    UnvalidatedPerson
+        <$> dtouserId 
+        <*> toUnvalidatedContactInformation . dtocontact
+        <*> toUnvalidatedFullName . dtofullname 
+
 
 fromPerson :: Person -> PersonDto
-fromPerson domain = PersonDto {
-        dtouserId = unwrapUserId $ userId domain
-    ,   dtocontact = fromContactInformation $ contact domain
-    ,   dtofullname = fromFullName $ name domain
-    }
+fromPerson = 
+    PersonDto
+        <$> unwrapUserId . userId 
+        <*> fromContactInformation . contact 
+        <*> fromFullName . name 
+    
 
 
 -- ----------------------------------------------------------------------------
@@ -227,13 +231,13 @@ toContactInformation dto =
                 }
 
 fromContactInformation :: ContactInformation -> ContactInformationDto
-fromContactInformation domain = 
-    ContactInformationDto {
-        dtoemail = unwrapEmailAddress $ email domain
-    ,   dtoaddress = unwrapPostalAddress $ address domain
-    ,   dtoprimaryTel = unwrapTelephone $ primaryTel domain
-    ,   dtosecondaryTel = unwrapTelephone $ secondaryTel domain 
-    }
+fromContactInformation = 
+    ContactInformationDto
+        <$> unwrapEmailAddress . email 
+        <*> unwrapPostalAddress . address 
+        <*> unwrapTelephone . primaryTel 
+        <*> unwrapTelephone . secondaryTel  
+    
 
 
 
@@ -272,12 +276,12 @@ toFullName dto =
                 }
 
 fromFullName :: FullName -> FullNameDto
-fromFullName domain = 
-    FullNameDto {
-      dtofirst = unwrapFirstName $ first domain
-    , dtomiddle = unwrapMiddle $ middle domain
-    , dtolast = unwrapLastName $ last domain
-    }
+fromFullName = 
+    FullNameDto
+        <$> unwrapFirstName . first 
+        <*> unwrapMiddle . middle 
+        <*> unwrapLastName . last 
+    
 
 
 
@@ -303,20 +307,30 @@ data DeclareLostItemForm = DeclareLostItemForm {
 -- Helper functions for converting from / to domain as well as to other states
 
 
-
+---- TODO:  Why is the applicative form broken here?????
 toUnvalidatedLostItem :: DeclareLostItemForm -> UnvalidatedLostItem
 toUnvalidatedLostItem dtoForm = 
     UnvalidatedLostItem {
-        uliName = fname dtoForm
-    ,   uliCategoryId = fcategoryId dtoForm
-    ,   uliDescription = fdescription dtoForm
-    ,   ulocations = fmap toUnvalidatedLocation $ flocations dtoForm
-    ,   uliDateAndTimeSpan = fDateAndTimeSpan dtoForm
-    ,   uliattributes = fmap toUnvalidatedAttribute $ fattributes dtoForm
-    ,   uowner = toUnvalidatedPerson $ fowner dtoForm   
+        uliName =               fname dtoForm
+    ,   uliCategoryId =         fcategoryId dtoForm
+    ,   uliDescription =        fdescription dtoForm
+    ,   ulocations =            fmap toUnvalidatedLocation $ flocations dtoForm
+    ,   uliDateAndTimeSpan =    fDateAndTimeSpan dtoForm
+    ,   uliattributes Z=         fmap toUnvalidatedAttribute $ fattributes dtoForm
+    ,   uowner =                 toUnvalidatedPerson $ fowner dtoForm   
     }
 
-
+{-
+    UnvalidatedLostItem {
+        uliName =               fname dtoForm
+    ,   uliCategoryId =         fcategoryId dtoForm
+    ,   uliDescription =        fdescription dtoForm
+    ,   ulocations =            fmap toUnvalidatedLocation $ flocations dtoForm
+    ,   uliDateAndTimeSpan =    fDateAndTimeSpan dtoForm
+    ,   uliattributes =         fmap toUnvalidatedAttribute $ fattributes dtoForm
+    ,   uowner =                toUnvalidatedPerson $ fowner dtoForm   
+    }
+-}
 
 -- ----------------------------------------------------------------------------
 -- DTO for LostItemDeclared  and SearchableItemDeclared Events

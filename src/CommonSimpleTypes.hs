@@ -39,9 +39,18 @@ import Data.List.Split
 
 
 
---- Common types wrappers
---- 
----
+
+
+
+-- ===================================================================================
+-- Simple types and constrained types related to the Lost |&| Found Inventory domain.
+--
+-- E.g. Single case discriminated unions (aka wrappers), enums, etc
+-- ===================================================================================
+
+
+
+
 type Country = String
 type RegionName =  String
     --RegionName String deriving (Eq, Ord, Show)
@@ -49,7 +58,6 @@ type DivisionName = String
     --DivisionName String deriving (Eq, Ord, Show)
 type SubDivisionName = String
     --SubDivisionName String deriving (Eq, Ord, Show)
-
 newtype DateTimeSpan = 
     DateTimeSpan (DateTime, DateTime) deriving (Eq, Ord, Show)
 newtype LostItemId = 
@@ -66,7 +74,8 @@ newtype TenantId =
     TenantId String deriving (Eq, Ord, Show)
 newtype CategoryId = 
     CategoryId String deriving (Eq, Ord, Show)
-type ParentCategoryId = CategoryId
+type ParentCategoryId = 
+    CategoryId
 newtype TenantName = 
     TenantName String deriving (Eq, Ord, Show)
 newtype ItemName = 
@@ -118,9 +127,17 @@ type ErrorMessage
 
 
 
---- Common types constraints
---- 
----
+
+
+
+-- ===================================================================================
+-- Reusable constructors and getters for constrained types
+-- Reusable unwrappers to primitives types such as String, Int ..etc
+-- ===================================================================================
+
+
+
+
 
 createString :: String 
                 -> (String -> a) 
@@ -283,7 +300,6 @@ createCategoryId :: String -> Either ErrorMessage CategoryId
 createCategoryId = 
     createStringControlledLength "Category Identifier: " CategoryId 36 36
 
-
 unwrapCategoryId :: CategoryId -> String
 unwrapCategoryId (CategoryId str) = str
 
@@ -319,15 +335,12 @@ createCity :: String -> Either ErrorMessage City
 createCity = 
     createString "City: " City 100
 
-
 unwrapCity:: City -> String
 unwrapCity (City str) = str
-
 
 createVillage :: String -> Either ErrorMessage Village
 createVillage = 
     createString "Village: " Village 100
-
 
 unwrapVillage :: Village -> String
 unwrapVillage (Village str) = str
@@ -336,10 +349,8 @@ createNeighborhood :: String -> Either ErrorMessage Neighborhood
 createNeighborhood = 
     createString "Neighborhood: " Neighborhood 500
 
-
 unwrapNeighborhood :: Neighborhood -> String
 unwrapNeighborhood (Neighborhood str) = str
-
 
 createAddress :: String -> Either ErrorMessage Address
 createAddress = 

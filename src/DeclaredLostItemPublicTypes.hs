@@ -32,12 +32,12 @@ data UnvalidatedLocation = UnvalidatedLocation {
     } deriving (Eq, Ord, Show)
 
 data UnvalidatedAttribute = UnvalidatedAttribute {
-        uattrCode :: String
-      , uattrName :: String
-      , uattrDescription :: String
-      , uattrValue :: String
-      , uattrUnit ::   String
-      , urelatedCategories :: [(String, String)]
+    uattrCode :: String
+    , uattrName :: String
+    , uattrDescription :: String
+    , uattrValue :: String
+    , uattrUnit ::   String
+    , urelatedCategories :: [(String, String)]
     } deriving (Eq, Ord, Show)
 
 data UnvalidatedPerson = UnvalidatedPerson {

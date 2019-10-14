@@ -42,6 +42,7 @@ import Data.List.Split
 
 
 
+
 -- ===================================================================================
 -- Simple types and constrained types related to the Lost |&| Found Inventory domain.
 --
@@ -463,8 +464,9 @@ creatDateTimeSpan strdtStart strdtEnd separator =
             let  
                 d1 = DateTime (dtstart!!0) (dtstart!!1) (dtstart!!2) (dtstart!!3) (dtstart!!4) (dtstart!!5)
                 d2 = DateTime (dtend!!0) (dtend!!1) (dtend!!2) (dtend!!3) (dtend!!4) (dtend!!5)    
-            in 
-                Right $ DateTimeSpan (d1, d2)
+            in if d1 > d2 
+               then Left "Invalid date span"
+               else Right $ DateTimeSpan (d1, d2)
         else Left "Invalid date format"
                 
                 

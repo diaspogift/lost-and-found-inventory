@@ -732,6 +732,8 @@ camerounAdministrativeMap :: AdministrativeMap
 camerounAdministrativeMap = AdministrativeMap allTenRegions
     where allTenRegions =
             [ adamaouaRegionItem
+            , centreRegionItem
+            , littoralRegion
             ]
 
 --- Adamaoua region
@@ -795,13 +797,13 @@ vinaDivision = DivisionItem (Vina "Vina") vinaSubDivisions
 
 
 
-{--
+
 --- Centre region
 ---
 ---
 
 centreRegionItem :: RegionItem
-centreRegionItem = RegionItem Centre centreDivisions
+centreRegionItem = RegionItem (Centre "Centre") centreDivisions
     where centreDivisions = 
             [ hauteSanagaDivision
             , lekieDivision
@@ -818,137 +820,198 @@ centreRegionItem = RegionItem Centre centreDivisions
           
 
 hauteSanagaDivision :: DivisionItem
-hauteSanagaDivision = DivisionItem HauteSanaga hauteSanagaSubDivisions
+hauteSanagaDivision = DivisionItem (HauteSanaga "Haute Sanaga") hauteSanagaSubDivisions
     where hauteSanagaSubDivisions =
-            [ Bibey
-            , LembeYezoum
-            , Mbandjock
-            , Minta
+            [ Bibey "Bibey"
+            , LembeYezoum "Lembe Yezoum"
+            , Mbandjock "Mbandjock"
+            , Minta "Minta"
             ]
 
 lekieDivision :: DivisionItem
-lekieDivision = DivisionItem Lekie lekieSubDivisions
+lekieDivision = DivisionItem (Lekie "Lékié") lekieSubDivisions
     where lekieSubDivisions =
-            [ Batchenga
-            , Ebebda
-            , EligMfomo
-            , Evodoula
-            , Lobo
-            , Monatélé
-            , Obala
-            , Okola
-            , Saa    
+            [ Batchenga "Batchenga"
+            , Ebebda "Ebebda"
+            , EligMfomo "Elig Mfomo"
+            , Evodoula "Evodoula"
+            , Lobo "Lobo" 
+            , Monatele "Monatélé"
+            , Obala "Obala"
+            , Okola "Okola"
+            , Saa "Saa"    
             ]
 
 mbamEtInoubouDivision :: DivisionItem
-mbamEtInoubouDivision = DivisionItem MbamEtInoubou mbamEtInoubouSubDivisions
+mbamEtInoubouDivision = DivisionItem (MbamEtInoubou "Mbam et Inoubou") mbamEtInoubouSubDivisions
     where mbamEtInoubouSubDivisions =
-            [
-                
+            [ Bafia "Bafia"
+            , Bokito "Bokito"
+            , Deuk "Deuk"
+            , Kiiki "Kiiki"
+            , KonYambetta "Kon Yambetta"
+            , Makenene "Makenene"
+            , Ndikiniméki "Ndikiniméki"
+            , Nitoukou "Nitoukou"
+            , Ombessa "Ombessa"
             ]
 
 mbamEtKimDivision :: DivisionItem
-mbamEtKimDivision = DivisionItem MbamEtKim mbamEtKimSubDivisions
+mbamEtKimDivision = DivisionItem (MbamEtKim "Mbam et Kim") mbamEtKimSubDivisions
     where mbamEtKimSubDivisions =
-            [
-                
+            [ Mbangassina "Mbangassina"
+            , NgambeTikar "Ngambe Tikar"
+            , Ngoro "Ngoro"
+            , Ntui "Ntui"
+            , Yoko "Yoko"     
             ]
 
 mefouEtAfambaDivision :: DivisionItem
-mefouEtAfambaDivision = DivisionItem MefouEtAfamba mefouEtAfambaSubDivisions
+mefouEtAfambaDivision = DivisionItem (MefouEtAfamba "Mefou et Afamba") mefouEtAfambaSubDivisions
     where mefouEtAfambaSubDivisions =
-            [
-                
+            [ Afanloum "Afanloum"
+            , AssambaOrOlanguina "Assamba / Olanguina"
+            , Awae "Awae"
+            , Edzendouan "Edzendouan"
+            , Esse "Esse"
+            , Mfou "Mfou"
+            , Nkolafamba "Nkolafamba"
+            , Soa "Soa"
             ]
 
 mefouEtAkonoDivision :: DivisionItem
-mefouEtAkonoDivision = DivisionItem MefouEtAkono mefouEtAkonoSubDivisions
+mefouEtAkonoDivision = DivisionItem (MefouEtAkono "Mefou et Akono") mefouEtAkonoSubDivisions
     where mefouEtAkonoSubDivisions =
-            [
-                
+            [ Akono "Akono"
+            , Bikok "Bikok"    
+            , Mbankomo "Mbankomo"
+            , Ngoumou "Ngoumou"
             ]
 
 mfoundiDivision :: DivisionItem
-mfoundiDivision = DivisionItem Mfoundi mfoundiSubDivisions
+mfoundiDivision = DivisionItem (Mfoundi "Mfoundi") mfoundiSubDivisions
     where mfoundiSubDivisions =
-            [
-                
+            [ YaoundeIOrNlongkakOrEtoudi "Yaounde I / Nlongkak / Etoudi"
+            , YaoundeIIOrTsinga "Yaounde II / Tsinga"
+            , YaoundeIIIOrEfoulan "Yaounde III / Efoulan"
+            , YaoundeOrIVKondengui "Yaounde IV / Kondengui"
+            , YaoundeVOrEssos "Yaounde V / Essos"
+            , YaoundeVIOrBiyemassi "Yaounde VI / BiyemAssi"
+            , YaoundeVIIOrNkolbisson "Yaounde VII / Nkolbisson"            
             ]
 
 nyongEtKelleDivision :: DivisionItem
-nyongEtKelleDivision = DivisionItem NyongEtKelle nyongEtKelleSubDivisions
+nyongEtKelleDivision = DivisionItem (NyongEtKelle "Nyong et Kéllé") nyongEtKelleSubDivisions
     where nyongEtKelleSubDivisions =
-            [
-                
+            [ Biyouha "Biyouha"
+            , Bondjock "Bondjock"
+            , BotMakak "BotMakak"
+            , Dibang "Dibang"
+            , Eseka "Eseka"
+            , Makak "Makak"
+            , Matomb "Matomb"
+            , Messondo "Messondo"
+            , NgogMapubi "Ngog Mapubi"
+            , Nguibassal "Nguibassal"           
             ]
 
 nyongEtMfoumouDivision :: DivisionItem
-nyongEtMfoumouDivision = DivisionItem NyongEtMfoumou nyongEtMfoumouSubDivisions
+nyongEtMfoumouDivision = DivisionItem (NyongEtMfoumou "Nyong et Mfoumou") nyongEtMfoumouSubDivisions
     where nyongEtMfoumouSubDivisions =
-            [
-                
+            [ Akonolinga "Akonolinga"
+            , Ayos "Ayos"
+            , Endom "Endom"
+            , Mengang "Mengang"
+            , NyakokomboOrKobdombo "Nyakokombo / Kobdombo"
             ]
-
 
 nyongEtSooDivision :: DivisionItem
-nyongEtSooDivision = DivisionItem NyongEtSoo nyongEtSooDivisionSubDivisions
+nyongEtSooDivision = DivisionItem (NyongEtSoo "Nyong et So'o") nyongEtSooDivisionSubDivisions
     where nyongEtSooDivisionSubDivisions =
-            [
-                
+            [ Akoeman "Akoeman"
+            , Dzeng "Dzeng"
+            , Mbalmayo "Mbalmayo"
+            , Mengueme "Mengueme"
+            , Ngomedzap "Ngomedzap"
+            , Nkolmetet "Nkolmetet" 
             ]
 
 
---- Far North region
+         
+
+
+--- Littoral Region
 ---
 ---
 
-adamaouaRegionItem :: RegionItem
-adamaouaRegionItem = RegionItem Adamaoua adamaouaDivisions
-    where adamaouaDivisions = 
-            [ 
+littoralRegion :: RegionItem
+littoralRegion = RegionItem (Littoral "Littoral") littoralDivisons
+    where littoralDivisons = 
+            [ moungoDivision
+            , nkamDivision
+            , sanagaMaritimeDivision
+            , wouriDivision
+            ]
+
+
+moungoDivision :: DivisionItem
+moungoDivision = DivisionItem (Moungo "Moungo")  moungoSubDivisions
+    where moungoSubDivisions =
+            [  BareBakem "Bare Bakem"
+            ,  Bonalea "Bonalea"
+            ,  Dibombari "Dibombari"
+            ,  Loum "Loum"
+            ,  Manjo "Manjo"
+            ,  Mbanga "Mbanga"
+            ,  Melong "Melong"
+            ,  Mombo "Mombo"
+            ,  NjombePenjaOrPenja "Njombe Penja / Penja"
+            ,  NkongsambaIer "Nkongsamba Ier"
+            ,  NkongsambaIIe "Nkongsamba IIe"
+            ,  NkongsambaIIIe "Nkongsamba IIIe"    
+            ,  NlonakoOrEbone "Nlonako / Ebone"
+            ]
+
+nkamDivision :: DivisionItem
+nkamDivision = DivisionItem (Nkam "Nkam") nkamSubDivisions
+    where nkamSubDivisions =
+            [ Nkondjock "Nkondjock"
+            , NordMakombeOrNdobian "Nord Makombe / Ndobian"
+            , Yabassi "Yabassi"
+            , Yingui "Yingui" 
+            ]
+
+sanagaMaritimeDivision :: DivisionItem
+sanagaMaritimeDivision = DivisionItem (SanagaMaritime "Sanaga Maritime") sanagaMaritimeSubDivisions
+    where sanagaMaritimeSubDivisions =
+            [ Dibamba "Dibamba"
+            , Dizangue "Dizangue"
+            , EdeaIer "Edéa Ier"
+            , EdeaIIe "Edéa IIe"
+            , MassockSongloulou "Massock Songloulou" 
+            , Mouanko "Mouanko"
+            , Ndom "Ndom"
+            , Ngambe "Ngambe"
+            , Ngwei "Ngwei"
+            , Nyanon "Nyanon" 
+            , Pouma "Pouma"  
+            ]
+
+wouriDivision :: DivisionItem
+wouriDivision = DivisionItem (Wouri "Wouri") wouriSubDivisions
+    where wouriSubDivisions =
+            [ DoualaIer "Douala Ier"
+            , DoualaIIe "Douala IIe"
+            , DoualaIIIe "Douala IIIe"
+            , DoualaIVe "Douala IVe" 
+            , DoualaVe "Douala Ve"
+            , DoualaVIe "Douala VIe"
+            , Manoka "Manoka"
+            ]
+
+
+
  
-            ]
-
-
-adamaouaDjeremDivision :: DivisionItem
-adamaouaDjeremDivision = DivisionItem Djerem djeremSubDivisions
-    where djeremSubDivisions =
-            [
-
-            ]
-
-adamaouaFaroEtDeoDivision :: DivisionItem
-adamaouaFaroEtDeoDivision = DivisionItem FaroEtDeo faroEtDeroSubDivisions
-    where faroEtDeroSubDivisions =
-            [
-                
-            ]
-
-adamaouaMayoBanyoDivision :: DivisionItem
-adamaouaMayoBanyoDivision = DivisionItem MayoBanyo mayoBanyoSubDivisions
-    where mayoBanyoSubDivisions =
-            [
-                
-            ]
-
-adamaouaMbereDivision :: DivisionItem
-adamaouaMbereDivision = DivisionItem Mbere mbereSubDivisions
-    where mbereSubDivisions =
-            [
-                
-            ]
-
-adamaouaVinaDivision :: DivisionItem
-adamaouaVinaDivision = DivisionItem Vina vinaSubDivisions
-    where vinaSubDivisions =
-            [
-                
-            ]
---}
-
- 
-
-
 
 
 --- /// Region Names lookup

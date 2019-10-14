@@ -316,7 +316,7 @@ toUnvalidatedLostItem dtoForm =
     ,   uliDescription =        fdescription dtoForm
     ,   ulocations =            fmap toUnvalidatedLocation $ flocations dtoForm
     ,   uliDateAndTimeSpan =    fDateAndTimeSpan dtoForm
-    ,   uliattributes           fmap toUnvalidatedAttribute $ fattributes dtoForm
+    ,   uliattributes =         fmap toUnvalidatedAttribute $ fattributes dtoForm
     ,   uowner =                toUnvalidatedPerson $ fowner dtoForm   
     }
 

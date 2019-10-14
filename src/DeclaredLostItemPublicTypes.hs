@@ -32,7 +32,7 @@ data UnvalidatedLocation = UnvalidatedLocation {
     } deriving (Eq, Ord, Show)
 
 data UnvalidatedAttribute = UnvalidatedAttribute {
-    uattrCode :: String
+      uattrCode :: String
     , uattrName :: String
     , uattrDescription :: String
     , uattrValue :: String

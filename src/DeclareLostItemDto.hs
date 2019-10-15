@@ -309,30 +309,17 @@ data DeclareLostItemForm = DeclareLostItemForm {
 
 ---- TODO:  Why is the applicative form broken here?????
 toUnvalidatedLostItem :: DeclareLostItemForm -> UnvalidatedLostItem
-toUnvalidatedLostItem dtoForm = 
-    UnvalidatedLostItem {
-        uliName =               fname dtoForm
-    ,   uliCategoryId =         fcategoryId dtoForm
-    ,   uliDescription =        fdescription dtoForm
-    ,   ulocations =            fmap toUnvalidatedLocation $ flocations dtoForm
-    ,   uliDateAndTimeSpan =    fDateAndTimeSpan dtoForm
-    ,   uliattributes =         fmap toUnvalidatedAttribute $ fattributes dtoForm
-    ,   uowner =                toUnvalidatedPerson $ fowner dtoForm   
-    }
+toUnvalidatedLostItem = 
+    UnvalidatedLostItem
+        <$> fname
+        <*> fcategoryId
+        <*> fdescription
+        <*> fDateAndTimeSpan 
+        <*> fmap toUnvalidatedLocation . flocations 
+        <*> fmap toUnvalidatedAttribute . fattributes 
+        <*> toUnvalidatedPerson . fowner
 
-{-
-    UnvalidatedLostItem {
-        uliName =               fname dtoForm
-    ,   uliCategoryId =         fcategoryId dtoForm
-    ,   uliDescription =        fdescription dtoForm
-    ,   ulocations =            fmap toUnvalidatedLocation $ flocations dtoForm
-    ,   uliDateAndTimeSpan =    fDateAndTimeSpan dtoForm
-    ,   uliattributes =         fmap toUnvalidatedAttribute $ fattributes dtoForm
-    ,   uowner =                toUnvalidatedPerson $ fowner dtoForm   
-    }
--}
-
--- ----------------------------------------------------------------------------
+----------------------------------------------------------------------------
 -- DTO for LostItemDeclared  and SearchableItemDeclared Events
 -- ----------------------------------------------------------------------------
 data LostItemDeclaredDto = LostItemDeclaredDto {
@@ -351,25 +338,25 @@ data LostItemDeclaredDto = LostItemDeclaredDto {
 -- Helper functions for converting from / to domain as well as to other states
 
 fromLostItemDeclared :: LostItemDeclared -> LostItemDeclaredDto
-fromLostItemDeclared domain = 
-    LostItemDeclaredDto {
-        dtoitemId = unwrapLostItemId $ lostItemId domain
-    ,   dtoname = unwrapItemName $ lostItemName domain
-    ,   dtocategoryId = unwrapCategoryId $ lostItemCategoryId domain
-    ,   dtoescription = unwrapLongDescription $ lostItemDesc domain
-    ,   dtolocations = (fmap fromLocation) $ toList $ lostItemLocation domain
-    ,   dtotimeRegistered = lostItemRegistrationTime domain
-    ,   dtodatetimeSpan = lostItemDateAndTimeSpan domain
-    ,   dtoattributes =  fmap fromAttribute $ toList $ lostItemAttributes domain
-    ,   dtoowner = fromPerson $ lostItemOwner domain 
-    }
+fromLostItemDeclared = 
+    LostItemDeclaredDto
+        <$> unwrapLostItemId . lostItemId 
+        <*> unwrapItemName . lostItemName 
+        <*> unwrapCategoryId . lostItemCategoryId 
+        <*> unwrapLongDescription . lostItemDesc 
+        <*> (fmap fromLocation) . toList . lostItemLocation 
+        <*> lostItemRegistrationTime 
+        <*> lostItemDateAndTimeSpan 
+        <*> (fmap fromAttribute) . toList . lostItemAttributes 
+        <*> fromPerson . lostItemOwner  
 
 
 -- ----------------------------------------------------------------------------
 -- DTO for AcknowledgmentSent Event
 -- ----------------------------------------------------------------------------
 
-data DeclarationAcknowledgmentSentDto = DeclarationAcknowledgmentSentDto {
+data DeclarationAcknowledgmentSentDto = 
+    DeclarationAcknowledgmentSentDto {
         id :: String
     ,   declarantContact :: ContactInformationDto
     }
@@ -377,12 +364,13 @@ data DeclarationAcknowledgmentSentDto = DeclarationAcknowledgmentSentDto {
 
 -- Helper functions for converting from / to domain as well as to other states
 
-fromDeclarationAcknowledgmentSent :: DeclarationAcknowledgmentSent -> DeclarationAcknowledgmentSentDto
-fromDeclarationAcknowledgmentSent domain = 
-    DeclarationAcknowledgmentSentDto {
-        id = unwrapLostItemId $ declaredLostItemId domain
-    ,   declarantContact = fromContactInformation $ ownerContactInfo domain
-    }
+fromDeclarationAcknowledgmentSent :: 
+    DeclarationAcknowledgmentSent -> DeclarationAcknowledgmentSentDto
+fromDeclarationAcknowledgmentSent  = 
+    DeclarationAcknowledgmentSentDto
+        <$> unwrapLostItemId . declaredLostItemId 
+        <*> fromContactInformation . ownerContactInfo
+    
 
 
 

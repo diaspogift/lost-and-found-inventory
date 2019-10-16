@@ -15,6 +15,7 @@ data Category = Category {
         categoryId          :: CategoryId
     ,   categoryType        :: CategoryType
     ,   parentalStatus      :: ParentalStatus
+    ,   enablementStatus    :: EnablementStatus
     ,   categoryDesc        :: LongDescription
     ,   subCategories       :: Set Category   
     } deriving (Eq, Ord, Show)
@@ -23,6 +24,11 @@ data Category = Category {
 data ParentalStatus =
       Parent
     | Sub ParentCategoryId CategoryType
+    deriving (Eq, Ord, Show)
+
+data EnablementStatus =
+      Enabled
+    | Disabled Reason 
     deriving (Eq, Ord, Show)
 
 
@@ -58,9 +64,10 @@ data Region
     | West RegionName
     deriving (Eq, Ord, Show)
 
-
+-- Check out the newtype lib
 data Division
     --    Adamaoua 
+    -- Consider a show instance
         = Djerem DivisionName
         | FaroEtDeo DivisionName
         | MayoBanyo DivisionName

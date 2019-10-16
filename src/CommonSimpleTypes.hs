@@ -8,7 +8,7 @@ module CommonSimpleTypes (
     , AttributeCode, AttributeName, AttributeValue, AttributeUnit
     , EmailAddress, PostalAddress, Telephone
     , FirstName, Middle, LastName
-    , Question, Answer, ErrorMessage
+    , Question, Answer, ErrorMessage, Reason
     , createFoundItemId, createLostItemId
     , createMatchedItemId, createClaimedItemId
     , createUserId, createTenantId, createCategoryId
@@ -51,7 +51,7 @@ import Data.List.Split
 
 
 
-
+type Reason = String
 type Country = String
 type RegionName =  String
     --RegionName String deriving (Eq, Ord, Show)
@@ -456,8 +456,8 @@ unwrapAnswer (Answer str) = str
 creatDateTimeSpan :: String -> String -> String -> Either ErrorMessage DateTimeSpan
 creatDateTimeSpan strdtStart strdtEnd separator =
     let                 
-        dtstart = fmap (read) $ splitOn separator strdtStart  
-        dtend = fmap (read) $ splitOn separator strdtEnd  
+        dtstart = fmap read $ splitOn separator strdtStart  
+        dtend = fmap read $ splitOn separator strdtEnd  
     
     in  if ((length dtstart == 6) && (length dtend == 6))
         then  
@@ -469,4 +469,4 @@ creatDateTimeSpan strdtStart strdtEnd separator =
                else Right $ DateTimeSpan (d1, d2)
         else Left "Invalid date format"
                 
-                
+-- Check Interval library

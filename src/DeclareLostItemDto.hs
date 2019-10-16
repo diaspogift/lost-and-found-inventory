@@ -11,6 +11,9 @@ import Data.Set
 
 
 
+
+
+
 -- ==========================================================================================
 -- This file contains the the logic for working with data transfer objects (DTOs)
 --
@@ -61,22 +64,15 @@ toUnvalidatedLocation  =
 ---- TODO:  I think applicative might be welcome here and in many other places :) 
 toLocation :: LocationDto -> Either ErrorMessage Location
 toLocation dto = 
-    do  reg <- toRegion $ dtoregion dto
-        div <- toDivision $ dtodivision dto
-        sub <- toSubDivision $ dtosubdivision dto
-        cit <- createCity $ dtocity dto
-        vil <- createVillage $ dtovillage dto
-        nei <- createNeighborhood $ dtoneighborhood dto
-        add <- createAddress $ dtolocationAddress dto
-        return  Location {
-                    region = reg 
-                ,   division = div
-                ,   subdivision = sub
-                ,   city = cit
-                ,   village = vil
-                ,   neighborhood = nei
-                ,   locationAddress = add
-                }
+    Location  
+        <$> (toRegion . dtoregion) dto
+        <*> (toDivision . dtodivision) dto
+        <*> (toSubDivision . dtosubdivision) dto
+        <*> (createCity . dtocity) dto
+        <*> (createVillage . dtovillage) dto
+        <*> (createNeighborhood . dtoneighborhood) dto
+        <*> (createAddress . dtolocationAddress) dto
+
 
 fromLocation :: Location -> LocationDto
 fromLocation = 
@@ -128,7 +124,7 @@ toAttribute dto =
         desc <- createShortDescription $ dtoattrDescription dto
         val <- createAttributeValue $ dtoattrValue dto
         unit <- createAttributeUnit $ dtoattrUnit dto
-        catIds <- sequence $ fmap toCatIdCatTypePair $ dtorelatedCategories dto
+        catIds <- traverse toCatIdCatTypePair $ dtorelatedCategories dto
 
         return  Attribute {
                   attrCode = code
@@ -207,30 +203,27 @@ data ContactInformationDto = ContactInformationDto {
 -- Helper functions for converting from / to domain as well as to other states
 
 
-toUnvalidatedContactInformation :: ContactInformationDto -> UnvalidatedContactInformation
-toUnvalidatedContactInformation dto =
-    UnvalidatedContactInformation {
-        uemail = dtoemail dto
-    ,   uaddress = dtoaddress dto
-    ,   uprimaryTel = dtoprimaryTel dto
-    ,   usecondaryTel = dtosecondaryTel dto
-    }
+toUnvalidatedContactInformation :: 
+    ContactInformationDto -> UnvalidatedContactInformation
+toUnvalidatedContactInformation =
+    UnvalidatedContactInformation
+        <$> dtoemail 
+        <*> dtoaddress 
+        <*> dtoprimaryTel 
+        <*> dtosecondaryTel 
+    
 
-toContactInformation :: ContactInformationDto -> Either ErrorMessage ContactInformation
+toContactInformation ::
+     ContactInformationDto -> Either ErrorMessage ContactInformation
 toContactInformation dto = 
-    do  ema <- createEmailAddress $ dtoemail dto
-        add <- createPostalAddress $ dtoaddress dto
-        pri <- createTelephone $ dtoprimaryTel dto
-        sec <- createTelephone $ dtosecondaryTel dto
-        return  ContactInformation {
-                -- Tel required, email optional
-                  email = ema
-                , address = add
-                , primaryTel = pri
-                , secondaryTel = sec
-                }
+    ContactInformation
+        <$> (createEmailAddress . dtoemail) dto
+        <*> (createPostalAddress . dtoaddress) dto
+        <*> (createTelephone . dtoprimaryTel) dto
+        <*> (createTelephone . dtosecondaryTel) dto
 
-fromContactInformation :: ContactInformation -> ContactInformationDto
+fromContactInformation :: 
+    ContactInformation -> ContactInformationDto
 fromContactInformation = 
     ContactInformationDto
         <$> unwrapEmailAddress . email 
@@ -257,24 +250,20 @@ data FullNameDto = FullNameDto {
 
 
 toUnvalidatedFullName :: FullNameDto -> UnvalidatedFullName
-toUnvalidatedFullName dto =
-    UnvalidatedFullName {
-        ufirst = dtofirst dto
-    ,   umiddle = dtomiddle dto
-    ,   ulast = dtolast dto  
-    }
+toUnvalidatedFullName =
+    UnvalidatedFullName
+        <$> dtofirst
+        <*> dtomiddle
+        <*> dtolast  
+    
 
 toFullName :: FullNameDto -> Either ErrorMessage FullName
 toFullName dto = 
-    do  fir <- createFirstName $ dtofirst dto
-        mid <- createMiddle $ dtomiddle dto
-        las <- createLastName $ dtolast dto
-        return FullName {
-                  first = fir
-                , middle = mid
-                , last = las
-                }
-
+    FullName  
+        <$> (createFirstName . dtofirst) dto
+        <*> (createMiddle . dtomiddle) dto
+        <*> (createLastName . dtolast) dto
+        
 fromFullName :: FullName -> FullNameDto
 fromFullName = 
     FullNameDto

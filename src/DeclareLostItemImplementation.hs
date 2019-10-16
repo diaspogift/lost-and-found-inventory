@@ -123,7 +123,7 @@ type ValidateUnvalidatedLostItem =
   -> CheckAttributeInfoValid                  -- Dependancy
   -> UnvalidatedLostItem                      -- Input
   -> UTCTime                                  -- Input
-  -> UUID                                     -- Input
+  -> UnvalidatedLostItemId                    -- Input
   -> Either ValidationError ValidatedLostItem -- Output
 
 
@@ -220,29 +220,22 @@ validateUnvalidatedLostItem
   checkAttributeInfoValid 
   unvalidatedLostItem 
   decalrationTime
-  assignUuid = 
+  unvalidatedAssignUuid = 
 
-    do id <- toLostItemId $ toString assignUuid
-       name <- toLostItemName $ uliName unvalidatedLostItem
-       catId <- toCategoryId $ uliCategoryId unvalidatedLostItem
-       descpt <- toLostItemDescription $ uliDescription unvalidatedLostItem
-       locations <- sequence $ fmap (toLostItemLocation checkAdministrativeAreaInfoValid) $ ulocations unvalidatedLostItem
-       dateAndTimeSpan <- toDateTimeSpan $ uliDateAndTimeSpan unvalidatedLostItem
-       attributes <- sequence $ fmap (toValidatedAttribute checkAttributeInfoValid unvalidatedLostItem) $ uliattributes unvalidatedLostItem
-       owner <- toOwner checkContactInfoValid $ uowner unvalidatedLostItem
-       return ValidatedLostItem {
-                    vlostItemId = id
-                ,   vlostItemName = name
-                ,   vlostItemCategoryId = catId
-                ,   vlostItemDesc = descpt
-                ,   vlostItemLocation = fromList locations
-                ,   vlostItemRegistrationTime = decalrationTime 
-                ,   vlostItemDateAndTimeSpan = dateAndTimeSpan 
-                ,   vlostItemAttributes = fromList attributes
-                ,   vlostItemOwner = owner
-                }
+  -- Check out record wild card extention
+  -- Use hlint
+    ValidatedLostItem
+      <$> toLostItemId unvalidatedAssignUuid
+      <*> (toLostItemName . uliName) unvalidatedLostItem
+      <*> (toCategoryId . uliCategoryId) unvalidatedLostItem
+      <*> (toLostItemDescription . uliDescription) unvalidatedLostItem
+      <*> (fmap fromList . traverse (toLostItemLocation checkAdministrativeAreaInfoValid) . ulocations) unvalidatedLostItem
+      <*> pure decalrationTime
+      <*> (toDateTimeSpan . uliDateAndTimeSpan) unvalidatedLostItem
+      <*> (fmap fromList . traverse (toValidatedAttribute checkAttributeInfoValid unvalidatedLostItem) . uliattributes) unvalidatedLostItem
+      <*> (toOwner checkContactInfoValid . uowner) unvalidatedLostItem
 
-  
+
 --- Helper functions for valodateUnvalidatedLostItem
 
 
@@ -252,33 +245,22 @@ toDateTimeSpan (startDate, endDate) =
 
 toOwner :: CheckContactInfoValid -> UnvalidatedPerson -> Either ValidationError ValidatedPerson
 toOwner checkContactInfoValid uperson =
-  do id <- toUserId $ uuserId uperson
-     contact <- toContactInfo checkContactInfoValid $ ucontact uperson
-     name <- toFullName $ ufullname uperson
-     let validPerson = ValidatedPerson {
-          vuserId = id
-        , vcontact = contact
-        , vname = name
-        }
-     return validPerson
-      
+  ValidatedPerson 
+    <$> (toUserId . uuserId) uperson
+    <*> (toContactInfo checkContactInfoValid . ucontact) uperson
+    <*> (toFullName . ufullname) uperson
+
+    
 toContactInfo :: 
   CheckContactInfoValid 
     -> UnvalidatedContactInformation 
     -> Either ValidationError ValidatedContactInformation 
 toContactInfo checkContactInfoValid ucinfo =
-  do email <- toEmail $ uemail ucinfo
-     address <- toPostalAddress $ uaddress ucinfo
-     primaryTel <- toCheckedValidTelephone checkContactInfoValid $ uprimaryTel ucinfo
-     secondaryTel <- toCheckedValidTelephone checkContactInfoValid $ usecondaryTel ucinfo
-     let validatedContactInformation = 
-            ValidatedContactInformation {
-                vemail = email
-              , vaddress = address   
-              , vprimaryTel = primaryTel  
-              , vsecondaryTel = secondaryTel
-            }
-     return validatedContactInformation
+  ValidatedContactInformation 
+    <$> (toEmail . uemail) ucinfo
+    <*> (toPostalAddress . uaddress) ucinfo
+    <*> (toCheckedValidTelephone checkContactInfoValid . uprimaryTel) ucinfo
+    <*> (toCheckedValidTelephone checkContactInfoValid . usecondaryTel) ucinfo
 
 toCheckedValidTelephone :: 
   CheckContactInfoValid 
@@ -286,8 +268,7 @@ toCheckedValidTelephone ::
   -> Either ValidationError Telephone
 toCheckedValidTelephone checkContactInfoValid str = 
   do tel <- toTelephone str
-     validTelephone <- mapLeft ValidationError $ checkContactInfoValid tel
-     return validTelephone
+     mapLeft ValidationError $ checkContactInfoValid tel
 
 toTelephone :: String -> Either ValidationError Telephone
 toTelephone str = 
@@ -307,15 +288,12 @@ toFirst str =
 
 toFullName :: UnvalidatedFullName -> Either ValidationError FullName
 toFullName uFullName =
-  do f <- toFirst $ ufirst uFullName
-     m <- toMiddle $ umiddle uFullName
-     l <- toLast $ ulast uFullName
-     let validFullName = FullName {
-          first = f
-        , middle =  m
-        , last = l
-        }
-     return validFullName
+  FullName 
+    <$> (toFirst . ufirst) uFullName
+    <*> (toMiddle . umiddle) uFullName
+    <*> (toLast . ulast) uFullName
+
+  
 
 toMiddle :: String -> Either ValidationError (Maybe Middle)
 toMiddle str = 
@@ -364,22 +342,8 @@ toCheckedValidAdminArea (r, d, s) checkAdministrativeAreaInfoValid =
      div <- mapLeft ValidationError $ toDivision d
      sub <- mapLeft ValidationError $ toSubDivision s
      let resultCheck = checkAdministrativeAreaInfoValid (reg, div, sub)
-     valTrio <-  mapLeft ValidationError resultCheck 
-     return valTrio
-{--
-toCheckedAttributeInfo :: 
-  UnvalidatedLostItem
-    -> UnvalidatedAttribute  
-    -> CheckAttributeInfoValid
-    -> Either ValidationError ValidatedAttribute 
-toCheckedAttributeInfo uvAttribute checkAttributeInfoValid =
-  do attrCode <- mapLeft ValidationError $ createAttributeCode $ uvAttribute
-     catId <- mapLeft ValidationError $ createCategoryId $ uvAttribute
-     catType <- mapLeft ValidationError $ toCategoryType $ uvAttribute
-     let resultCheck = checkAttributeInfoValid (attrCode, catId, catType)
-     valTrio <-  mapLeft ValidationError resultCheck 
-     return valTrio
-  --}                
+     mapLeft ValidationError resultCheck 
+               
 toCity :: String -> Either ValidationError City
 toCity str = 
   mapLeft ValidationError $ createCity str
@@ -448,37 +412,38 @@ toLostItemLocation checkAdministrativeAreaInfoValid u =
 
 
 createLostItem :: CreateLostItem
-createLostItem validatedLostItem =
-        DeclaredLostItem {
-            lostItemId = vlostItemId validatedLostItem
-        ,   lostItemName = vlostItemName validatedLostItem
-        ,   lostItemCategoryId = vlostItemCategoryId validatedLostItem
-        ,   lostItemDesc = vlostItemDesc validatedLostItem
-        ,   lostItemLocation = fromList $ fmap toLocation $ toList $ vlostItemLocation validatedLostItem
-        ,   lostItemDateAndTimeSpan = vlostItemDateAndTimeSpan validatedLostItem
-        ,   lostItemRegistrationTime = vlostItemRegistrationTime validatedLostItem
-        ,   lostItemAttributes = fromList $ fmap toAttribute $ toList $ vlostItemAttributes validatedLostItem
-        ,   lostItemOwner = toPerson $ vlostItemOwner validatedLostItem
-        }
+createLostItem  =
+  DeclaredLostItem 
+    <$> vlostItemId
+    <*> vlostItemName
+    <*> vlostItemCategoryId
+    <*> vlostItemDesc
+    <*> fromList . fmap toLocation . toList . vlostItemLocation
+    <*> vlostItemDateAndTimeSpan
+    <*> vlostItemRegistrationTime
+    <*> fromList . fmap toAttribute . toList . vlostItemAttributes
+    <*> toPerson . vlostItemOwner
+
+
 
 --- Helper functions
 
 toPerson :: ValidatedPerson -> Person
-toPerson valPerson = 
-  Person {
-    userId = vuserId valPerson
-  , contact = toContactInformation $ vcontact valPerson
-  , name = vname valPerson
-  }
+toPerson = 
+  Person 
+    <$> vuserId
+    <*> toContactInformation . vcontact
+    <*> vname
+  
 
 toContactInformation :: ValidatedContactInformation -> ContactInformation
-toContactInformation valContactInfo = 
-  ContactInformation {
-      email = vemail valContactInfo  
-    , address = vaddress valContactInfo
-    , primaryTel = vprimaryTel valContactInfo
-    , secondaryTel = vsecondaryTel valContactInfo
-    }
+toContactInformation = 
+  ContactInformation 
+    <$> vemail
+    <*> vaddress
+    <*> vprimaryTel
+    <*> vsecondaryTel
+
 
 
 toAttribute :: ValidatedAttribute -> Attribute
@@ -494,17 +459,15 @@ toAttribute valAttr =
 
 
 toLocation :: ValidatedLocation -> Location
-toLocation valLocatiion = 
-  Location {
-        region = vregion valLocatiion
-    ,   division = vdivision valLocatiion
-    ,   subdivision = vsubdivision valLocatiion
-    ,   city = vcity valLocatiion
-    ,   village = vvillage valLocatiion
-    ,   neighborhood = vneighborhood valLocatiion
-    ,   locationAddress = vlocationAddress valLocatiion
-    }
-
+toLocation = 
+  Location 
+    <$> vregion
+    <*> vdivision
+    <*> vsubdivision
+    <*> vcity
+    <*> vvillage
+    <*> vneighborhood
+    <*> vlocationAddress
 
 
 
@@ -587,7 +550,7 @@ declareLostItem ::
   -> SendAcknowledgment
   -> UnvalidatedLostItem
   -> UTCTime
-  -> UUID
+  -> UnvalidatedLostItemId
   -> Either DeclareLostItemError [DeclareLostItemEvent]
 declareLostItem 
   checkAdministrativeAreaInfoValid  -- Dependency
@@ -597,7 +560,7 @@ declareLostItem
   sendAcknowledgment                -- Dependency
   unvalidatedLostItem               -- Input
   lostItemCreationTime              -- Input
-  lostItemUuid =                    -- Input
+  unValidatedlostItemUuid =                    -- Input
       do  
           -- Validation step
           validatedLostItem 
@@ -609,7 +572,7 @@ declareLostItem
                       checkAttributeInfoValid
                       unvalidatedLostItem
                       lostItemCreationTime
-                      lostItemUuid
+                      unValidatedlostItemUuid
 
           -- Creation step
           createdLostItem 
@@ -625,15 +588,25 @@ declareLostItem
                     createdLostItem
 
           -- Events creation step
-          events 
-            <- return 
-                $ createEvents 
-                    createdLostItem
-                    maybeAcknowledgment
+          return 
+            $ createEvents 
+                createdLostItem
+                maybeAcknowledgment   
 
-          return events
           
 
+
+
+--- Check out ThinkPad Lenonvo
+--- Check out ThinkPad Lenonvo
+--- Check out ThinkPad Lenonvo
+--- Check out ThinkPad Lenonvo
+--- Check out ThinkPad Lenonvo
+--- Check out ThinkPad Lenonvo
+--- Check out ThinkPad Lenonvo
+
+
+--- pramp.com 
 
 
 

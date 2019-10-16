@@ -3,7 +3,7 @@ module DeclaredLostItemPublicTypes where
 import CommonSimpleTypes
 import CommonCompoundTypes
 
-import Control.Exception.Base
+import Control.Exception
 import Data.Set
 import Data.Time
 import Data.Dates
@@ -20,7 +20,7 @@ import Data.Dates
 -- --------------------------------------------------------------------------
 -- inputs to the workflow
 -- --------------------------------------------------------------------------
-
+type UnvalidatedLostItemId = String
 
 data UnvalidatedLocation = UnvalidatedLocation {
         uregion :: String
@@ -91,10 +91,10 @@ data DeclaredLostItem = DeclaredLostItem {
         lostItemId                  :: LostItemId
     ,   lostItemName                :: ItemName
     ,   lostItemCategoryId          :: CategoryId
-    ,   lostItemLocation            :: Set Location
     ,   lostItemDesc                :: LongDescription
-    ,   lostItemRegistrationTime    :: UTCTime
+    ,   lostItemLocation            :: Set Location
     ,   lostItemDateAndTimeSpan     :: DateTimeSpan
+    ,   lostItemRegistrationTime    :: UTCTime
     ,   lostItemAttributes          :: Set Attribute
     ,   lostItemOwner               :: Person
     } deriving (Eq, Ord, Show)
@@ -127,7 +127,7 @@ data ServiceInfo = ServiceInfo {
 
 data RemoteServiceError = RemoteServiceError {
         service :: ServiceInfo
-    ,   execption :: IOException
+    ,   execption :: SomeException
     }
 
 data DeclareLostItemError =

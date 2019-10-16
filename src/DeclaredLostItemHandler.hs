@@ -48,6 +48,8 @@ type SaveOneCategory =
 type LoadAdministrativeAreaMap =
     String -> IO (Either DbError AdministrativeMap)
 
+type NextId = IO UnvalidatedLostItemId
+
 
 
 
@@ -64,7 +66,7 @@ checkAttributeInfoValid :: CheckAttributeInfoValid
 checkAttributeInfoValid = undefined 
 
 checkContactInfoValid :: CheckContactInfoValid 
-checkContactInfoValid t = return t           
+checkContactInfoValid  =  return           
     
 createDeclarationAcknowledgment :: CreateDeclarationAcknowledgment  
 createDeclarationAcknowledgment item = 
@@ -89,6 +91,7 @@ lookupOneCategory catId =
                                         categoryId = id
                                     ,   categoryType = Humans
                                     ,   parentalStatus = Parent
+                                    ,   enablementStatus = Enabled
                                     ,   categoryDesc = desc
                                     ,   subCategories = fromList []  
                                     }
@@ -99,6 +102,9 @@ lockupAttributes [(acode, catId, catTy)] = return $ Right []
 loadAdministrativeAreaMap :: LoadAdministrativeAreaMap
 loadAdministrativeAreaMap country = 
     return $ Right camerounAdministrativeMap
+
+nextId :: NextId
+nextId = let id = nextRandom in fmap toString id
 
 
 -- =============================================================================
@@ -111,6 +117,7 @@ declareLostItemHandler ::
     LookupOneCategory 
     -> LockupAttributes
     -> SaveOneCategory
+    -> NextId
     -> DeclareLostItemCmd 
     -> IO (Either DeclareLostItemError [DeclareLostItemEvent])
     
@@ -118,6 +125,7 @@ declareLostItemHandler
     lookupOneCategory
     lockupAttributes
     saveOneCategory
+    nextId
     (Command unvalidatedLostItem curTime userId) = 
      
     do  -- retrieve adminitrative map area
@@ -129,19 +137,18 @@ declareLostItemHandler
         -- get creation time
         declarationTime <- getCurrentTime
         -- get randon uuid 
-        lostItemUuid <- nextRandom
+        lostItemUuid <- nextId
         -- call workflow
-        events <- return $
-                     declareLostItem 
-                        checkAdministrativeAreaInfoValid  -- Dependency
-                        checkAttributeInfoValid           -- Dependency
-                        checkContactInfoValid             -- Dependency
-                        createDeclarationAcknowledgment   -- Dependency
-                        sendAcknowledgment                -- Dependency
-                        unvalidatedLostItem               -- Input
-                        declarationTime                   -- Input
-                        lostItemUuid
-        return events
+        return $
+            declareLostItem 
+                checkAdministrativeAreaInfoValid  -- Dependency
+                checkAttributeInfoValid           -- Dependency
+                checkContactInfoValid             -- Dependency
+                createDeclarationAcknowledgment   -- Dependency
+                sendAcknowledgment                -- Dependency
+                unvalidatedLostItem               -- Input
+                declarationTime                   -- Input
+                lostItemUuid
 
         
    

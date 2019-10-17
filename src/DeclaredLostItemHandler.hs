@@ -13,7 +13,7 @@ import Data.Time
 import Data.UUID.V4
 import Data.UUID  -- Internal
 
-import Data.Set
+import Data.Set hiding (filter)
 
 import Data.Either.Combinators
 
@@ -36,6 +36,8 @@ import Control.Applicative
 
 --- Dependencies
 
+
+
 type LookupOneCategory = 
     String -> IO (Either DbError Category)
 
@@ -55,12 +57,32 @@ type NextId = IO UnvalidatedLostItemId
 
 
 -- =============================================================================
--- Workflow Dummy Implementations
+-- Workflow dependencies Dummy Implementations
 -- =============================================================================
+
+checkAdministrativeAreaInfoValidBase :: 
+    AdministrativeMap
+    -> (Region, Division, SubDivision) 
+    -> Either AdminAreaValidationError (Region, Division, SubDivision)
+
+checkAdministrativeAreaInfoValidBase (AdministrativeMap regions) (aRegion, aDivision, aSubDivision) = 
+    let singRegion = filter (isRegionItemRegion aRegion) regions
+    in case singRegion of
+        [RegionItem freg divs] -> 
+            let singDivision = filter (isDivisionItemDivision aDivision) divs
+            in case singDivision of 
+                [DivisionItem fdiv subs] ->
+                    let singSub = filter ( == aSubDivision) subs
+                    in case singSub of 
+                        [fsub] -> Right (freg, fdiv, fsub)
+                        _ -> Left "given sub division not found"
+                _ -> Left "given division not found"
+        _ -> Left "given region not found"
 
 checkAdministrativeAreaInfoValid :: CheckAdministrativeAreaInfoValid
 checkAdministrativeAreaInfoValid (r, d, s) = 
     return (r, d, s)
+
 
 checkAttributeInfoValid :: CheckAttributeInfoValid   
 checkAttributeInfoValid = undefined 

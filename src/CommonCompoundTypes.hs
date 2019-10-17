@@ -11,6 +11,22 @@ import qualified Data.Map as M
 
 
 
+
+-- ==============================================================================================
+-- Common compound types used throughout the Inventory Management domain
+--
+-- Includes: Categories, Locations, Regions, Divisons, SubDivisions etc.
+--
+-- ==============================================================================================
+
+
+-- ===============================================
+-- Category-related types
+-- ===============================================
+
+
+
+
 data Category = Category {
         categoryId          :: CategoryId
     ,   categoryType        :: CategoryType
@@ -37,7 +53,21 @@ data CategoryType =
     | Documents
     | Electronics 
     | PersonalItems
-    deriving (Eq, Ord, Show)
+    deriving (Eq, Ord)
+
+instance Show CategoryType where 
+    show catType =
+        case catType of
+            Humans -> "Humans Being"
+            Documents -> "Ducument Items"
+            Electronics -> "Electronic Items"
+            PersonalItems -> "PersonalItems"
+
+
+
+-- ===============================================
+-- Location-related types
+-- ===============================================
 
 -- /// Etudier l'éventualité d'un module support independant pour les données de localisations
 data Location = Location {
@@ -51,536 +81,1080 @@ data Location = Location {
     } deriving (Eq, Ord, Show)
 
 
+
+-- ===============================================
+-- Region-related types
+-- ===============================================
+
+
+
 data Region 
-    = Adamaoua RegionName
-    | Centre RegionName
-    | East RegionName
-    | FarNorth RegionName
-    | Littoral RegionName
-    | North RegionName
-    | NorthWest RegionName
-    | South RegionName
-    | SouthWest RegionName
-    | West RegionName
-    deriving (Eq, Ord, Show)
+    = Adamaoua 
+    | Centre 
+    | East 
+    | FarNorth 
+    | Littoral 
+    | North 
+    | NorthWest 
+    | South 
+    | SouthWest 
+    | West 
+    deriving (Eq, Ord)
+
+instance Show Region where
+    show reg =
+        case reg of
+            Adamaoua -> "Adamaoua"
+            Centre -> "Centre"
+            East -> "East"
+            FarNorth -> "Far North"
+            Littoral -> "Littoral" 
+            North -> "North"
+            NorthWest -> "North West"
+            South -> "South"
+            SouthWest -> "South West"
+            West -> "West"
+
+
+
+
+-- ===============================================
+-- Division-related types
+-- ===============================================
+
+
 
 -- Check out the newtype lib
 data Division
     --    Adamaoua 
     -- Consider a show instance
-        = Djerem DivisionName
-        | FaroEtDeo DivisionName
-        | MayoBanyo DivisionName
-        | Mbere DivisionName
-        | Vina DivisionName
+        = Djerem 
+        | FaroEtDeo 
+        | MayoBanyo 
+        | Mbere 
+        | Vina 
     --    Centre
-        | HauteSanaga DivisionName
-        | Lekie DivisionName
-        | MbamEtInoubou DivisionName
-        | MbamEtKim DivisionName
-        | MefouEtAfamba DivisionName
-        | MefouEtAkono DivisionName
-        | Mfoundi DivisionName
-        | NyongEtKelle DivisionName
-        | NyongEtMfoumou DivisionName
-        | NyongEtSoo DivisionName
+        | HauteSanaga 
+        | Lekie 
+        | MbamEtInoubou 
+        | MbamEtKim 
+        | MefouEtAfamba 
+        | MefouEtAkono 
+        | Mfoundi 
+        | NyongEtKelle 
+        | NyongEtMfoumou 
+        | NyongEtSoo 
     --    Est
-        | BoumbaEtNgoko DivisionName
-        | HautNyong DivisionName
-        | Kadey DivisionName
-        | LomEtDjerem DivisionName
+        | BoumbaEtNgoko 
+        | HautNyong 
+        | Kadey 
+        | LomEtDjerem 
     --    Far North
-        | Diamare DivisionName
-        | LogoneEtChari DivisionName
-        | MayoDanay DivisionName
-        | MayoKani DivisionName
-        | MayoSava DivisionName
-        | MayoTsanaga DivisionName
+        | Diamare 
+        | LogoneEtChari 
+        | MayoDanay 
+        | MayoKani 
+        | MayoSava 
+        | MayoTsanaga 
     --    Littoral
-        | Moungo DivisionName
-        | Nkam DivisionName
-        | SanagaMaritime DivisionName
-        | Wouri DivisionName
+        | Moungo 
+        | Nkam 
+        | SanagaMaritime 
+        | Wouri 
     --    North
 
-        | Benoue DivisionName
-        | Faro DivisionName
-        | MayoLouti DivisionName
-        | MayoRey DivisionName
+        | Benoue 
+        | Faro 
+        | MayoLouti 
+        | MayoRey 
     --    NorthWest
-        | Boyo DivisionName
-        | Bui DivisionName
-        | DongaMantung DivisionName
-        | Menchum DivisionName
-        | Mezam DivisionName
-        | Momo DivisionName
-        | Ngoketunjia DivisionName
+        | Boyo 
+        | Bui 
+        | DongaMantung 
+        | Menchum 
+        | Mezam 
+        | Momo 
+        | Ngoketunjia 
     --    South
-        | DjaEtLobo DivisionName
-        | Mvila DivisionName
-        | Ocean DivisionName
-        | ValleeDuNtem DivisionName
+        | DjaEtLobo 
+        | Mvila 
+        | Ocean 
+        | ValleeDuNtem 
     --    SouthWest
-        | Fako DivisionName
-        | KoupeManengouba DivisionName
-        | Lebialem DivisionName
-        | Manyu DivisionName
-        | Meme DivisionName
-        | Ndian DivisionName
+        | Fako 
+        | KoupeManengouba 
+        | Lebialem 
+        | Manyu 
+        | Meme 
+        | Ndian 
     --    West
-        | Bamboutos DivisionName
-        | HautNkam DivisionName
-        | HautsPlateaux DivisionName
-        | KoungKhi DivisionName
-        | Menoua DivisionName
-        | Mifi DivisionName
-        | Nde DivisionName
-        | Noun DivisionName
-        deriving (Eq, Ord, Show)
+        | Bamboutos 
+        | HautNkam 
+        | HautsPlateaux 
+        | KoungKhi 
+        | Menoua 
+        | Mifi 
+        | Nde 
+        | Noun 
+        deriving (Eq, Ord)
 
-    
+instance Show Division where
+    show div =
+        case div of
+             -- Adamaoua
+            Djerem -> show "Djerem"
+            FaroEtDeo -> show "Faro et Déo"
+            MayoBanyo -> show "Mayo Banyo"
+            Mbere -> show "Mbéré"
+            Vina -> show "Vina"
+            
+            HauteSanaga -> show "Haute Sanaga"
+            Lekie -> show "Lekié"
+            MbamEtInoubou -> show "Mbam et Inoubou"
+            MbamEtKim -> show "Mbam et Kim"
+            MefouEtAfamba -> show "Mefou et Afamba"
+            MefouEtAkono -> show "Mefou et Akono"
+            Mfoundi -> show "Mfoundi"
+            NyongEtKelle -> show "Nyong et Kelle"
+            NyongEtMfoumou -> show "Nyong et Mfoumou"
+            NyongEtSoo -> show "Nyong et Soo"
+            
+            BoumbaEtNgoko -> show "Boumba et Ngoko"
+            HautNyong -> show "Haut Nyong"
+            Kadey -> show "Kadey"
+            LomEtDjerem -> show "Lom et Djerem"
+            
+            Diamare -> show "Diamare"
+            LogoneEtChari -> show "Logone et Chari"
+            MayoDanay -> show "Mayo Danay"
+            MayoKani -> show "Mayo Kani"
+            MayoSava -> show "Mayo Sava"
+            MayoTsanaga -> show "Mayo Tsanaga"
+            
+            Moungo -> show "Moungo"
+            Nkam -> show "Nkam"
+            SanagaMaritime -> show "Sanaga Maritime"
+            Wouri -> show "Wouri"
+            
+            Benoue -> show "Benoue"
+            Faro -> show "Faro"
+            MayoRey -> show "Mayo Rey"
+            MayoLouti -> show"Mayo Louti"
+            
+            Boyo -> show "Boyo"
+            Bui -> show "Bui"
+            Menchum -> show "Menchum"
+            DongaMantung -> show "Donga Mantung"
+            Mezam -> show "Mezam"
+            Momo -> show "Momo"
+            Ngoketunjia -> show "Ngoketunjia"
+            
+            DjaEtLobo -> show "Dja et Lobo"
+            Mvila -> show "Mvila"
+            ValleeDuNtem -> show "Vallée du Ntem"
+            Ocean -> show "Ocean"
+            
+            KoupeManengouba -> show "Koupé Manengouba"
+            Fako -> show "Fako"
+            Lebialem -> show "Lebialem"
+            Manyu -> show "Manyu"
+            Meme -> show "Meme"
+            Ndian -> show "Ndian"
+            
+            Bamboutos -> show "Bamboutos"
+            HautNkam -> show "Haut Nkam" 
+            HautsPlateaux -> show "Hauts Plateaux"
+            KoungKhi -> show "KoungKhi"
+            Menoua -> show "Menoua"
+            Mifi -> show "Mifi"
+            Nde -> show "Nde"
+            Noun -> show "Noun"
+  
+            
+
+
+
+-- ===============================================
+-- SubDivision-related types
+-- ===============================================
+
+
+
+
 data SubDivision
     -- ADAMAOUA --
     --  Djerem
-        = Gouandal SubDivisionName
-        | Tibati SubDivisionName
+        = Gouandal 
+        | Tibati 
     --  Faro et Deo 
-        | GalimTignere SubDivisionName
-        | MayoBaleo SubDivisionName
-        | Tignere SubDivisionName
+        | GalimTignere 
+        | MayoBaleo 
+        | Tignere 
     --  Mayo Banyo
-        | Bankim SubDivisionName
-        | Banyo SubDivisionName
-        | MayoDarl SubDivisionName
+        | Bankim 
+        | Banyo 
+        | MayoDarl 
     -- Mbere
-        | Dir SubDivisionName
-        | Djohong SubDivisionName
-        | Meiganga SubDivisionName
-        | Ngaoui SubDivisionName
+        | Dir 
+        | Djohong 
+        | Meiganga 
+        | Ngaoui 
     -- Vina 
-        | Belel SubDivisionName
-        | Mbe SubDivisionName
-        | Nganha SubDivisionName
-        | NgaoundereIer SubDivisionName
-        | NgaoundereIIe SubDivisionName
-        | NgaoundereIIIe SubDivisionName
-        | Nyambaka SubDivisionName
-        | Martap SubDivisionName
+        | Belel 
+        | Mbe 
+        | Nganha 
+        | NgaoundereIer 
+        | NgaoundereIIe 
+        | NgaoundereIIIe 
+        | Nyambaka 
+        | Martap 
     -- CENTRE --
     -- Haute Sanaga
-        | Bibey SubDivisionName
-        | LembeYezoum SubDivisionName
-        | Mbandjock SubDivisionName
-        | Minta SubDivisionName
+        | Bibey 
+        | LembeYezoum 
+        | Mbandjock 
+        | Minta 
     -- Lekie
-        | Batchenga SubDivisionName
-        | Ebebda SubDivisionName
-        | EligMfomo SubDivisionName
-        | Evodoula SubDivisionName
-        | Lobo SubDivisionName
-        | Monatele SubDivisionName
-        | Obala SubDivisionName
-        | Okola SubDivisionName
-        | Saa SubDivisionName
+        | Batchenga 
+        | Ebebda 
+        | EligMfomo 
+        | Evodoula 
+        | Lobo 
+        | Monatele 
+        | Obala 
+        | Okola 
+        | Saa 
     -- Mbam Et Inoubou
-        | Bafia SubDivisionName
-        | Bokito SubDivisionName
-        | Deuk SubDivisionName
-        | Kiiki SubDivisionName
-        | KonYambetta SubDivisionName
-        | Makenene SubDivisionName
-        | Ndikiniméki SubDivisionName
-        | Nitoukou SubDivisionName
-        | Ombessa SubDivisionName
+        | Bafia 
+        | Bokito 
+        | Deuk 
+        | Kiiki 
+        | KonYambetta 
+        | Makenene 
+        | Ndikiniméki 
+        | Nitoukou 
+        | Ombessa 
     -- Mbam et Kim
 
-        | Mbangassina SubDivisionName
-        | NgambeTikar SubDivisionName
-        | Ngoro SubDivisionName
-        | Ntui SubDivisionName
-        | Yoko SubDivisionName
+        | Mbangassina 
+        | NgambeTikar 
+        | Ngoro 
+        | Ntui 
+        | Yoko 
     -- MefouEtAfamba 
 
-        | Afanloum SubDivisionName
-        | AssambaOrOlanguina SubDivisionName
-        | Awae SubDivisionName
-        | Edzendouan SubDivisionName
-        | Esse SubDivisionName
-        | Mfou SubDivisionName
-        | Nkolafamba SubDivisionName
-        | Soa SubDivisionName
+        | Afanloum 
+        | AssambaOrOlanguina 
+        | Awae 
+        | Edzendouan 
+        | Esse 
+        | Mfou 
+        | Nkolafamba 
+        | Soa 
     -- MefouEtAkono 
-        | Akono SubDivisionName
-        | Bikok SubDivisionName
-        | Mbankomo SubDivisionName
-        | Ngoumou SubDivisionName
+        | Akono 
+        | Bikok 
+        | Mbankomo 
+        | Ngoumou 
     -- Mfoundi 
-        | YaoundeIOrNlongkakOrEtoudi SubDivisionName
-        | YaoundeIIOrTsinga SubDivisionName
-        | YaoundeIIIOrEfoulan SubDivisionName
-        | YaoundeOrIVKondengui SubDivisionName
-        | YaoundeVOrEssos SubDivisionName
-        | YaoundeVIOrBiyemassi SubDivisionName
-        | YaoundeVIIOrNkolbisson SubDivisionName
+        | YaoundeIOrNlongkakOrEtoudi 
+        | YaoundeIIOrTsinga 
+        | YaoundeIIIOrEfoulan 
+        | YaoundeOrIVKondengui 
+        | YaoundeVOrEssos 
+        | YaoundeVIOrBiyemassi 
+        | YaoundeVIIOrNkolbisson 
     -- NyongEtKelle 
-        | Biyouha SubDivisionName
-        | Bondjock SubDivisionName
-        | BotMakak SubDivisionName
-        | Dibang SubDivisionName
-        | Eseka SubDivisionName
-        | Makak SubDivisionName
-        | Matomb SubDivisionName
-        | Messondo SubDivisionName
-        | NgogMapubi SubDivisionName
-        | Nguibassal SubDivisionName
+        | Biyouha 
+        | Bondjock 
+        | BotMakak 
+        | Dibang 
+        | Eseka 
+        | Makak 
+        | Matomb 
+        | Messondo 
+        | NgogMapubi 
+        | Nguibassal 
     -- NyongEtMfoumou 
 
 
-        | Akonolinga SubDivisionName
-        | Ayos SubDivisionName
-        | Endom SubDivisionName
-        | Mengang SubDivisionName
-        | NyakokomboOrKobdombo SubDivisionName
+        | Akonolinga 
+        | Ayos 
+        | Endom 
+        | Mengang 
+        | NyakokomboOrKobdombo 
     -- NyongEtSoo 
 
 
-        | Akoeman SubDivisionName
-        | Dzeng SubDivisionName
-        | Mbalmayo SubDivisionName
-        | Mengueme SubDivisionName
-        | Ngomedzap SubDivisionName
-        | Nkolmetet SubDivisionName
+        | Akoeman 
+        | Dzeng 
+        | Mbalmayo 
+        | Mengueme 
+        | Ngomedzap 
+        | Nkolmetet 
     -- EST --
     -- BoumbaEtNgoko 
-        | GariGombo SubDivisionName
-        | Moloundou SubDivisionName
-        | Salapoumbe SubDivisionName
-        | Yokadouma SubDivisionName
+        | GariGombo 
+        | Moloundou 
+        | Salapoumbe 
+        | Yokadouma 
     -- HautNyong
-        | AbongMbang SubDivisionName
-        | BebendOrAtok SubDivisionName
-        | Dimako SubDivisionName
-        | Doumaintang SubDivisionName
-        | Doume SubDivisionName
-        | Lomie SubDivisionName
-        | MboanzOrAngossas SubDivisionName
-        | Mboma SubDivisionName
-        | Messamena SubDivisionName
-        | Messok SubDivisionName
-        | Mindourou SubDivisionName
-        | Ngoyla SubDivisionName
-        | Nguelemendouka SubDivisionName
-        | Somalomo SubDivisionName
+        | AbongMbang 
+        | BebendOrAtok 
+        | Dimako 
+        | Doumaintang 
+        | Doume 
+        | Lomie 
+        | MboanzOrAngossas 
+        | Mboma 
+        | Messamena 
+        | Messok 
+        | Mindourou 
+        | Ngoyla 
+        | Nguelemendouka 
+        | Somalomo 
     -- Kadey 
 
-        | Batouri SubDivisionName
-        | Kentzou SubDivisionName
-        | Kette SubDivisionName
-        | Mbang SubDivisionName
-        | Ndelele SubDivisionName
-        | Nguelebok SubDivisionName
-        | Ouli SubDivisionName
+        | Batouri 
+        | Kentzou 
+        | Kette 
+        | Mbang 
+        | Ndelele 
+        | Nguelebok 
+        | Ouli 
     -- LomEtDjerem 
 
-        | Belabo SubDivisionName
-        | BertouaIer SubDivisionName
-        | BertouaIIe SubDivisionName
-        | BétareOya SubDivisionName
-        | Diang SubDivisionName
-        | GarouaBoulai SubDivisionName
-        | Mandjou SubDivisionName
-        | Ngoura SubDivisionName
+        | Belabo 
+        | BertouaIer 
+        | BertouaIIe 
+        | BetareOya 
+        | Diang 
+        | GarouaBoulai 
+        | Mandjou 
+        | Ngoura 
     -- FAR NORTH --
 
     -- Diamare 
-        | Bogo SubDivisionName
-        | Dargala SubDivisionName
-        | Gazawa SubDivisionName
-        | MarouaIer SubDivisionName
-        | MarouaIIe SubDivisionName
-        | MarouaIIIe SubDivisionName
-        | Meri SubDivisionName
-        | Ndoukoula SubDivisionName
-        | Pette SubDivisionName
+        | Bogo 
+        | Dargala 
+        | Gazawa 
+        | MarouaIer 
+        | MarouaIIe 
+        | MarouaIIIe 
+        | Meri 
+        | Ndoukoula 
+        | Pette 
     -- LogoneEtChari 
 
-        | Blangoua SubDivisionName
-        | Darak SubDivisionName
-        | Fotokol SubDivisionName
-        | Goulfey SubDivisionName
-        | HileAlifa SubDivisionName
-        | Kousseri SubDivisionName
-        | LogoneBirni SubDivisionName
-        | Makary SubDivisionName
-        | Waza SubDivisionName
-        | Zina SubDivisionName
+        | Blangoua 
+        | Darak 
+        | Fotokol 
+        | Goulfey 
+        | HileAlifa 
+        | Kousseri 
+        | LogoneBirni 
+        | Makary 
+        | Waza 
+        | Zina 
     -- MayoDanay 
-        | Datcheka SubDivisionName
-        | Gobo SubDivisionName
-        | Gueme SubDivisionName
-        | Guere SubDivisionName
-        | KaiKai SubDivisionName
-        | Kalfou SubDivisionName
-        | KarHay SubDivisionName
-        | Maga SubDivisionName
-        | TchatiBali SubDivisionName
-        | Wina SubDivisionName
-        | Yagoua SubDivisionName
+        | Datcheka 
+        | Gobo 
+        | Gueme 
+        | Guere 
+        | KaiKai 
+        | Kalfou 
+        | KarHay 
+        | Maga 
+        | TchatiBali 
+        | Wina 
+        | Yagoua 
     -- MayoKani 
-        | Dziguilao SubDivisionName -- ??? Commune ou arrondiseement ???
-        | Taibong SubDivisionName
-        | Guidiguis SubDivisionName
-        | Kaele SubDivisionName
-        | Mindif SubDivisionName
-        | Moulvoudaye SubDivisionName
-        | Moutourwa SubDivisionName
-        | Touloum SubDivisionName
+        | Dziguilao  -- ??? Commune ou arrondiseement ???
+        | Taibong 
+        | Guidiguis 
+        | Kaele 
+        | Mindif 
+        | Moulvoudaye 
+        | Moutourwa 
+        | Touloum 
     -- MayoSava
-        | Kolofata SubDivisionName
-        | Mora SubDivisionName
-        | Tokombere SubDivisionName
+        | Kolofata 
+        | Mora 
+        | Tokombere 
     -- MayoTsanaga 
-        | Bourrha SubDivisionName
-        | Hina SubDivisionName
-        | Koza SubDivisionName
-        | Mogode SubDivisionName
-        | Mokolo SubDivisionName
-        | Mozogo SubDivisionName
-        | SouledeRoua SubDivisionName
+        | Bourrha 
+        | Hina 
+        | Koza 
+        | Mogode 
+        | Mokolo 
+        | Mozogo 
+        | SouledeRoua 
     -- LITTORAL --
     -- Moungo 
-        | BareBakem SubDivisionName
-        | Bonalea SubDivisionName
-        | Dibombari SubDivisionName
-        | Loum SubDivisionName
-        | Manjo SubDivisionName
-        | Mbanga SubDivisionName
-        | Melong SubDivisionName
-        | Mombo SubDivisionName
-        | NjombePenjaOrPenja SubDivisionName
-        | NkongsambaIer SubDivisionName
-        | NkongsambaIIe SubDivisionName
-        | NkongsambaIIIe SubDivisionName
-        | NlonakoOrEbone SubDivisionName
+        | BareBakem 
+        | Bonalea 
+        | Dibombari 
+        | Loum 
+        | Manjo 
+        | Mbanga 
+        | Melong 
+        | Mombo 
+        | NjombePenjaOrPenja 
+        | NkongsambaIer 
+        | NkongsambaIIe 
+        | NkongsambaIIIe 
+        | NlonakoOrEbone 
     -- Nkam 
-        | Nkondjock SubDivisionName
-        | NordMakombeOrNdobian SubDivisionName
-        | Yabassi SubDivisionName
-        | Yingui SubDivisionName
+        | Nkondjock 
+        | NordMakombeOrNdobian 
+        | Yabassi 
+        | Yingui 
     -- SanagaMaritime 
-        | Dibamba SubDivisionName
-        | Dizangue SubDivisionName
-        | EdeaIer SubDivisionName
-        | EdeaIIe SubDivisionName
-        | MassockSongloulou SubDivisionName
-        | Mouanko SubDivisionName
-        | Ndom SubDivisionName
-        | Ngambe SubDivisionName
-        | Ngwei SubDivisionName
-        | Nyanon SubDivisionName
-        | Pouma SubDivisionName
+        | Dibamba 
+        | Dizangue 
+        | EdeaIer 
+        | EdeaIIe 
+        | MassockSongloulou 
+        | Mouanko 
+        | Ndom 
+        | Ngambe 
+        | Ngwei 
+        | Nyanon 
+        | Pouma 
     -- Wouri 
 
-        | DoualaIer SubDivisionName
-        | DoualaIIe SubDivisionName
-        | DoualaIIIe SubDivisionName
-        | DoualaIVe SubDivisionName
-        | DoualaVe SubDivisionName
-        | DoualaVIe SubDivisionName
-        | Manoka SubDivisionName
+        | DoualaIer 
+        | DoualaIIe 
+        | DoualaIIIe 
+        | DoualaIVe 
+        | DoualaVe 
+        | DoualaVIe 
+        | Manoka 
     -- NORTH --
     -- Benoue 
-        | Bibemi SubDivisionName
-        | Dembo SubDivisionName
-        | GarouaIer SubDivisionName
-        | GarouaIIe SubDivisionName
-        | GarouaIIIe SubDivisionName
-        | Lagdo SubDivisionName
-        | MayoHourna SubDivisionName
-        | Pitoa SubDivisionName
-        | Tcheboa SubDivisionName
-        | Demsa SubDivisionName
-        | Bascheo SubDivisionName
+        | Bibemi 
+        | Dembo 
+        | GarouaIer 
+        | GarouaIIe 
+        | GarouaIIIe 
+        | Lagdo 
+        | MayoHourna 
+        | Pitoa 
+        | Tcheboa 
+        | Demsa 
+        | Bascheo 
     -- Faro 
-        | Beka SubDivisionName
-        | Poli SubDivisionName
+        | Beka 
+        | Poli 
     -- MayoLouti 
-        | Figuil SubDivisionName
-        | Guider SubDivisionName
-        | MayoOulo SubDivisionName
+        | Figuil 
+        | Guider 
+        | MayoOulo 
     -- MayoRey 
-        | Madingring SubDivisionName
-        | ReyBouba SubDivisionName
-        | Tchollire SubDivisionName
-        | Touboro SubDivisionName
+        | Madingring 
+        | ReyBouba 
+        | Tchollire 
+        | Touboro 
     -- NORTH WEST -- 
     -- Boyo
 
-        | Belo SubDivisionName
-        | Fonfuka SubDivisionName
-        | Fundong SubDivisionName
-        | Njinikom SubDivisionName
+        | Belo 
+        | Fonfuka 
+        | Fundong 
+        | Njinikom 
     -- Bui 
-        | Jakiri SubDivisionName
-        | Kumbo SubDivisionName
-        | MbvenOrMbiame SubDivisionName
-        | Nkum SubDivisionName
-        | NoniOrNkor SubDivisionName
-        | OkuOrElakOku SubDivisionName
+        | Jakiri 
+        | Kumbo 
+        | MbvenOrMbiame 
+        | Nkum 
+        | NoniOrNkor 
+        | OkuOrElakOku 
     -- DongaMantung 
-        | Ako SubDivisionName
-        | Misaje SubDivisionName
-        | Ndu SubDivisionName
-        | Nkambe SubDivisionName
-        | Nwa SubDivisionName
+        | Ako 
+        | Misaje 
+        | Ndu 
+        | Nkambe 
+        | Nwa 
     -- Menchum 
-        | Benakuma SubDivisionName
-        | FuruAwa SubDivisionName
-        | Wum SubDivisionName
-        | Zhoa SubDivisionName
+        | Benakuma 
+        | FuruAwa 
+        | Wum 
+        | Zhoa 
     -- Mezam 
-        | Bafut SubDivisionName
-        | Bali SubDivisionName
-        | BamendaIer SubDivisionName
-        | BamendaIIe SubDivisionName
-        | BamendaIIIe SubDivisionName
-        | Santa SubDivisionName
-        | Tubah SubDivisionName
+        | Bafut 
+        | Bali 
+        | BamendaIer 
+        | BamendaIIe 
+        | BamendaIIIe 
+        | Santa 
+        | Tubah 
     -- Momo 
-        | Andek SubDivisionName
-        | Batibo SubDivisionName
-        | Mbengwi SubDivisionName
-        | Njikwa SubDivisionName
-        | WidikumBoffe SubDivisionName
+        | Andek 
+        | Batibo 
+        | Mbengwi 
+        | Njikwa 
+        | WidikumBoffe 
     -- Ngoketunjia
 
-        | Babessi SubDivisionName
-        | Balikumbat SubDivisionName
-        | Ndop SubDivisionName
+        | Babessi 
+        | Balikumbat 
+        | Ndop 
     -- SOUTH 
     -- DjaEtLobo 
-        | Bengbis SubDivisionName
-        | Djoum SubDivisionName
-        | Meyomessala SubDivisionName
-        | Meyomessi SubDivisionName
-        | Mintom SubDivisionName
-        | Oveng SubDivisionName
-        | Sangmelima SubDivisionName
-        | Zoetele SubDivisionName
+        | Bengbis 
+        | Djoum 
+        | Meyomessala 
+        | Meyomessi 
+        | Mintom 
+        | Oveng 
+        | Sangmelima 
+        | Zoetele 
     -- Mvila
-        | BiwongBane SubDivisionName
-        | BiwongBulu SubDivisionName
-        | EbolowaIer SubDivisionName
-        | EbolowaIIe SubDivisionName
-        | Efoulan SubDivisionName
-        | Mengong SubDivisionName
-        | Mvangan SubDivisionName
-        | Ngoulemakong SubDivisionName
+        | BiwongBane 
+        | BiwongBulu 
+        | EbolowaIer 
+        | EbolowaIIe 
+        | Efoulan 
+        | Mengong 
+        | Mvangan 
+        | Ngoulemakong 
     -- Ocean
 
-        | AkomII SubDivisionName
-        | Bipindi SubDivisionName
-        | Campo SubDivisionName
-        | KribiIer SubDivisionName
-        | KribiIIe SubDivisionName
-        | Lokoundje SubDivisionName
-        | Lolodorf SubDivisionName
-        | Mvengue SubDivisionName
-        | Niete SubDivisionName
+        | AkomII 
+        | Bipindi 
+        | Campo 
+        | KribiIer 
+        | KribiIIe 
+        | Lokoundje 
+        | Lolodorf 
+        | Mvengue 
+        | Niete 
     -- ValleeDuNtem
-        | Ambam SubDivisionName
-        | KyeOssi SubDivisionName
-        | Maan SubDivisionName
-        | Olamze SubDivisionName
+        | Ambam 
+        | KyeOssi 
+        | Maan 
+        | Olamze 
     -- SOUTH WEST --
     -- Fako
-        | Buea SubDivisionName
-        | LimbeIer SubDivisionName
-        | LimbeIIe SubDivisionName
-        | LimbeIIIe SubDivisionName
-        | Muyuka SubDivisionName
-        | Tiko SubDivisionName
-        | WestCoast SubDivisionName
+        | Buea 
+        | LimbeIer 
+        | LimbeIIe 
+        | LimbeIIIe 
+        | Muyuka 
+        | Tiko 
+        | WestCoast 
     -- KoupeManengouba
-        | Bangem SubDivisionName
-        | Nguti SubDivisionName
-        | Tombel SubDivisionName
+        | Bangem 
+        | Nguti 
+        | Tombel 
     -- Lebialem 
-        | Alou SubDivisionName
-        | Fontem SubDivisionName
-        | Wabane SubDivisionName
+        | Alou 
+        | Fontem 
+        | Wabane 
     -- Manyu
-        | Akwaya SubDivisionName
-        | Eyumodjock SubDivisionName
-        | Mamfe SubDivisionName
-        | TintoOrUpperBayang SubDivisionName
+        | Akwaya 
+        | Eyumodjock 
+        | Mamfe 
+        | TintoOrUpperBayang 
     -- Meme 
-        | Konye SubDivisionName
-        | KumbaIer SubDivisionName
-        | KumbaIIe SubDivisionName
-        | KumbaIIIe SubDivisionName
-        | Mbonge SubDivisionName
+        | Konye 
+        | KumbaIer 
+        | KumbaIIe 
+        | KumbaIIIe 
+        | Mbonge 
     -- Ndian
-        | Bamusso SubDivisionName
-        | EkondoTiti SubDivisionName
-        | Idabato SubDivisionName
-        | Isanguele SubDivisionName
-        | KomboAbedimo SubDivisionName
-        | KomboItindi SubDivisionName
-        | Mundemba SubDivisionName
+        | Bamusso 
+        | EkondoTiti 
+        | Idabato 
+        | Isanguele 
+        | KomboAbedimo 
+        | KomboItindi 
+        | Mundemba 
     -- WEST -- 
     -- Bamboutos
-        | Babadjou SubDivisionName
-        | Batcham SubDivisionName
-        | Galim SubDivisionName
-        | Mbouda SubDivisionName
+        | Babadjou 
+        | Batcham 
+        | Galim 
+        | Mbouda 
     -- Haut Nkam 
-        | Bafang SubDivisionName
-        | Bakou SubDivisionName
-        | Bana SubDivisionName
-        | Bandja SubDivisionName
-        | Banka SubDivisionName
-        | Kekem SubDivisionName
+        | Bafang 
+        | Bakou 
+        | Bana 
+        | Bandja 
+        | Banka 
+        | Kekem 
     -- Hauts Plateaux
-        | Baham SubDivisionName
-        | Bamendjou SubDivisionName
-        | Bangou SubDivisionName
-        | Batie SubDivisionName
-        | Bangam SubDivisionName
-        | Badenkop SubDivisionName
+        | Baham 
+        | Bamendjou 
+        | Bangou 
+        | Batie 
+        | Bangam 
+        | Badenkop 
     -- KoungKhi
-        | Bayangam SubDivisionName
-        | Demdeng SubDivisionName
-        | Poumougne SubDivisionName
+        | Bayangam 
+        | Demdeng 
+        | Poumougne 
     -- Menoua 
-        | Dschang SubDivisionName
-        | Fokoue SubDivisionName
-        | FongoTongo SubDivisionName
-        | NkongZem SubDivisionName
-        | PenkaMichel SubDivisionName
-        | Santchou SubDivisionName
+        | Dschang 
+        | Fokoue 
+        | FongoTongo 
+        | NkongZem 
+        | PenkaMichel 
+        | Santchou 
     -- Mifi
 
-        | BafoussamIer SubDivisionName
-        | BafoussamIIe SubDivisionName
-        | BafoussamIIIe SubDivisionName
+        | BafoussamIer 
+        | BafoussamIIe 
+        | BafoussamIIIe 
     -- Nde
-        | Bangangte SubDivisionName
-        | Bassamba SubDivisionName
-        | Bazou SubDivisionName
-        | Tonga SubDivisionName
+        | Bangangte 
+        | Bassamba 
+        | Bazou 
+        | Tonga 
     -- Noun 
-        | Bangourain SubDivisionName
-        | Foumban SubDivisionName
-        | Foumbot SubDivisionName
-        | Kouoptamo SubDivisionName
-        | Koutaba SubDivisionName
-        | Magba SubDivisionName
-        | Malentouen SubDivisionName
-        | Massangam SubDivisionName
-        | Njimom SubDivisionName
-        deriving (Eq, Ord, Show)
+        | Bangourain 
+        | Foumban 
+        | Foumbot 
+        | Kouoptamo 
+        | Koutaba 
+        | Magba 
+        | Malentouen 
+        | Massangam 
+        | Njimom 
+        deriving (Eq, Ord)
 
+
+instance Show SubDivision where
+    show sub =
+        case sub of
+        Gouandal -> "Gouandal"
+        Tibati -> "Tibati"
+        --  Faro et Deo 
+        GalimTignere -> "GalimTignere"
+        MayoBaleo -> "Mayo Baléo"
+        Tignere -> "Tignere"
+        --  Mayo Banyo
+        Bankim -> "Bankim"    
+        Banyo -> "Banyo"
+        MayoDarl -> "MayoDarl"
+        -- Mbere
+        Dir -> "Dir"
+        Djohong -> "Djohong"
+        Meiganga -> "Meiganga"
+        Ngaoui -> "Ngaoui"
+        -- Vina 
+        Belel -> "Belel"
+        Mbe -> "Mbe"    
+        Nganha -> "Nganha"
+        NgaoundereIer -> "Ngaoundere Ier"
+        NgaoundereIIe -> "Ngaoundere IIe"
+        NgaoundereIIIe -> "Ngaoundere IIIe"
+        Nyambaka -> "Nyambaka"
+        Martap -> "Martap"
+        -- Centre
+        -- Haute Sanaga 
+        Bibey -> "Bibey"
+        LembeYezoum -> "Lembe Yezoum"    
+        Mbandjock -> "Mbandjock"
+        Minta -> "Minta"
+        -- Lekie
+        Batchenga -> "Batchenga"
+        Ebebda -> "Ebebda"
+        EligMfomo -> "Elig Mfomo"
+        Evodoula -> "Evodoula"    
+        Lobo -> "Lobo"
+        Monatele -> "Monatélé"
+        Obala -> "Obala"
+        Okola -> "Okola" 
+        Saa -> "Saa"
+        -- Mbam Et Inoubou
+        Bafia -> "Bafia"
+        Bokito -> "Bokito"
+        Deuk -> "Deuk"    
+        Kiiki -> "Kiiki"
+        KonYambetta -> "Kon Yambetta"
+        Makenene -> "Makenene"
+        Ndikiniméki -> "Ndikiniméki"   
+        Nitoukou -> "Nitoukou"   
+        Ombessa -> "Ombessa"  
+        -- Mbam et Kim
+        Mbangassina -> "Mbangassina"
+        NgambeTikar -> "Ngambe Tikar"    
+        Ngoro -> "Ngoro"
+        Ntui -> "Ntui"
+        Yoko -> "Yoko"
+        -- MefouEtAfamba 
+        Afanloum -> "Afanloum"
+        AssambaOrOlanguina -> "Assamba / Olanguina"    
+        Awae -> "Awae"
+        Edzendouan -> "Edzendouan"
+        Esse -> "Esse"
+        Mfou -> "Mfou"
+        Nkolafamba -> "Nkolafamba"
+        Soa -> "Soa"
+        -- MefouEtAkono 
+        Akono -> "Akono"
+        Bikok -> "Bikok"    
+        Mbankomo -> "Mbankomo"
+        Ngoumou -> "Ngoumou"
+        -- Mfoundi 
+        YaoundeIOrNlongkakOrEtoudi -> "Yaounde I / Nlongkak / Etoudi"
+        YaoundeIIOrTsinga -> "Yaounde II / Tsinga"
+        YaoundeIIIOrEfoulan -> "Yaounde III / Efoulan"
+        YaoundeOrIVKondengui -> "Yaounde IV / Kondengui"
+        YaoundeVOrEssos -> "Yaounde V / Essos"
+        YaoundeVIOrBiyemassi -> "Yaounde VI / BiyemAssi"
+        YaoundeVIIOrNkolbisson -> "Yaounde VII / Nkolbisson"
+        -- NyongEtKelle 
+        Biyouha -> "Biyouha"
+        Bondjock -> "Bondjock"
+        BotMakak -> "BotMakak"
+        Dibang -> "Dibang"
+        Eseka -> "Eseka"
+        Makak -> "Makak"
+        Matomb -> "Matomb"
+        Messondo -> "Messondo"
+        NgogMapubi -> "Ngog Mapubi"
+        Nguibassal -> "Nguibassal"
+        -- NyongEtMfoumou 
+        Akonolinga -> "Akonolinga"
+        Ayos -> "Ayos"
+        Endom -> "Endom"
+        Mengang -> "Mengang"
+        NyakokomboOrKobdombo -> "Nyakokombo / Kobdombo"
+        -- NyongEtSoo 
+        Akoeman -> "Akoeman"
+        Dzeng -> "Dzeng"
+        Mbalmayo -> "Mbalmayo"
+        Mengueme -> "Mengueme"
+        Ngomedzap -> "Ngomedzap"
+        Nkolmetet -> "Nkolmetet"
+        -- East
+        -- BoumbaEtNgoko 
+        GariGombo -> "Gari Gombo"
+        Moloundou -> "Moloundou"
+        Salapoumbe -> "Salapoumbe"
+        Yokadouma -> "Yokadouma"    
+        -- HautNyong
+        AbongMbang -> "Abong Mbang"
+        BebendOrAtok -> "Bebend / Atok"
+        Dimako -> "Dimako"
+        Doumaintang -> "Doumaintang"
+        Doume -> "Doume"
+        Lomie -> "Lomie"
+        MboanzOrAngossas -> "Mboanz / Angossas"
+        Mboma -> "Mboma"    
+        Messamena -> "Messamena"
+        Messok -> "Messok"
+        Mindourou -> "Mindourou"
+        Ngoyla -> "Ngoyla"
+        Nguelemendouka -> "Nguelemendouka"
+        Somalomo -> "Somalomo"
+         -- Kadey 
+        Batouri -> "Batouri"
+        Kentzou -> "Kentzou"
+        Kette -> "Kette"
+        Mbang -> "Mbang"
+        Ndelele -> "Ndelele"
+        Nguelebok -> "Nguelebok"
+        Ouli -> "Ouli"
+        -- LomEtDjerem 
+        Belabo -> "Belabo"
+        BertouaIer -> "Bertoua Ier"
+        BertouaIIe -> "Bertoua IIe"
+        BetareOya -> "Bétare Oya"
+        Diang -> "Diang"
+        GarouaBoulai -> "Garoua Boulai"
+        Ngoura -> "Ngoura"
+        -- Far North
+        -- Diamare 
+        Bogo -> "Bogo"
+        Dargala -> "Dargala"
+        Gazawa -> "Gazawa"
+        MarouaIer -> "Maroua Ier"    
+        MarouaIIe -> "Maroua IIe"
+        MarouaIIIe -> "Maroua IIIe"
+        Meri -> "Meri"
+        Ndoukoula -> "Ndoukoula"
+        Pette -> "Pette"
+         -- LogoneEtChari 
+        Blangoua -> "Blangoua"
+        Darak -> "Darak"
+        Fotokol -> "Fotokol"
+        Goulfey -> "Goulfey"    
+        HileAlifa -> "Hile Alifa"
+        Kousseri -> "Kousseri"
+        LogoneBirni -> "Logone Birni"
+        Makary -> "Makary"
+        Waza -> "Waza"
+        Zina -> "Zina"
+        -- MayoDanay
+        Datcheka -> "Datcheka"
+        Gobo -> "Gobo"    
+        Gueme -> "Gueme"
+        Guere -> "Guere"
+        KaiKai -> "KaiKai"
+        Kalfou -> "Kalfou"
+        KarHay -> "KarHay"
+        Maga -> "Maga"    
+        TchatiBali -> "Tchati Bali"
+        Wina -> "Wina"
+        Yagoua -> "Yagoua"
+        -- MayoKani 
+        Dziguilao -> "Dziguilao" -- ??? Commune ou arrondiseement ???
+        Taibong -> "Taibong"    
+        Guidiguis -> "Guidiguis"
+        Kaele -> "Kaele"
+        Mindif -> "Mindif"
+        Moulvoudaye -> "Moulvoudaye"
+        Moutourwa -> "Moutourwa"
+        Touloum -> "Touloum"    
+        -- MayoSava
+        Kolofata -> "Kolofata"
+        Mora -> "Mora"
+        Tokombere -> "Tokombere"
+        -- MayoTsanaga 
+        Bourrha -> "Bourrha"
+        Hina -> "Hina"
+        Koza -> "Koza"
+        Mogode -> "Mogode" 
+        Mokolo -> "Mokolo"
+        Mozogo -> "Mozogo"
+        SouledeRoua -> "Soulede Roua"
+        -- Littoral
+        -- Moungo 
+        BareBakem -> "Bare Bakem"
+        Bonalea -> "Bonalea"
+        Dibombari -> "Dibombari"
+        Loum -> "Loum"    
+        Manjo -> "Manjo"
+        Mbanga -> "Mbanga"
+        Melong -> "Melong"
+        Mombo -> "Mombo"
+        NjombePenjaOrPenja -> "Njombe Penja / Penja"
+        NkongsambaIer -> "Nkongsamba Ier"
+        NkongsambaIIe -> "Nkongsamba IIe"
+        NkongsambaIIIe -> "Nkongsamba IIIe"    
+        NlonakoOrEbone -> "Nlonako / Ebone"
+        -- Nkam
+        Nkondjock -> "Nkondjock"
+        NordMakombeOrNdobian -> "Nord Makombe / Ndobian"
+        Yabassi -> "Yabassi"
+        Yingui -> "Yingui"
+        -- SanagaMaritime
+        Dibamba -> "Dibamba"
+        Dizangue -> "Dizangue"
+        EdeaIer -> "Edéa Ier"
+        EdeaIIe -> "Edéa IIe"
+        MassockSongloulou -> "Massock Songloulou" 
+        Mouanko -> "Mouanko"
+        Ndom -> "Ndom"
+        Ngambe -> "Ngambe"
+        Ngwei -> "Ngwei"
+        Nyanon -> "Nyanon" 
+        Pouma -> "Pouma"
+        -- Wouri 
+        DoualaIer -> "Douala Ier"
+        DoualaIIe -> "Douala IIe"
+        DoualaIIIe -> "Douala IIIe"
+        DoualaIVe -> "Douala IVe"  
+        DoualaVe -> "Douala Ve"
+        DoualaVIe -> "Douala VIe"
+        Manoka -> "Manoka"
+        -- North
+         -- Benoue 
+        Bibemi -> "Bibemi"
+        Dembo -> "Dembo"
+        GarouaIer -> "Garoua Ier"
+        GarouaIIe -> "Garoua IIe"    
+        GarouaIIIe -> "Garoua IIIe"
+        Lagdo -> "Lagdo"
+        MayoHourna -> "Mayo Hourna"
+        Pitoa -> "Pitoa"
+        Tcheboa -> "Tcheboa"
+        Demsa -> "Demsa"
+        Bascheo -> "Bascheo"
+        -- Faro 
+        Beka -> "Beka"
+        Poli -> "Poli"
+        -- MayoLouti
+        Figuil -> "Figuil"
+        Guider -> "Guider"
+        MayoOulo -> "Mayo Oulo"
+        -- Mayo Rey 
+        Madingring -> "Madingring"
+        ReyBouba -> "Rey Bouba"
+        Tchollire -> "Tchollire"
+        Touboro -> "Touboro"    
+        --  NorthWest
+        -- Boyo
+        Belo -> "Belo"
+        Fonfuka -> "Fonfuka"
+        Fundong -> "Fundong"
+        Njinikom -> "Njinikom"    
+        -- Bui 
+        Jakiri -> "Jakiri"
+        Kumbo -> "Kumbo"
+        MbvenOrMbiame -> "Mbven / Mbiame"
+        Nkum -> "Nkum"    
+        NoniOrNkor -> "Noni / Nkor"
+        OkuOrElakOku -> "Oku / Elak Oku"
+        -- DongaMantung 
+        Ako -> "Ako"
+        Misaje -> "Misaje"
+        Ndu -> "Ndu"
+        Nkambe -> "Nkambe"    
+        Nwa -> "Nwa"
+        -- Menchum 
+        Benakuma -> "Benakuma"
+        FuruAwa -> "Furu Awa"
+        Wum -> "Wum"
+        Zhoa -> "Zhoa"    
+        -- Mezam 
+        Bafut -> "Bafut"
+        Bali -> "Bali"
+        BamendaIer -> "Bamenda Ier"
+        BamendaIIe -> "Bamenda IIe"    
+        BamendaIIIe -> "Bamenda IIIe"
+        Santa -> "Santa"
+        Tubah -> "Tubah"
+        -- Momo
+        Andek -> "Andek"
+        Batibo -> "Batibo"
+        Mbengwi -> "Mbengwi"
+        Njikwa -> "Njikwa"    
+        WidikumBoffe -> "Widikum Boffe"
+        -- Ngoketunjia
+        Babessi -> "Babessi"
+        Balikumbat -> "Balikumbat"
+        Ndop -> "Ndop"
+        -- South 
+         -- DjaEtLobo 
+        Bengbis -> "Bengbis"
+        Djoum -> "Djoum"
+        Meyomessala -> "Meyomessala"
+        Meyomessi -> "Meyomessi"    
+        Mintom -> "Mintom"
+        Oveng -> "Oveng"
+        Sangmelima -> "Sangmelima"
+        Zoetele -> "Zoetele"
+        -- Mvila
+        BiwongBane -> "Biwong Bane"
+        BiwongBulu -> "Biwong Bulu"
+        EbolowaIer -> "Ebolowa Ier"
+        EbolowaIIe -> "Ebolowa IIe"    
+        Efoulan -> "Efoulan"
+        Mengong -> "Mengong"
+        Mvangan -> "Mvangan"
+        Ngoulemakong -> "Ngoulemakong"
+        -- Ocean
+        AkomII -> "Akom II"
+        Bipindi -> "Bipindi"
+        Campo -> "Campo"
+        KribiIer -> "Kribi Ier"    
+        KribiIIe -> "Kribi IIe"
+        Lolodorf -> "Lolodorf"
+        Mvengue -> "Mvengue"
+        Niete -> "Niete"
+         -- ValleeDuNtem
+        Ambam -> "Ambam"
+        KyeOssi -> "Kye Ossi"
+        Maan -> "Maan" -- ??
+        Olamze -> "Olamze"    
+        -- SouthWest
+                    -- Fako
+        Buea -> "Buéa"
+        LimbeIer -> "Limbé Ier"
+        LimbeIIe -> "Limbé IIe"
+        LimbeIIIe -> "Limbé IIIe"    
+        Muyuka -> "Muyuka"
+        Tiko -> "Tiko"
+        WestCoast -> "West Coast"
+        -- KoupeManengouba
+        Bangem -> "Bangem"
+        Nguti -> "Nguti"
+        Tombel -> "Tombel"
+        -- Lebialem 
+        Alou -> "Alou"
+        Fontem -> "Fontem"
+        Wabane -> "Wabane"
+        -- Manyu
+        Akwaya -> "Akwaya"
+        Eyumodjock -> "Eyumodjock"
+        Mamfe -> "Mamfe"
+        TintoOrUpperBayang -> "Tinto / Upper / Bayang"    
+        -- Meme 
+        Konye -> "Konye"
+        KumbaIer -> "Kumba Ier"
+        KumbaIIe -> "Kumba IIe"
+        KumbaIIIe -> "Kumba IIIe"    
+        Mbonge -> "Mbonge"
+         -- Ndian
+        Bamusso -> "Bamusso"
+        EkondoTiti -> "Ekondo Titi"
+        Idabato -> "Idabato"
+        Isanguele -> "Isanguele"    
+        KomboAbedimo -> "Kombo Abedimo"
+        KomboItindi -> "Kombo Itindi"
+        Mundemba -> "Mundemba"
+        -- West
+        -- Bamboutos
+        Babadjou -> "Babadjou"
+        Batcham -> "Batcham"
+        Galim -> "Galim"
+        Mbouda -> "Mbouda"    
+        -- Haut Nkam 
+        Bafang -> "Bafang"
+        Bakou -> "Bakou"
+        Bana -> "Bana"
+        Bandja -> "Bandja"    
+        Banka -> "Banka"
+        Kekem -> "Kekem"
+        -- Hauts Plateaux
+        Baham -> "Baham"
+        Bamendjou -> "Bamendjou"
+        Bangou -> "Bangou"
+        Batie -> "Batie"    
+        Bangam -> "Bangam"
+        Badenkop -> "Badenkop"
+        -- KoungKhi
+        Bayangam -> "Bayangam"
+        Demdeng -> "Demdeng"
+        Poumougne -> "Poumougne"
+        -- Menoua 
+        Dschang -> "Dschang"
+        Fokoue -> "Fokoué"
+        FongoTongo -> "Fongo Tongo"
+        NkongZem -> "Nkong Zem"    
+        PenkaMichel -> "Penka Michel"
+        Santchou -> "Santchou"
+        -- Mifi
+        BafoussamIer -> "Bafoussam Ier"
+        BafoussamIIe -> "Bafoussam IIe"
+        BafoussamIIIe -> "Bafoussam IIIe"
+        -- Nde
+        Bangangte -> "Bangangte"
+        Bassamba -> "Bassamba"
+        Bazou -> "Bazou"
+        Tonga -> "Tonga"    
+        -- Noun
+        Bangourain -> "Bangourain"
+        Foumban -> "Foumban"
+        Foumbot -> "Foumbot"
+        Kouoptamo -> "Kouoptamo"    
+        Koutaba -> "Koutaba"
+        Magba -> "Magba"
+        Malentouen -> "Malentouen"
+        Massangam -> "Massangam" 
+        Njimom -> "Njimom"
+
+
+
+
+
+-- ===============================================
+-- Attribute-related types
+-- ===============================================
 
 data Attribute = Attribute {
       attrCode             :: AttributeCode
@@ -590,6 +1164,13 @@ data Attribute = Attribute {
     , attrUnit             :: Maybe AttributeUnit
     , relatedCategories    :: [(CategoryId, CategoryType)]
     } deriving (Eq, Ord, Show)
+
+
+
+
+-- ===============================================
+-- Owner-related types
+-- ===============================================
 
 
 data Person = Person {
@@ -615,12 +1196,31 @@ data FullName = FullName {
     } deriving (Eq, Ord, Show)
 
 
+
+
+
+-- ===============================================
+-- Lost Item Keeper-related types
+-- ===============================================
+
+
+
+
 data Tenant = Tenant {
       tenantId              :: TenantId
     , tenantName            ::  TenantName
     , tenantDescription     :: LongDescription
     , tenantContactAddress  :: ContactInformation
     } deriving (Eq, Show, Ord)
+
+
+
+
+
+-- ===============================================
+-- Challenge-related types
+-- ===============================================
+
 
 
 data Challenge = 
@@ -632,48 +1232,49 @@ data ChallengeAnser =
 
 
 
---- Helper functions
----
----
+
+-- ===============================================
+-- Helper functions
+-- ===============================================
 
 
 --- Location helper functions
 toRegion :: String -> Either ErrorMessage Region
 toRegion str  
-    | "adamaoua" == lowerStr = Right $ Adamaoua str
-    | "centre" == lowerStr = Right $ Centre str
-    | "est" == lowerStr = Right $ East str
-    | "farnorth" == lowerStr = Right $ FarNorth str
-    | "littoral" == lowerStr = Right $ Littoral str
-    | "north" == lowerStr = Right $ North str
-    | "northwest" == lowerStr = Right $ NorthWest str
-    | "south" == lowerStr = Right $ South str
-    | "southwest" == lowerStr = Right $ SouthWest str
-    | "west" == lowerStr = Right $ West str
+    | "adamaoua" == lowerStr = Right Adamaoua
+    | "centre" == lowerStr = Right Centre
+    | "est" == lowerStr = Right East
+    | "farnorth" == lowerStr = Right FarNorth 
+    | "littoral" == lowerStr = Right Littoral 
+    | "north" == lowerStr = Right North 
+    | "northwest" == lowerStr = Right NorthWest 
+    | "south" == lowerStr = Right South 
+    | "southwest" == lowerStr = Right SouthWest 
+    | "west" == lowerStr = Right West 
     | otherwise  = Left $ str <> ": is an invalid region code"
     where lowerStr = fmap toLower str
 
 fromRegion :: Region -> String
 fromRegion region = 
     case region of
-        Adamaoua str -> str
-        Centre str -> str
-        East str -> str
-        FarNorth str-> str
-        Littoral str -> str
-        North str -> str
-        NorthWest str -> str
-        South str -> str
-        SouthWest str -> str
-        West str-> str
+        Adamaoua -> show Adamaoua
+        Centre -> show Centre
+        East -> show East
+        FarNorth -> show FarNorth
+        Littoral -> show Littoral
+        North -> show North
+        NorthWest -> show NorthWest
+        South -> show South
+        SouthWest -> show SouthWest
+        West -> show West
    
 
 toDivision :: String -> Either ErrorMessage Division
 toDivision str
-    | "faroetdeo" == lowerStr = Right $ FaroEtDeo str
-    | "mayobanyo" == lowerStr = Right $ MayoBanyo str
-    | "mbere" == lowerStr = Right $ Mbere str
-    | "vina" == lowerStr = Right $ Vina str
+    | "faroetdeo" == lowerStr = Right FaroEtDeo
+    | "mayobanyo" == lowerStr = Right MayoBanyo 
+    | "mbere" == lowerStr =     Right Mbere
+    | "vina" == lowerStr =      Right Vina
     | otherwise = Left $ str <> ": is an invalid division code"
     -- TODO FINISH  ALL CASES
     where lowerStr = fmap toLower str
@@ -682,17 +1283,17 @@ toDivision str
 fromDivision :: Division -> String
 fromDivision division = 
     case division of
-        FaroEtDeo str -> str
-        MayoBanyo str -> str
-        Mbere str -> str
-        Vina str -> str
+        FaroEtDeo -> show FaroEtDeo
+        MayoBanyo -> show MayoBanyo
+        Mbere -> show Mbere
+        Vina -> show Vina
         _ -> error "NOT IMPLEMENTED YET"
 
 
 toSubDivision :: String -> Either ErrorMessage SubDivision
 toSubDivision str  
-    | "gouandal" == lowerStr = Right $ Gouandal str
-    | "tibati" == lowerStr = Right $ Tibati str
+    | "gouandal" == lowerStr = Right Gouandal 
+    | "tibati" == lowerStr = Right Tibati
     | otherwise  = Left $ str <> ": is an invalid sub division code"
     -- TODO FINISH  ALL CASES
     where lowerStr = fmap toLower str
@@ -701,8 +1302,8 @@ toSubDivision str
 fromSubDivision :: SubDivision -> String
 fromSubDivision subdivision = 
     case subdivision of
-        Gouandal str -> str
-        Tibati str-> str
+        Gouandal -> show Gouandal 
+        Tibati -> show Tibati
         _ -> error "NOT IMPLEMENTED YET"
 
 
@@ -720,19 +1321,30 @@ toCategoryType str
 fromCategoryType :: CategoryType -> String
 fromCategoryType cat = 
     case cat of 
-        Humans -> "Humans"
-        Documents -> "Documents"
-        Electronics -> "Electronics"
-        PersonalItems -> "PersonalItems"
+        Humans -> show Humans
+        Documents -> show Documents
+        Electronics -> show Electronics
+        PersonalItems -> show PersonalItems
 
 
---- /// Admin Map Data Structure
+---  Admin Map Data Structure
 data AdministrativeMap = 
-    AdministrativeMap [RegionItem]  deriving Show
+    AdministrativeMap [RegionItem]  deriving (Eq, Ord, Show)
 data RegionItem = 
-    RegionItem Region [DivisionItem] deriving Show
+    RegionItem Region [DivisionItem] deriving (Eq, Ord, Show)
 data DivisionItem = 
-    DivisionItem Division [SubDivision] deriving Show
+    DivisionItem Division [SubDivision] deriving (Eq, Ord, Show)
+
+
+
+--- Helper functions 
+
+isRegionItemRegion :: Region -> RegionItem -> Bool
+isRegionItemRegion reg (RegionItem regItem _) = reg == regItem
+
+
+isDivisionItemDivision :: Division -> DivisionItem -> Bool
+isDivisionItemDivision div (DivisionItem divItem _) = div == divItem
 
 
 camerounAdministrativeMap :: AdministrativeMap
@@ -748,7 +1360,7 @@ camerounAdministrativeMap = AdministrativeMap allTenRegions
 ---
 
 adamaouaRegionItem :: RegionItem
-adamaouaRegionItem = RegionItem (Adamaoua "Adamaoua") adamaouaDivisions
+adamaouaRegionItem = RegionItem Adamaoua adamaouaDivisions
     where adamaouaDivisions = 
             [ djeremDivision
             , faroEtDeoDivision
@@ -758,48 +1370,48 @@ adamaouaRegionItem = RegionItem (Adamaoua "Adamaoua") adamaouaDivisions
             ]
 
 djeremDivision :: DivisionItem
-djeremDivision = DivisionItem (Djerem "Djerem") djeremSubDivisions
+djeremDivision = DivisionItem Djerem djeremSubDivisions
     where djeremSubDivisions =
-            [  (Gouandal "Gouandal")
-            ,  (Tibati "Tibati")
+            [  Gouandal
+            ,  Tibati
             ]
 
 faroEtDeoDivision :: DivisionItem
-faroEtDeoDivision = DivisionItem (FaroEtDeo "Faro et Deo") faroEtDeroSubDivisions
+faroEtDeoDivision = DivisionItem FaroEtDeo faroEtDeroSubDivisions
     where faroEtDeroSubDivisions =
-            [   GalimTignere "GalimTignere"
-            ,   MayoBaleo "Mayo Baléo"
-            ,   Tignere "Tignere"
+            [   GalimTignere
+            ,   MayoBaleo
+            ,   Tignere  
             ]
 
 mayoBanyoDivision :: DivisionItem
-mayoBanyoDivision = DivisionItem (MayoBanyo "Mayo Banyo") mayoBanyoSubDivisions
+mayoBanyoDivision = DivisionItem MayoBanyo mayoBanyoSubDivisions
     where mayoBanyoSubDivisions =
-            [  Bankim "Bankim"    
-            ,  Banyo "Banyo"
-            ,  MayoDarl "MayoDarl"
+            [  Bankim      
+            ,  Banyo  
+            ,  MayoDarl  
             ]
 
 mbereDivision :: DivisionItem
-mbereDivision = DivisionItem (Mbere "Mbéré") mbereSubDivisions
+mbereDivision = DivisionItem Mbere mbereSubDivisions
     where mbereSubDivisions =
-            [  Dir "Dir"
-            ,  Djohong "Djohong"
-            ,  Meiganga "Meiganga"
-            ,  Ngaoui "Ngaoui"
+            [  Dir  
+            ,  Djohong  
+            ,  Meiganga  
+            ,  Ngaoui  
             ]
 
 vinaDivision :: DivisionItem
-vinaDivision = DivisionItem (Vina "Vina") vinaSubDivisions
+vinaDivision = DivisionItem Vina vinaSubDivisions
     where vinaSubDivisions =
-            [ Belel "Belel"
-            , Mbe "Mbe"  
-            , Nganha "Nganha"
-            , NgaoundereIer "Ngaoundere Ier"
-            , NgaoundereIIe "Ngaoundere IIe"
-            , NgaoundereIIIe "Ngaoundere IIIe"
-            , Nyambaka "Nyambaka"
-            , Martap "Martap" 
+            [ Belel  
+            , Mbe    
+            , Nganha  
+            , NgaoundereIer
+            , NgaoundereIIe
+            , NgaoundereIIIe
+            , Nyambaka  
+            , Martap   
             ]
 
 
@@ -810,7 +1422,7 @@ vinaDivision = DivisionItem (Vina "Vina") vinaSubDivisions
 ---
 
 centreRegionItem :: RegionItem
-centreRegionItem = RegionItem (Centre "Centre") centreDivisions
+centreRegionItem = RegionItem Centre centreDivisions
     where centreDivisions = 
             [ hauteSanagaDivision
             , lekieDivision
@@ -827,120 +1439,120 @@ centreRegionItem = RegionItem (Centre "Centre") centreDivisions
           
 
 hauteSanagaDivision :: DivisionItem
-hauteSanagaDivision = DivisionItem (HauteSanaga "Haute Sanaga") hauteSanagaSubDivisions
+hauteSanagaDivision = DivisionItem HauteSanaga hauteSanagaSubDivisions
     where hauteSanagaSubDivisions =
-            [ Bibey "Bibey"
-            , LembeYezoum "Lembe Yezoum"
-            , Mbandjock "Mbandjock"
-            , Minta "Minta"
+            [ Bibey
+            , LembeYezoum
+            , Mbandjock  
+            , Minta  
             ]
 
 lekieDivision :: DivisionItem
-lekieDivision = DivisionItem (Lekie "Lékié") lekieSubDivisions
+lekieDivision = DivisionItem Lekie lekieSubDivisions
     where lekieSubDivisions =
-            [ Batchenga "Batchenga"
-            , Ebebda "Ebebda"
-            , EligMfomo "Elig Mfomo"
-            , Evodoula "Evodoula"
-            , Lobo "Lobo" 
-            , Monatele "Monatélé"
-            , Obala "Obala"
-            , Okola "Okola"
-            , Saa "Saa"    
+            [ Batchenga  
+            , Ebebda  
+            , EligMfomo
+            , Evodoula  
+            , Lobo   
+            , Monatele  
+            , Obala  
+            , Okola  
+            , Saa      
             ]
 
 mbamEtInoubouDivision :: DivisionItem
-mbamEtInoubouDivision = DivisionItem (MbamEtInoubou "Mbam et Inoubou") mbamEtInoubouSubDivisions
+mbamEtInoubouDivision = DivisionItem MbamEtInoubou mbamEtInoubouSubDivisions
     where mbamEtInoubouSubDivisions =
-            [ Bafia "Bafia"
-            , Bokito "Bokito"
-            , Deuk "Deuk"
-            , Kiiki "Kiiki"
-            , KonYambetta "Kon Yambetta"
-            , Makenene "Makenene"
-            , Ndikiniméki "Ndikiniméki"
-            , Nitoukou "Nitoukou"
-            , Ombessa "Ombessa"
+            [ Bafia  
+            , Bokito  
+            , Deuk  
+            , Kiiki  
+            , KonYambetta
+            , Makenene  
+            , Ndikiniméki  
+            , Nitoukou  
+            , Ombessa  
             ]
 
 mbamEtKimDivision :: DivisionItem
-mbamEtKimDivision = DivisionItem (MbamEtKim "Mbam et Kim") mbamEtKimSubDivisions
+mbamEtKimDivision = DivisionItem MbamEtKim mbamEtKimSubDivisions
     where mbamEtKimSubDivisions =
-            [ Mbangassina "Mbangassina"
-            , NgambeTikar "Ngambe Tikar"
-            , Ngoro "Ngoro"
-            , Ntui "Ntui"
-            , Yoko "Yoko"     
+            [ Mbangassina  
+            , NgambeTikar
+            , Ngoro  
+            , Ntui  
+            , Yoko       
             ]
 
 mefouEtAfambaDivision :: DivisionItem
-mefouEtAfambaDivision = DivisionItem (MefouEtAfamba "Mefou et Afamba") mefouEtAfambaSubDivisions
+mefouEtAfambaDivision = DivisionItem MefouEtAfamba mefouEtAfambaSubDivisions
     where mefouEtAfambaSubDivisions =
-            [ Afanloum "Afanloum"
-            , AssambaOrOlanguina "Assamba / Olanguina"
-            , Awae "Awae"
-            , Edzendouan "Edzendouan"
-            , Esse "Esse"
-            , Mfou "Mfou"
-            , Nkolafamba "Nkolafamba"
-            , Soa "Soa"
+            [ Afanloum  
+            , AssambaOrOlanguina
+            , Awae  
+            , Edzendouan  
+            , Esse  
+            , Mfou  
+            , Nkolafamba  
+            , Soa  
             ]
 
 mefouEtAkonoDivision :: DivisionItem
-mefouEtAkonoDivision = DivisionItem (MefouEtAkono "Mefou et Akono") mefouEtAkonoSubDivisions
+mefouEtAkonoDivision = DivisionItem MefouEtAkono mefouEtAkonoSubDivisions
     where mefouEtAkonoSubDivisions =
-            [ Akono "Akono"
-            , Bikok "Bikok"    
-            , Mbankomo "Mbankomo"
-            , Ngoumou "Ngoumou"
+            [ Akono  
+            , Bikok      
+            , Mbankomo  
+            , Ngoumou  
             ]
 
 mfoundiDivision :: DivisionItem
-mfoundiDivision = DivisionItem (Mfoundi "Mfoundi") mfoundiSubDivisions
+mfoundiDivision = DivisionItem Mfoundi mfoundiSubDivisions
     where mfoundiSubDivisions =
-            [ YaoundeIOrNlongkakOrEtoudi "Yaounde I / Nlongkak / Etoudi"
-            , YaoundeIIOrTsinga "Yaounde II / Tsinga"
-            , YaoundeIIIOrEfoulan "Yaounde III / Efoulan"
-            , YaoundeOrIVKondengui "Yaounde IV / Kondengui"
-            , YaoundeVOrEssos "Yaounde V / Essos"
-            , YaoundeVIOrBiyemassi "Yaounde VI / BiyemAssi"
-            , YaoundeVIIOrNkolbisson "Yaounde VII / Nkolbisson"            
+            [ YaoundeIOrNlongkakOrEtoudi
+            , YaoundeIIOrTsinga  
+            , YaoundeIIIOrEfoulan   
+            , YaoundeOrIVKondengui   
+            , YaoundeVOrEssos   
+            , YaoundeVIOrBiyemassi   
+            , YaoundeVIIOrNkolbisson         
             ]
 
 nyongEtKelleDivision :: DivisionItem
-nyongEtKelleDivision = DivisionItem (NyongEtKelle "Nyong et Kéllé") nyongEtKelleSubDivisions
+nyongEtKelleDivision = DivisionItem NyongEtKelle nyongEtKelleSubDivisions
     where nyongEtKelleSubDivisions =
-            [ Biyouha "Biyouha"
-            , Bondjock "Bondjock"
-            , BotMakak "BotMakak"
-            , Dibang "Dibang"
-            , Eseka "Eseka"
-            , Makak "Makak"
-            , Matomb "Matomb"
-            , Messondo "Messondo"
-            , NgogMapubi "Ngog Mapubi"
-            , Nguibassal "Nguibassal"           
+            [ Biyouha  
+            , Bondjock  
+            , BotMakak  
+            , Dibang  
+            , Eseka  
+            , Makak  
+            , Matomb  
+            , Messondo  
+            , NgogMapubi   
+            , Nguibassal             
             ]
 
 nyongEtMfoumouDivision :: DivisionItem
-nyongEtMfoumouDivision = DivisionItem (NyongEtMfoumou "Nyong et Mfoumou") nyongEtMfoumouSubDivisions
+nyongEtMfoumouDivision = DivisionItem NyongEtMfoumou nyongEtMfoumouSubDivisions
     where nyongEtMfoumouSubDivisions =
-            [ Akonolinga "Akonolinga"
-            , Ayos "Ayos"
-            , Endom "Endom"
-            , Mengang "Mengang"
-            , NyakokomboOrKobdombo "Nyakokombo / Kobdombo"
+            [ Akonolinga  
+            , Ayos  
+            , Endom  
+            , Mengang  
+            , NyakokomboOrKobdombo   
             ]
 
 nyongEtSooDivision :: DivisionItem
-nyongEtSooDivision = DivisionItem (NyongEtSoo "Nyong et So'o") nyongEtSooDivisionSubDivisions
+nyongEtSooDivision = DivisionItem NyongEtSoo nyongEtSooDivisionSubDivisions
     where nyongEtSooDivisionSubDivisions =
-            [ Akoeman "Akoeman"
-            , Dzeng "Dzeng"
-            , Mbalmayo "Mbalmayo"
-            , Mengueme "Mengueme"
-            , Ngomedzap "Ngomedzap"
-            , Nkolmetet "Nkolmetet" 
+            [ Akoeman  
+            , Dzeng  
+            , Mbalmayo  
+            , Mengueme  
+            , Ngomedzap  
+            , Nkolmetet   
             ]
 
 
@@ -952,7 +1564,7 @@ nyongEtSooDivision = DivisionItem (NyongEtSoo "Nyong et So'o") nyongEtSooDivisio
 ---
 
 littoralRegion :: RegionItem
-littoralRegion = RegionItem (Littoral "Littoral") littoralDivisons
+littoralRegion = RegionItem Littoral littoralDivisons
     where littoralDivisons = 
             [ moungoDivision
             , nkamDivision
@@ -962,579 +1574,64 @@ littoralRegion = RegionItem (Littoral "Littoral") littoralDivisons
 
 
 moungoDivision :: DivisionItem
-moungoDivision = DivisionItem (Moungo "Moungo")  moungoSubDivisions
+moungoDivision = DivisionItem Moungo moungoSubDivisions
     where moungoSubDivisions =
-            [  BareBakem "Bare Bakem"
-            ,  Bonalea "Bonalea"
-            ,  Dibombari "Dibombari"
-            ,  Loum "Loum"
-            ,  Manjo "Manjo"
-            ,  Mbanga "Mbanga"
-            ,  Melong "Melong"
-            ,  Mombo "Mombo"
-            ,  NjombePenjaOrPenja "Njombe Penja / Penja"
-            ,  NkongsambaIer "Nkongsamba Ier"
-            ,  NkongsambaIIe "Nkongsamba IIe"
-            ,  NkongsambaIIIe "Nkongsamba IIIe"    
-            ,  NlonakoOrEbone "Nlonako / Ebone"
+            [  BareBakem
+            ,  Bonalea  
+            ,  Dibombari  
+            ,  Loum  
+            ,  Manjo  
+            ,  Mbanga  
+            ,  Melong  
+            ,  Mombo  
+            ,  NjombePenjaOrPenja
+            ,  NkongsambaIer
+            ,  NkongsambaIIe
+            ,  NkongsambaIIIe
+            ,  NlonakoOrEbone
             ]
 
 nkamDivision :: DivisionItem
-nkamDivision = DivisionItem (Nkam "Nkam") nkamSubDivisions
+nkamDivision = DivisionItem Nkam nkamSubDivisions
     where nkamSubDivisions =
-            [ Nkondjock "Nkondjock"
-            , NordMakombeOrNdobian "Nord Makombe / Ndobian"
-            , Yabassi "Yabassi"
-            , Yingui "Yingui" 
+            [ Nkondjock  
+            , NordMakombeOrNdobian
+            , Yabassi  
+            , Yingui   
             ]
 
 sanagaMaritimeDivision :: DivisionItem
-sanagaMaritimeDivision = DivisionItem (SanagaMaritime "Sanaga Maritime") sanagaMaritimeSubDivisions
+sanagaMaritimeDivision = DivisionItem SanagaMaritime sanagaMaritimeSubDivisions
     where sanagaMaritimeSubDivisions =
-            [ Dibamba "Dibamba"
-            , Dizangue "Dizangue"
-            , EdeaIer "Edéa Ier"
-            , EdeaIIe "Edéa IIe"
-            , MassockSongloulou "Massock Songloulou" 
-            , Mouanko "Mouanko"
-            , Ndom "Ndom"
-            , Ngambe "Ngambe"
-            , Ngwei "Ngwei"
-            , Nyanon "Nyanon" 
-            , Pouma "Pouma"  
+            [ Dibamba  
+            , Dizangue  
+            , EdeaIer
+            , EdeaIIe
+            , MassockSongloulou
+            , Mouanko  
+            , Ndom  
+            , Ngambe  
+            , Ngwei  
+            , Nyanon   
+            , Pouma    
             ]
 
 wouriDivision :: DivisionItem
-wouriDivision = DivisionItem (Wouri "Wouri") wouriSubDivisions
+wouriDivision = DivisionItem Wouri wouriSubDivisions
     where wouriSubDivisions =
-            [ DoualaIer "Douala Ier"
-            , DoualaIIe "Douala IIe"
-            , DoualaIIIe "Douala IIIe"
-            , DoualaIVe "Douala IVe" 
-            , DoualaVe "Douala Ve"
-            , DoualaVIe "Douala VIe"
-            , Manoka "Manoka"
+            [ DoualaIer
+            , DoualaIIe
+            , DoualaIIIe
+            , DoualaIVe
+            , DoualaVe
+            , DoualaVIe
+            , Manoka  
             ]
 
 
 
- 
 
-
---- /// Region Names lookup
-regionNamesMap :: M.Map String Region
-regionNamesMap = M.fromList [
-        ("adamaoua", Adamaoua "Adamaoua")
-    ,   ("centre", Centre "Centre")
-    ,   ("east", East "East")
-    ,   ("farnorh", FarNorth "Far North")
-    ,   ("littoral", Littoral "Littoral")
-    ,   ("north", North "Nort")
-    ,   ("northwest", NorthWest "North West")
-    ,   ("south", South "South")
-    ,   ("southwest", SouthWest "South West")
-    ,   ("west", West "West")
-    ]
-
---- /// Division Names lookup
-divisionNamesMap :: M.Map String Division
-divisionNamesMap = M.fromList [
-    -- Adamaoua
-        ("djerem", Djerem "Djerem")
-    ,   ("faroetdeo", FaroEtDeo "Faro et Déo")
-    ,   ("mayobanyo", MayoBanyo "Mayo Banyo")
-    ,   ("mbere", Mbere "Mbéré")
-    ,   ("vina", Vina "Vina")
-    -- Centre
-    ,   ("hautesanaga", HauteSanaga "Haute Sanaga")
-    ,   ("lekie", Lekie "Lekié")
-    ,   ("mbametinoubou", MbamEtInoubou "Mbam et Inoubou")
-    ,   ("mbametkim", MbamEtKim "Mbam et Kim")
-    ,   ("mefouetafamba", MefouEtAfamba "Mefou et Afamba")
-    ,   ("mefouetakono", MefouEtAkono "Mefou et Akono")
-    ,   ("mfoundi", Mfoundi "Mfoundi")
-    ,   ("nyongetkelle", NyongEtKelle "Nyong et Kelle")
-    ,   ("nyongetmfoumou", NyongEtMfoumou "Nyong et Mfoumou")
-    ,   ("nyongetsoo", NyongEtSoo "Nyong et Soo")
-    -- East
-    ,   ("boumbaetngoko", BoumbaEtNgoko "Boumba et Ngoko")
-    ,   ("hautnyong", HautNyong "Haut Nyong")
-    ,   ("kadey", Kadey "Kadey")
-    ,   ("lometdjerem", LomEtDjerem "Lom et Djerem")
-    -- Far North
-    ,   ("diamare", Diamare "Diamare")
-    ,   ("logoneetchari", LogoneEtChari "Logone et Chari")
-    ,   ("mayodanay", MayoDanay "Mayo Danay")
-    ,   ("mayokani", MayoKani "Mayo Kani")
-    ,   ("mayosava", MayoSava "Mayo Sava")
-    ,   ("mayotsanaga", MayoTsanaga "Mayo Tsanaga")
-    -- Littoral
-    ,   ("moungo", Moungo "Moungo")
-    ,   ("mkam", Nkam "Nkam")
-    ,   ("sanagamaritime", SanagaMaritime "Sanaga Maritime")
-    ,   ("wouri", Wouri "Wouri")
-    -- North
-    ,   ("benoue", Benoue "Benoue")
-    ,   ("faro", Faro "Faro")
-    ,   ("mayolouti", MayoLouti "Mayo Louti")
-    ,   ("mayorey", MayoRey "Mayo Rey")
-    --  NorthWest
-    ,   ("boyo", Boyo "Boyo")
-    ,   ("bui", Bui "Bui")
-    ,   ("dongamantung", DongaMantung "Donga Mantung")
-    ,   ("Menchum", Menchum "Menchum")
-    ,   ("mezam", Mezam "Mezam")
-    ,   ("momo", Momo "Momo")
-    ,   ("ngoketunjia", Ngoketunjia "Ngoketunjia")
-    -- South 
-    ,   ("djaetlobo", DjaEtLobo "Dja et Lobo")
-    ,   ("mvila", Mvila "Mvila")
-    ,   ("ocean", Ocean "Ocean")
-    ,   ("valleeduntem", ValleeDuNtem "Vallée du Ntem")
-    -- SouthWest
-    ,   ("fako", Fako "Fako")
-    ,   ("koupemanengouba", KoupeManengouba "Koupé Manengouba")
-    ,   ("lebialem", Lebialem "Lebialem")
-    ,   ("manyu", Manyu "Manyu")
-    ,   ("meme", Meme "Meme")
-    ,   ("ndian", Ndian "Ndian")
-    -- West
-    ,   ("bamboutos", Bamboutos "Bamboutos")
-    ,   ("hautnkam", HautNkam "Haut Nkam")
-    ,   ("hautsplateaux", HautsPlateaux "Hauts Plateaux")
-    ,   ("koungKhi", KoungKhi "KoungKhi")
-    ,   ("menoua", Menoua "Menoua")
-    ,   ("mifi", Mifi "Mifi")
-    ,   ("nde", Nde "Nde")
-    ,   ("noun", Noun "Noun")
-    ]
-
---- Subdivision Names lookup
-subDivisionNamesMap :: M.Map String SubDivision
-subDivisionNamesMap = M.fromList [
-    -- Adamaoua
-        -- Djerem
-        ("gouandal", Gouandal "Gouandal")
-    ,   ("tibati", Tibati "Tibati")
-        --  Faro et Deo 
-    ,   ("galimtignere", GalimTignere "GalimTignere")
-    ,   ("mayobaleo", MayoBaleo "Mayo Baléo")
-    ,   ("tignere", Tignere "Tignere")
-        --  Mayo Banyo
-    ,   ("bankim", Bankim "Bankim")    
-    ,   ("banyo", Banyo "Banyo")
-    ,   ("mayodarl", MayoDarl "MayoDarl")
-        -- Mbere
-    ,   ("dir", Dir "Dir")
-    ,   ("djohong", Djohong "Djohong")
-    ,   ("meiganga", Meiganga "Meiganga")
-    ,   ("ngaoui", Ngaoui "Ngaoui")
-        -- Vina 
-    ,   ("belel", Belel "Belel")
-    ,   ("mbe", Mbe "Mbe")    
-    ,   ("nganha", Nganha "Nganha")
-    ,   ("ngaounderepremier", NgaoundereIer "Ngaoundere Ier")
-    ,   ("ngaounderedeuxieme", NgaoundereIIe "Ngaoundere IIe")
-    ,   ("Ngaounderetroisieme", NgaoundereIIIe "Ngaoundere IIIe")
-    ,   ("nyambaka", Nyambaka "Nyambaka")
-    ,   ("martap", Martap "Martap")
-    -- Centre
-        -- Haute Sanaga 
-    ,   ("bibey", Bibey "Bibey")
-    ,   ("lembeyezoum", LembeYezoum "Lembe Yezoum")    
-    ,   ("mbandjock", Mbandjock "Mbandjock")
-    ,   ("minta", Minta "Minta")
-        -- Lekie
-    ,   ("batchenga", Batchenga "Batchenga")
-    ,   ("ebebda", Ebebda "Ebebda")
-    ,   ("eligmfomo", EligMfomo "Elig Mfomo")
-    ,   ("evodoula", Evodoula "Evodoula")    
-    ,   ("lobo", Lobo "Lobo")
-    ,   ("monatele", Monatele "Monatélé")
-    ,   ("obala", Obala "Obala")
-    ,   ("okola", Okola "Okola") 
-    ,   ("saa", Saa "Saa")
-        -- Mbam Et Inoubou
-    ,   ("bafia", Bafia "Bafia")
-    ,   ("bokito", Bokito "Bokito")
-    ,   ("deuk", Deuk "Deuk")    
-    ,   ("kiiki", Kiiki "Kiiki")
-    ,   ("konYambetta", KonYambetta "Kon Yambetta")
-    ,   ("makenene", Makenene "Makenene")
-    ,   ("ndikinimeki", Ndikiniméki "Ndikiniméki")   
-    ,   ("nitoukou", Nitoukou "Nitoukou")   
-    ,   ("ombessa", Ombessa "Ombessa")  
-        -- Mbam et Kim
-    ,   ("mbangassina", Mbangassina "Mbangassina")
-    ,   ("ngambetikar", NgambeTikar "Ngambe Tikar")    
-    ,   ("ngoro", Ngoro "Ngoro")
-    ,   ("ntui", Ntui "Ntui")
-    ,   ("yoko", Yoko "Yoko")
-        -- MefouEtAfamba 
-    ,   ("afanloum", Afanloum "Afanloum")
-    ,   ("assambarrolanguina", AssambaOrOlanguina "Assamba / Olanguina")    
-    ,   ("awae", Awae "Awae")
-    ,   ("edzendouan", Edzendouan "Edzendouan")
-    ,   ("esse", Esse "Esse")
-    ,   ("mfou", Mfou "Mfou")
-    ,   ("nkolafamba", Nkolafamba "Nkolafamba")
-    ,   ("soa", Soa "Soa")
-        -- MefouEtAkono 
-    ,   ("akono", Akono "Akono")
-    ,   ("bikok", Bikok "Bikok")    
-    ,   ("mbankomo", Mbankomo "Mbankomo")
-    ,   ("ngoumou", Ngoumou "Ngoumou")
-        -- Mfoundi 
-    ,   ("yaoundepremierornlongkakoretoudi", YaoundeIOrNlongkakOrEtoudi "Yaounde I / Nlongkak / Etoudi")
-    ,   ("yaoundesecondortsinga", YaoundeIIOrTsinga "Yaounde II / Tsinga")
-    ,   ("yaoundetroisiemeorefoulan", YaoundeIIIOrEfoulan "Yaounde III / Efoulan")
-    ,   ("yaoundequatriemeorkondengui", YaoundeOrIVKondengui "Yaounde IV / Kondengui")
-    ,   ("yaoundecinquiemeoressos", YaoundeVOrEssos "Yaounde V / Essos")
-    ,   ("yaoundesixiemeorbiyemassi", YaoundeVIOrBiyemassi "Yaounde VI / BiyemAssi")
-    ,   ("yaoundeseptiemeornkolbisson", YaoundeVIIOrNkolbisson "Yaounde VII / Nkolbisson")
-        -- NyongEtKelle 
-    ,   ("biyouha", Biyouha "Biyouha")
-    ,   ("bondjock", Bondjock "Bondjock")
-    ,   ("botMakak", BotMakak "BotMakak")
-    ,   ("dibang", Dibang "Dibang")
-    ,   ("eseka", Eseka "Eseka")
-    ,   ("makak", Makak "Makak")
-    ,   ("matomb", Matomb "Matomb")
-    ,   ("messondo", Messondo "Messondo")
-    ,   ("ngogmapubi", NgogMapubi "Ngog Mapubi")
-    ,   ("nguibassal", Nguibassal "Nguibassal")
-        -- NyongEtMfoumou 
-    ,   ("akonolinga", Akonolinga "Akonolinga")
-    ,   ("ayos", Ayos "Ayos")
-    ,   ("endom", Endom "Endom")
-    ,   ("mengang", Mengang "Mengang")
-    ,   ("nyakokomboorkobdombo", NyakokomboOrKobdombo "Nyakokombo / Kobdombo")
-        -- NyongEtSoo 
-    ,   ("akoeman", Akoeman "Akoeman")
-    ,   ("dzeng", Dzeng "Dzeng")
-    ,   ("mbalmayo", Mbalmayo "Mbalmayo")
-    ,   ("mengueme", Mengueme "Mengueme")
-    ,   ("ngomedzap", Ngomedzap "Ngomedzap")
-    ,   ("nkolmetet", Nkolmetet "Nkolmetet")
-    -- East
-        -- BoumbaEtNgoko 
-    ,   ("garigombo", GariGombo "Gari Gombo")
-    ,   ("moloundou", Moloundou "Moloundou")
-    ,   ("salapoumbe", Salapoumbe "Salapoumbe")
-    ,   ("yokadouma", Yokadouma "Yokadouma")    
-        -- HautNyong
-    ,   ("abongmbang", AbongMbang "Abong Mbang")
-    ,   ("bebendorratok", BebendOrAtok "Bebend / Atok")
-    ,   ("dimako", Dimako "Dimako")
-    ,   ("doumaintang", Doumaintang "Doumaintang")
-    ,   ("doume", Doume "Doume")
-    ,   ("lomie", Lomie "Lomie")
-    ,   ("mboanzorangossas", MboanzOrAngossas "Mboanz / Angossas")
-    ,   ("mboma", Mboma "Mboma")    
-    ,   ("messamena", Messamena "Messamena")
-    ,   ("messok", Messok "Messok")
-    ,   ("mindourou", Mindourou "Mindourou")
-    ,   ("ngoyla", Ngoyla "Ngoyla")
-    ,   ("nguelemendouka", Nguelemendouka "Nguelemendouka")
-    ,   ("somalomo", Somalomo "Somalomo")
-        -- Kadey 
-    ,   ("batouri", Batouri "Batouri")
-    ,   ("kentzou", Kentzou "Kentzou")
-    ,   ("kette", Kette "Kette")
-    ,   ("mbang", Mbang "Mbang")
-    ,   ("ndelele", Ndelele "Ndelele")
-    ,   ("nguelebok", Nguelebok "Nguelebok")
-    ,   ("ouli", Ouli "Ouli")
-        -- LomEtDjerem 
-    ,   ("belabo", Belabo "Belabo")
-    ,   ("bertouapremier", BertouaIer "Bertoua Ier")
-    ,   ("bertouadeuxieme", BertouaIIe "Bertoua IIe")
-    ,   ("betareoya", BétareOya "Bétare Oya")
-    ,   ("diang", Diang "Diang")
-    ,   ("garouaboulai", GarouaBoulai "Garoua Boulai")
-    ,   ("ngoura", Ngoura "Ngoura")
-    -- Far North
-        -- Diamare 
-    ,   ("bogo", Bogo "Bogo")
-    ,   ("dargala", Dargala "Dargala")
-    ,   ("gazawa", Gazawa "Gazawa")
-    ,   ("marouapremier", MarouaIer "Maroua Ier")    
-    ,   ("marouadeuxieme", MarouaIIe "Maroua IIe")
-    ,   ("marouatroisieme", MarouaIIIe "Maroua IIIe")
-    ,   ("meri", Meri "Meri")
-    ,   ("ndoukoula", Ndoukoula "Ndoukoula")
-    ,   ("pette", Pette "Pette")
-        -- LogoneEtChari 
-    ,   ("blangoua", Blangoua "Blangoua")
-    ,   ("darak", Darak "Darak")
-    ,   ("fotokol", Fotokol "Fotokol")
-    ,   ("goulfey", Goulfey "Goulfey")    
-    ,   ("hilealifa", HileAlifa "Hile Alifa")
-    ,   ("kousseri", Kousseri "Kousseri")
-    ,   ("logonebirni", LogoneBirni "Logone Birni")
-    ,   ("makary", Makary "Makary")
-    ,   ("waza", Waza "Waza")
-    ,   ("zina", Zina "Zina")
-        -- MayoDanay
-    ,   ("datcheka", Datcheka "Datcheka")
-    ,   ("gobo", Gobo "Gobo")    
-    ,   ("gueme", Gueme "Gueme")
-    ,   ("guere", Guere "Guere")
-    ,   ("kaiKai", KaiKai "KaiKai")
-    ,   ("kalfou", Kalfou "Kalfou")
-    ,   ("karHay", KarHay "KarHay")
-    ,   ("maga", Maga "Maga")    
-    ,   ("tchatibali", TchatiBali "Tchati Bali")
-    ,   ("wina", Wina "Wina")
-    ,   ("yagoua", Yagoua "Yagoua")
-        -- MayoKani 
-    ,   ("dziguilao", Dziguilao "Dziguilao") -- ??? Commune ou arrondiseement ???
-    ,   ("taibong", Taibong "Taibong")    
-    ,   ("guidiguis", Guidiguis "Guidiguis")
-    ,   ("kaele", Kaele "Kaele")
-    ,   ("mindif", Mindif "Mindif")
-    ,   ("moulvoudaye", Moulvoudaye "Moulvoudaye")
-    ,   ("moutourwa", Moutourwa "Moutourwa")
-    ,   ("touloum", Touloum "Touloum")    
-        -- MayoSava
-    ,   ("kolofata", Kolofata "Kolofata")
-    ,   ("mora", Mora "Mora")
-    ,   ("tokombere", Tokombere "Tokombere")
-        -- MayoTsanaga 
-    ,   ("bourrha", Bourrha "Bourrha")
-    ,   ("hina", Hina "Hina")
-    ,   ("koza", Koza "Koza")
-    ,   ("mogode", Mogode "Mogode") 
-    ,   ("mokolo", Mokolo "Mokolo")
-    ,   ("mozogo", Mozogo "Mozogo")
-    ,   ("soulederoua", SouledeRoua "Soulede Roua")
-    -- Littoral
-        -- Moungo 
-    ,   ("barebakem", BareBakem "Bare Bakem")
-    ,   ("bonalea", Bonalea "Bonalea")
-    ,   ("dibombari", Dibombari "Dibombari")
-    ,   ("loum", Loum "Loum")    
-    ,   ("manjo", Manjo "Manjo")
-    ,   ("mbanga", Mbanga "Mbanga")
-    ,   ("melong", Melong "Melong")
-    ,   ("mombo", Mombo "Mombo")
-    ,   ("njombepenjaorpenja", NjombePenjaOrPenja "Njombe Penja / Penja")
-    ,   ("nkongsambapremier", NkongsambaIer "Nkongsamba Ier")
-    ,   ("nkongsambadeuxieme", NkongsambaIIe "Nkongsamba IIe")
-    ,   ("nkongsambatroisieme", NkongsambaIIIe "Nkongsamba IIIe")    
-    ,   ("nlonakoorebone", NlonakoOrEbone "Nlonako / Ebone")
-        -- Nkam
-    ,   ("nkondjock", Nkondjock "Nkondjock")
-    ,   ("nordmakombeorndobian", NordMakombeOrNdobian "Nord Makombe / Ndobian")
-    ,   ("yabassi", Yabassi "Yabassi")
-    ,   ("yingui", Yingui "Yingui")
-        -- SanagaMaritime
-    ,   ("bibamba", Dibamba "Dibamba")
-    ,   ("dizangue", Dizangue "Dizangue")
-    ,   ("edeapremier", EdeaIer "Edéa Ier")
-    ,   ("edeadeuxieme", EdeaIIe "Edéa IIe")
-    ,   ("massocksongloulou", MassockSongloulou "Massock Songloulou") 
-    ,   ("mouanko", Mouanko "Mouanko")
-    ,   ("ndom", Ndom "Ndom")
-    ,   ("ngambe", Ngambe "Ngambe")
-    ,   ("ngwei", Ngwei "Ngwei")
-    ,   ("nyanon", Nyanon "Nyanon") 
-    ,   ("pouma", Pouma "Pouma")
-        -- Wouri 
-    ,   ("doualapremier", DoualaIer "Douala Ier")
-    ,   ("doualadeuxieme", DoualaIIe "Douala IIe")
-    ,   ("doualatroisieme", DoualaIIIe "Douala IIIe")
-    ,   ("doualaquatrieme", DoualaIVe "Douala IVe")  
-    ,   ("doualacinquieme", DoualaVe "Douala Ve")
-    ,   ("doualasixiemee", DoualaVIe "Douala VIe")
-    ,   ("manoka", Manoka "Manoka")
-    -- North
-        -- Benoue 
-    ,   ("bibemi", Bibemi "Bibemi")
-    ,   ("dembo", Dembo "Dembo")
-    ,   ("garouapremier", GarouaIer "Garoua Ier")
-    ,   ("garouadeuxieme", GarouaIIe "Garoua IIe")    
-    ,   ("garouatroisieme", GarouaIIIe "Garoua IIIe")
-    ,   ("lagdo", Lagdo "Lagdo")
-    ,   ("mayohourna", MayoHourna "Mayo Hourna")
-    ,   ("pitoa", Pitoa "Pitoa")
-    ,   ("tcheboa", Tcheboa "Tcheboa")
-    ,   ("demsa", Demsa "Demsa")
-    ,   ("bascheo", Bascheo "Bascheo")
-        -- Faro 
-    ,   ("beka", Beka "Beka")
-    ,   ("poli", Poli "Poli")
-        -- MayoLouti
-    ,   ("figuil", Figuil "Figuil")
-    ,   ("guider", Guider "Guider")
-    ,   ("mayooulo", MayoOulo "Mayo Oulo")
-        -- Mayo Rey 
-    ,   ("madingring", Madingring "Madingring")
-    ,   ("reybouba", ReyBouba "Rey Bouba")
-    ,   ("tchollire", Tchollire "Tchollire")
-    ,   ("touboro", Touboro "Touboro")    
-    --  NorthWest
-        -- Boyo
-    ,   ("belo", Belo "Belo")
-    ,   ("fonfuka", Fonfuka "Fonfuka")
-    ,   ("fundong", Fundong "Fundong")
-    ,   ("njinikom", Njinikom "Njinikom")    
-        -- Bui 
-    ,   ("jakiri", Jakiri "Jakiri")
-    ,   ("kumbo", Kumbo "Kumbo")
-    ,   ("mbvenormbiame", MbvenOrMbiame "Mbven / Mbiame")
-    ,   ("nkum", Nkum "Nkum")    
-    ,   ("noniorkkor", NoniOrNkor "Noni / Nkor")
-    ,   ("okuorelakoku", OkuOrElakOku "Oku / Elak Oku")
-        -- DongaMantung 
-    ,   ("ako", Ako "Ako")
-    ,   ("misaje", Misaje "Misaje")
-    ,   ("ndu", Ndu "Ndu")
-    ,   ("nkambe", Nkambe "Nkambe")    
-    ,   ("nwa", Nwa "Nwa")
-        -- Menchum 
-    ,   ("benakuma", Benakuma "Benakuma")
-    ,   ("furuawa", FuruAwa "Furu Awa")
-    ,   ("wum", Wum "Wum")
-    ,   ("zhoa", Zhoa "Zhoa")    
-        -- Mezam 
-    ,   ("bafut", Bafut "Bafut")
-    ,   ("bali", Bali "Bali")
-    ,   ("bamendapremier", BamendaIer "Bamenda Ier")
-    ,   ("bamendadeuxieme", BamendaIIe "Bamenda IIe")    
-    ,   ("bamendatroisieme", BamendaIIIe "Bamenda IIIe")
-    ,   ("santa", Santa "Santa")
-    ,   ("tubah", Tubah "Tubah")
-        -- Momo
-    ,   ("andek", Andek "Andek")
-    ,   ("batibo", Batibo "Batibo")
-    ,   ("mbengwi", Mbengwi "Mbengwi")
-    ,   ("njikwa", Njikwa "Njikwa")    
-    ,   ("widikumboffe", WidikumBoffe "Widikum Boffe")
-        -- Ngoketunjia
-    ,   ("babessi", Babessi "Babessi")
-    ,   ("balikumbat", Balikumbat "Balikumbat")
-    ,   ("ndop", Ndop "Ndop")
-    -- South 
-        -- DjaEtLobo 
-    ,   ("bengbis", Bengbis "Bengbis")
-    ,   ("djoum", Djoum "Djoum")
-    ,   ("meyomessala", Meyomessala "Meyomessala")
-    ,   ("meyomessi", Meyomessi "Meyomessi")    
-    ,   ("mintom", Mintom "Mintom")
-    ,   ("oveng", Oveng "Oveng")
-    ,   ("sangmelima", Sangmelima "Sangmelima")
-    ,   ("zoetele", Zoetele "Zoetele")
-        -- Mvila
-    ,   ("biwongbane", BiwongBane "Biwong Bane")
-    ,   ("biwongbulu", BiwongBulu "Biwong Bulu")
-    ,   ("ebolowapremier", EbolowaIer "Ebolowa Ier")
-    ,   ("ebolowadeuxieme", EbolowaIIe "Ebolowa IIe")    
-    ,   ("efoulan", Efoulan "Efoulan")
-    ,   ("mengong", Mengong "Mengong")
-    ,   ("mvangan", Mvangan "Mvangan")
-    ,   ("ngoulemakong", Ngoulemakong "Ngoulemakong")
-        -- Ocean
-    ,   ("akomdeux", AkomII "Akom II")
-    ,   ("bipindi", Bipindi "Bipindi")
-    ,   ("campo", Campo "Campo")
-    ,   ("kribipremier", KribiIer "Kribi Ier")    
-    ,   ("kribideuxieme", KribiIIe "Kribi IIe")
-    ,   ("lolodorf", Lolodorf "Lolodorf")
-    ,   ("mvengue", Mvengue "Mvengue")
-    ,   ("niete", Niete "Niete")
-        -- ValleeDuNtem
-    ,   ("ambam", Ambam "Ambam")
-    ,   ("kyeossi", KyeOssi "Kye Ossi")
-    ,   ("maan", Maan "Maan") -- ??
-    ,   ("olamze", Olamze "Olamze")    
-    -- SouthWest
-        -- Fako
-    ,   ("buea", Buea "Buéa")
-    ,   ("limbepremier", LimbeIer "Limbé Ier")
-    ,   ("limbedeuxieme", LimbeIIe "Limbé IIe")
-    ,   ("limbetroisieme", LimbeIIIe "Limbé IIIe")    
-    ,   ("muyuka", Muyuka "Muyuka")
-    ,   ("tiko", Tiko "Tiko")
-    ,   ("westcoast", WestCoast "West Coast")
-        -- KoupeManengouba
-    ,   ("bangem", Bangem "Bangem")
-    ,   ("nguti", Nguti "Nguti")
-    ,   ("tombel", Tombel "Tombel")
-        -- Lebialem 
-    ,   ("alou", Alou "Alou")
-    ,   ("fontem", Fontem "Fontem")
-    ,   ("wabane", Wabane "Wabane")
-        -- Manyu
-    ,   ("akwaya", Akwaya "Akwaya")
-    ,   ("eyumodjock", Eyumodjock "Eyumodjock")
-    ,   ("mamfe", Mamfe "Mamfe")
-    ,   ("tintoorupperbayang", TintoOrUpperBayang "Tinto / Upper / Bayang")    
-        -- Meme 
-    ,   ("konye", Konye "Konye")
-    ,   ("kumbapremier", KumbaIer "Kumba Ier")
-    ,   ("kumbadeuxieme", KumbaIIe "Kumba IIe")
-    ,   ("kumbatroisieme", KumbaIIIe "Kumba IIIe")    
-    ,   ("mbonge", Mbonge "Mbonge")
-        -- Ndian
-    ,   ("bamusso", Bamusso "Bamusso")
-    ,   ("ekondotiti", EkondoTiti "Ekondo Titi")
-    ,   ("idabato", Idabato "Idabato")
-    ,   ("isanguele", Isanguele "Isanguele")    
-    ,   ("komboabedimo", KomboAbedimo "Kombo Abedimo")
-    ,   ("komboitindi", KomboItindi "Kombo Itindi")
-    ,   ("mundemba", Mundemba "Mundemba")
-    -- West
-        -- Bamboutos
-    ,   ("babadjou", Babadjou "Babadjou")
-    ,   ("batcham", Batcham "Batcham")
-    ,   ("galim", Galim "Galim")
-    ,   ("mbouda", Mbouda "Mbouda")    
-        -- Haut Nkam 
-    ,   ("bafang", Bafang "Bafang")
-    ,   ("bakou", Bakou "Bakou")
-    ,   ("bana", Bana "Bana")
-    ,   ("bandja", Bandja "Bandja")    
-    ,   ("banka", Banka "Banka")
-    ,   ("kekem", Kekem "Kekem")
-        -- Hauts Plateaux
-    ,   ("baham", Baham "Baham")
-    ,   ("bamendjou", Bamendjou "Bamendjou")
-    ,   ("bangou", Bangou "Bangou")
-    ,   ("batie", Batie "Batie")    
-    ,   ("bangam", Bangam "Bangam")
-    ,   ("badenkop", Badenkop "Badenkop")
-        -- KoungKhi
-    ,   ("bayangam", Bayangam "Bayangam")
-    ,   ("demdeng", Demdeng "Demdeng")
-    ,   ("poumougne", Poumougne "Poumougne")
-        -- Menoua 
-    ,   ("dschang", Dschang "Dschang")
-    ,   ("fokoue", Fokoue "Fokoué")
-    ,   ("fongotongo", FongoTongo "Fongo Tongo")
-    ,   ("nkongzem", NkongZem "Nkong Zem")    
-    ,   ("penkamichel", PenkaMichel "Penka Michel")
-    ,   ("santchou", Santchou "Santchou")
-        -- Mifi
-    ,   ("bafoussampremier", BafoussamIer "Bafoussam Ier")
-    ,   ("bafoussamdeuxieme", BafoussamIIe "Bafoussam IIe")
-    ,   ("bafoussamtroisieme", BafoussamIIIe "Bafoussam IIIe")
-        -- Nde
-    ,   ("bangangte", Bangangte "Bangangte")
-    ,   ("bassamba", Bassamba "Bassamba")
-    ,   ("bazou", Bazou "Bazou")
-    ,   ("tonga", Tonga "Tonga")    
-        -- Noun
-    ,   ("Bangourain", Bangourain "Bangourain")
-    ,   ("Foumban", Foumban "Foumban")
-    ,   ("Foumbot", Foumbot "Foumbot")
-    ,   ("Kouoptamo", Kouoptamo "Kouoptamo")    
-    ,   ("Koutaba", Koutaba "Koutaba")
-    ,   ("Magba", Magba "Magba")
-    ,   ("Malentouen", Malentouen "Malentouen")
-    ,   ("Massangam", Massangam "Massangam") 
-    ,   ("Njimom", Njimom "Njimom")
-    ]
+  
 
 
 

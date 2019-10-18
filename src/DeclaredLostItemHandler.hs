@@ -81,7 +81,7 @@ checkAdministrativeAreaInfoValidBase (AdministrativeMap regions) (aRegion, aDivi
 
 checkAdministrativeAreaInfoValid :: CheckAdministrativeAreaInfoValid
 checkAdministrativeAreaInfoValid (r, d, s) = 
-    return (r, d, s)
+    return $ Just (Adamaoua, Djerem, Gouandal)
 
 
 checkAttributeInfoValid :: CheckAttributeInfoValid   

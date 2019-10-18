@@ -22,14 +22,15 @@ import Data.Dates
 -- --------------------------------------------------------------------------
 type UnvalidatedLostItemId = String
 
+type UnvalidatedAminitrativeArea = (String, String, String)
+
+
 data UnvalidatedLocation = UnvalidatedLocation {
-        uregion :: String
-    ,   udivision :: String
-    ,   usubdivision :: String
+        uadminArea :: UnvalidatedAminitrativeArea
     ,   ucity :: String
     ,   uvillage :: String
     ,   uneighborhood :: String
-    ,   uloaddress :: String
+    ,   uloaddresses :: [String]
     } deriving (Eq, Ord, Show)
 
 data UnvalidatedAttribute = UnvalidatedAttribute {

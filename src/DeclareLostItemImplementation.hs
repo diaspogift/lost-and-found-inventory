@@ -8,12 +8,16 @@ import DeclaredLostItemPublicTypes
 import Data.Time
 import Prelude hiding (last)
 import Data.Maybe
-import Data.Set hiding (singleton)
+import Data.Set hiding (singleton, null)
 import Util
 import Data.Either.Combinators
 
 import Data.UUID.V4
-import Data.UUID  -- Internal
+import Data.UUID hiding (null) -- Internal
+
+-- import Data.List.NonEmpty
+
+
 
 -- ==========================================================================================
 -- This file contains the initial implementation for the declareLostItem workflow
@@ -45,8 +49,8 @@ import Data.UUID  -- Internal
 type AdminAreaValidationError = String
 
 type CheckAdministrativeAreaInfoValid = 
-  (Region, Division, SubDivision) 
-    -> Either AdminAreaValidationError (Region, Division, SubDivision)
+  (String, String, String) 
+    -> Either AdminAreaValidationError (Maybe (Region, Division, SubDivision))
 
 -- Contact Information (Phone number) validation
 
@@ -72,13 +76,10 @@ type CheckAttributeInfoValid =
 -- Validated LostItem
 
 data ValidatedLocation = ValidatedLocation {
-        vregion :: Region
-    ,   vdivision :: Division
-    ,   vsubdivision :: SubDivision
-    ,   vcity :: City
-    ,   vvillage :: Village
-    ,   vneighborhood :: Neighborhood
-    ,   vlocationAddress :: Address
+        vadminArea :: Maybe AdministrativeAreaInfo
+    ,   vcityOrVillage :: Maybe CityOrVillage
+    ,   vneighborhood :: Maybe Neighborhood
+    ,   vlocationAddresses :: [Address]
     } deriving (Eq, Ord, Show)
 
 data ValidatedAttribute = ValidatedAttribute {
@@ -91,19 +92,16 @@ data ValidatedAttribute = ValidatedAttribute {
     } deriving (Eq, Ord, Show)
 
 data ValidatedPerson = ValidatedPerson {
-    -- Revoir si l'attribut userId est optionel
       vuserId   :: UserId
     , vcontact  :: ValidatedContactInformation
     , vname     :: FullName
     } deriving (Eq, Ord, Show)
 
 data ValidatedContactInformation = ValidatedContactInformation {
-      -- Maybe Tel required, Email optional ????
-      vemail         :: EmailAddress
-    , vaddress       :: PostalAddress
-    , vprimaryTel    :: Telephone
-    , vsecondaryTel  :: Telephone
+      vaddress       :: PostalAddress
+    , vContactMethod    :: ContactMethod
     } deriving (Eq, Ord, Show)
+
 
 data ValidatedLostItem = ValidatedLostItem {
       vlostItemId               :: LostItemId
@@ -255,12 +253,126 @@ toContactInfo ::
   CheckContactInfoValid 
     -> UnvalidatedContactInformation 
     -> Either ValidationError ValidatedContactInformation 
-toContactInfo checkContactInfoValid ucinfo =
-  ValidatedContactInformation 
-    <$> (toEmail . uemail) ucinfo
-    <*> (toPostalAddress . uaddress) ucinfo
+toContactInfo checkContactInfoValid uc
+    -- no email but both prim and sec phone given
+    | null givenEmail 
+      && (not . null) givenPrimTel 
+      && (not . null) givenSecTel =
+        do  adress <- mapLeft ValidationError $ createPostalAddress givenAddress
+            primTel <- mapLeft ValidationError $ createTelephone givenPrimTel
+            secTel <- mapLeft ValidationError $ createOptionalTelephone givenSecTel
+
+            let contactMethod = PhoneOnly primTel secTel
+            return  ValidatedContactInformation {
+                        vaddress = adress
+                    ,   vContactMethod = contactMethod
+                    }
+
+    -- no email but only prim phone given
+    | null givenEmail
+      && (not . null) givenPrimTel 
+      && null givenSecTel =
+        do  adress <- mapLeft ValidationError $ createPostalAddress givenAddress
+            primTel <- mapLeft ValidationError $ createTelephone givenPrimTel
+            let contactMethod = PhoneOnly primTel Nothing
+            return  ValidatedContactInformation {
+                        vaddress = adress
+                    ,   vContactMethod = contactMethod
+                    }
+    
+    -- just email given
+    | (not. null) givenEmail
+      && null givenPrimTel 
+      && null givenSecTel =
+        do  adress <- mapLeft ValidationError $ createPostalAddress givenAddress
+            email <- mapLeft ValidationError $ createEmailAddress givenEmail
+            let contactMethod = EmailOnly email
+            return  ValidatedContactInformation {
+                        vaddress = adress
+                    ,   vContactMethod = contactMethod
+                    }
+            
+    -- email and prim phone given
+    | (not . null) givenEmail
+      && (not . null) givenPrimTel
+      && null givenSecTel =
+        do  adress <- mapLeft ValidationError $ createPostalAddress givenAddress
+            primTel <- mapLeft ValidationError $ createTelephone givenPrimTel
+            email <- mapLeft ValidationError $ createEmailAddress givenEmail
+            let contactMethod = EmailAndPhone BothContactInfo {
+                    emailInfo = email
+                ,   primTelephoneInfo = primTel
+                ,   secTelephoneInfo = Nothing
+                }
+            return  ValidatedContactInformation {
+                        vaddress = adress
+                    ,   vContactMethod = contactMethod
+                    }
+
+    -- email, prim and sec phones given
+    | (not . null) givenEmail 
+      && (not . null)  givenPrimTel  
+      && (not . null) givenSecTel =
+        do  adress <- mapLeft ValidationError $ createPostalAddress givenAddress
+            primTel <- mapLeft ValidationError $ createTelephone givenPrimTel
+            email <- mapLeft ValidationError $ createEmailAddress givenEmail
+            secTel <- mapLeft ValidationError $ createOptionalTelephone givenSecTel
+
+            let contactMethod = EmailAndPhone BothContactInfo {
+                    emailInfo = email
+                ,   primTelephoneInfo = primTel
+                ,   secTelephoneInfo = secTel
+                }
+
+            return  ValidatedContactInformation {
+                        vaddress = adress
+                    ,   vContactMethod = contactMethod
+                    }
+
+    | otherwise = error "Invalid contact information"
+
+    where   givenEmail = uemail uc
+            givenPrimTel = uprimaryTel uc
+            givenSecTel = usecondaryTel uc
+            givenAddress = uaddress uc
+
+{--
+
+ValidatedContactInformation 
+    <$> (toPostalAddress . uaddress) uc
+    <*> (toEmail . uemail) ucinfo
     <*> (toCheckedValidTelephone checkContactInfoValid . uprimaryTel) ucinfo
     <*> (toCheckedValidTelephone checkContactInfoValid . usecondaryTel) ucinfo
+
+
+data UnvalidatedContactInformation = UnvalidatedContactInformation {
+        uemail :: String
+    ,   uaddress :: String
+    ,   uprimaryTel :: String
+    ,   usecondaryTel :: String 
+    } deriving (Eq, Ord, Show)
+
+
+data ValidatedContactInformation = ValidatedContactInformation {
+      vaddress       :: PostalAddress
+    , vContactMethod    :: ContactMethod
+    } deriving (Eq, Ord, Show)
+
+
+data BothContactInfo = BothContactInfo {
+        emailInfo :: EmailAddress
+    ,   primTelephoneInfo :: Telephone
+    ,   secTelephoneInfo :: Maybe Telephone
+    } deriving (Eq, Ord, Show)
+
+
+data ContactMethod =
+      EmailOnly EmailAddress
+    | PhoneOnly Telephone
+    | EmailAndPhone BothContactInfo
+    deriving (Eq, Ord, Show)
+--}
+
 
 toCheckedValidTelephone :: 
   CheckContactInfoValid 
@@ -336,14 +448,30 @@ toLostItemDescription str =
 toCheckedValidAdminArea :: 
   (String, String, String)  
     -> CheckAdministrativeAreaInfoValid
-    -> Either ValidationError (Region, Division, SubDivision) 
-toCheckedValidAdminArea (r, d, s) checkAdministrativeAreaInfoValid =
-  do reg <- mapLeft ValidationError $ toRegion r
-     div <- mapLeft ValidationError $ toDivision d
-     sub <- mapLeft ValidationError $ toSubDivision s
-     let resultCheck = checkAdministrativeAreaInfoValid (reg, div, sub)
-     mapLeft ValidationError resultCheck 
-               
+    -> Either ValidationError (Maybe (Region, Division, SubDivision))
+toCheckedValidAdminArea (reg, div, sub) checkAdministrativeAreaInfoValid =
+    do  resultCheck 
+            <- mapLeft 
+                ValidationError $
+                checkAdministrativeAreaInfoValid (reg, div, sub)
+        return resultCheck 
+    
+        
+toCityOrVillage :: 
+    (String, String) 
+    -> Either ValidationError (Maybe CityOrVillage)
+toCityOrVillage (cityStr, villageStr)
+    | null cityStr && null villageStr = 
+        return Nothing
+    | null cityStr && (not . null) villageStr = 
+        do  village <- mapLeft ValidationError $ createVillage villageStr
+            return $ Just $ Country village
+    | (not . null) cityStr && null villageStr = 
+        do  city <- mapLeft ValidationError $ createCity cityStr
+            return $ Just $ Urban city
+    | otherwise = return Nothing
+
+
 toCity :: String -> Either ValidationError City
 toCity str = 
   mapLeft ValidationError $ createCity str
@@ -352,7 +480,7 @@ toVillage :: String -> Either ValidationError Village
 toVillage str = 
   mapLeft ValidationError $ createVillage str
 
-toNeighborhood :: String -> Either ValidationError Neighborhood
+toNeighborhood :: String -> Either ValidationError (Maybe Neighborhood)
 toNeighborhood str = 
   mapLeft ValidationError $ createNeighborhood str
 
@@ -381,30 +509,32 @@ toLostItemLocation ::
     -> UnvalidatedLocation 
     -> Either ValidationError ValidatedLocation
 toLostItemLocation checkAdministrativeAreaInfoValid u =
-  do 
-    (region, 
-     division, 
-     subDivison) <- toCheckedValidAdminArea
-                      (uregion u, udivision u, usubdivision u ) 
-                      checkAdministrativeAreaInfoValid
-    city <- toCity $ ucity u
-    village <- toVillage $ uvillage u
-    neighborhood <- toNeighborhood $ uregion u
-    address <- toAddress $ uregion u
-    let validateLocation = 
-          ValidatedLocation {
-                vregion = region
-            ,   vdivision = division
-            ,   vsubdivision = subDivison
-            ,   vcity = city
-            ,   vvillage = village
-            ,   vneighborhood = neighborhood
-            ,   vlocationAddress = address
-            }
-    return validateLocation 
+  do    adminArea 
+            <- toCheckedValidAdminArea
+                    (uadminArea u)
+                    checkAdministrativeAreaInfoValid
+        cityOrVillage
+            <- toCityOrVillage (ucity u, uvillage u)
+        neighborhood 
+            <- toNeighborhood $ uneighborhood u
+        addresses 
+            <- traverse toAddress $ uloaddresses u
+                
+        return  ValidatedLocation {
+                        vadminArea = adminArea
+                    ,   vcityOrVillage = cityOrVillage
+                    ,   vneighborhood = neighborhood
+                    ,   vlocationAddresses = addresses
+                    }
+          
 
 
-
+{--
+ vadminArea :: Maybe AdministrativeAreaInfo
+    ,   vcityOrVillage :: Maybe CityOrVillage
+    ,   vneighborhood :: Maybe Neighborhood
+    ,   vlocationAddress :: [Address]
+--}
 
 -- ----------------------------------------------------------------------------
 -- Creation step
@@ -439,11 +569,8 @@ toPerson =
 toContactInformation :: ValidatedContactInformation -> ContactInformation
 toContactInformation = 
   ContactInformation 
-    <$> vemail
-    <*> vaddress
-    <*> vprimaryTel
-    <*> vsecondaryTel
-
+    <$> vaddress
+    <*> vContactMethod
 
 
 toAttribute :: ValidatedAttribute -> Attribute
@@ -459,16 +586,14 @@ toAttribute valAttr =
 
 
 toLocation :: ValidatedLocation -> Location
-toLocation = 
-  Location 
-    <$> vregion
-    <*> vdivision
-    <*> vsubdivision
-    <*> vcity
-    <*> vvillage
-    <*> vneighborhood
-    <*> vlocationAddress
-
+toLocation vLoc =
+    Location {
+        adminArea = vadminArea vLoc
+    ,   cityOrVillage = vcityOrVillage vLoc
+    ,   neighborhood = vneighborhood vLoc
+    ,   locationAddresses = vlocationAddresses vLoc
+    }
+    
 
 
 
@@ -552,6 +677,7 @@ declareLostItem ::
   -> UTCTime
   -> UnvalidatedLostItemId
   -> Either DeclareLostItemError [DeclareLostItemEvent]
+
 declareLostItem 
   checkAdministrativeAreaInfoValid  -- Dependency
   checkAttributeInfoValid           -- Dependency

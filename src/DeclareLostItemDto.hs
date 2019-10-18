@@ -7,7 +7,7 @@ import DeclaredLostItemPublicTypes
 
 import Prelude hiding (last, id)
 import Data.Time
-import Data.Set
+import Data.Set hiding (null)
 
 
 
@@ -43,50 +43,102 @@ data LocationDto = LocationDto {
     ,   dtocity :: String
     ,   dtovillage :: String
     ,   dtoneighborhood :: String
-    ,   dtolocationAddress :: String
+    ,   dtolocationAddress :: [String]
     } deriving (Eq, Ord, Show)
 
 -- Helper functions for converting from / to domain as well as to other states
 
 toUnvalidatedLocation :: LocationDto -> UnvalidatedLocation
-toUnvalidatedLocation  =
-    UnvalidatedLocation 
-        <$> dtoregion 
-        <*> dtodivision 
-        <*> dtosubdivision
-        <*> dtocity
-        <*> dtovillage 
-        <*> dtoneighborhood 
-        <*> dtolocationAddress
+toUnvalidatedLocation dto  =
+    let area = (dtoregion dto, dtodivision dto, dtosubdivision dto)
+        city = dtocity dto
+        village = dtovillage dto
+        neighborhood = dtoneighborhood dto
+        addresses = dtolocationAddress dto
+    in UnvalidatedLocation {
+            uadminArea = area
+        ,   ucity = city
+        ,   uvillage = village
+        ,   uneighborhood = neighborhood
+        ,   uloaddresses = addresses
+        }
         
 
 
----- TODO:  I think applicative might be welcome here and in many other places :) 
 toLocation :: LocationDto -> Either ErrorMessage Location
 toLocation dto = 
-    Location  
-        <$> (toRegion . dtoregion) dto
-        <*> (toDivision . dtodivision) dto
-        <*> (toSubDivision . dtosubdivision) dto
-        <*> (createCity . dtocity) dto
-        <*> (createVillage . dtovillage) dto
-        <*> (createNeighborhood . dtoneighborhood) dto
-        <*> (createAddress . dtolocationAddress) dto
+    do  area <- toAdminAreaInfo (dtoregion dto, dtodivision dto, dtosubdivision dto)
+        lieu <- toCityOrVillage (dtocity dto, dtovillage dto)
+        voisinage <- createOptionalNeighborhood $ dtoneighborhood dto
+        addresses <- traverse toAddress $ dtolocationAddress dto
+        return Location  {
+                    adminArea = area
+                ,   cityOrVillage = lieu
+                ,   neighborhood = voisinage
+                ,   locationAddresses = addresses
+                }
 
+
+toAdminAreaInfo :: 
+    (String, String, String) -> Either ErrorMessage (Maybe AdministrativeAreaInfo) 
+toAdminAreaInfo (strReg, strDiv, strSub)
+    | null strReg && null strDiv, null strSub = Right Nothing
+    | otherwise = 
+        do  reg <- toRegion strReg
+            div <- toDivision strDiv
+            sub <- toSubDivision strSub
+            return $ Just (reg, div, sub)
+
+toCityOrVillage :: 
+    (String, String) 
+    -> Either ErrorMessage (Maybe CityOrVillage)
+toCityOrVillage (strCity, strVillage)
+    | isStringNull strCity && isStringNull strVillage = 
+        return Nothing
+    | isStringNull strCity && isStringNotNull strVillage = 
+        do  village <- createVillage strVillage
+            return $ Just $ Country village
+    | isStringNotNull strCity && isStringNull strVillage = 
+        do  city <- createCity strCity
+            return $ Just $ Urban city
+    | otherwise = return Nothing 
+    where   isStringNotNull = (not . null)
+            isStringNull = null
+
+
+
+toAddress :: String -> Either ErrorMessage Address
+toAddress strAddress = createAddress strAddress
 
 fromLocation :: Location -> LocationDto
-fromLocation = 
-    LocationDto  
-        <$> (fromRegion . region) 
-        <*> (fromDivision . division) 
-        <*> (fromSubDivision . subdivision)
-        <*> (unwrapCity . city)
-        <*> (unwrapVillage . village) 
-        <*> (unwrapNeighborhood . neighborhood) 
-        <*> (unwrapAddress . locationAddress) 
+fromLocation loc = 
+    let (reg, div, sub) = fromMaybeAdminArea $ adminArea loc
+        (city, village) = fromMaybeCityOrVillage $ cityOrVillage loc
+        maybeNeighborhood = fromMaybeNeighborhood $ neighborhood loc
+        addresses = fmap unwrapAddress $ locationAddresses loc
+    in LocationDto {
+            dtoregion = reg
+        ,   dtodivision = div
+        ,   dtosubdivision = sub
+        ,   dtocity = city
+        ,   dtovillage = village
+        ,   dtoneighborhood = maybeNeighborhood
+        ,   dtolocationAddress = addresses
+        }
+
+fromMaybeAdminArea :: Maybe AdministrativeAreaInfo -> (String, String, String)
+fromMaybeAdminArea Nothing = ("", "", "")
+fromMaybeAdminArea (Just (reg, div, sub)) = (fromRegion reg, fromDivision div, fromSubDivision sub)
+
+fromMaybeCityOrVillage :: Maybe CityOrVillage -> (String, String)
+fromMaybeCityOrVillage (Just (Urban wCity))= (unwrapCity wCity, "")
+fromMaybeCityOrVillage (Just (Country wVillage))= ("", unwrapVillage wVillage)
+fromMaybeCityOrVillage Nothing = ("","")
 
 
-
+fromMaybeNeighborhood :: Maybe Neighborhood -> String
+fromMaybeNeighborhood (Just wNeighborhood) = unwrapNeighborhood wNeighborhood
+fromMaybeNeighborhood Nothing = ""
 
 -- ----------------------------------------------------------------------------
 -- DTO for Attribute
@@ -216,23 +268,145 @@ toUnvalidatedContactInformation =
 toContactInformation ::
      ContactInformationDto -> Either ErrorMessage ContactInformation
 toContactInformation dto = 
-    ContactInformation
-        <$> (createEmailAddress . dtoemail) dto
-        <*> (createPostalAddress . dtoaddress) dto
-        <*> (createTelephone . dtoprimaryTel) dto
-        <*> (createTelephone . dtosecondaryTel) dto
+    do add <- (createPostalAddress . dtoaddress) dto
+       contact <- toContactMethod (dtoemail dto, dtoprimaryTel dto, dtosecondaryTel dto)
+       return ContactInformation {
+                    address = add
+                ,   contactMethod = contact
+                }
+        
+
+
+
+
+toContactMethod :: (String, String, String) -> Either ErrorMessage ContactMethod
+toContactMethod (givenEmail, givenPrimTel, givenSecTel)
+    -- no email but both prim and sec phone given
+    | null givenEmail 
+      && (not . null) givenPrimTel 
+      && (not . null) givenSecTel =
+        do  primTel <- createTelephone givenPrimTel
+            secTel <- createOptionalTelephone givenSecTel
+            return $ PhoneOnly primTel secTel
+          
+
+    -- no email but only prim phone given
+    | null givenEmail
+      && (not . null) givenPrimTel 
+      && null givenSecTel =
+        do  primTel <- createTelephone givenPrimTel
+            return $ PhoneOnly primTel Nothing
+            
+
+    -- just email given
+    | (not. null) givenEmail
+      && null givenPrimTel 
+      && null givenSecTel =
+        do  email <- createEmailAddress givenEmail
+            return $ EmailOnly email
+            
+    -- email and prim phone given
+    | (not . null) givenEmail
+      && (not . null) givenPrimTel
+      && null givenSecTel =
+        do  primTel <- createTelephone givenPrimTel
+            email <- createEmailAddress givenEmail
+            return $ 
+                EmailAndPhone BothContactInfo {
+                        emailInfo = email
+                    ,   primTelephoneInfo = primTel
+                    ,   secTelephoneInfo = Nothing
+                    }
+            
+    -- email, prim and sec phones given
+    | (not . null) givenEmail 
+      && (not . null)  givenPrimTel  
+      && (not . null) givenSecTel =
+        do  primTel <- createTelephone givenPrimTel
+            email <- createEmailAddress givenEmail
+            secTel <- createOptionalTelephone givenSecTel
+            return $ 
+                EmailAndPhone BothContactInfo {
+                        emailInfo = email
+                    ,   primTelephoneInfo = primTel
+                    ,   secTelephoneInfo = secTel
+                    }
+    | otherwise = error "Invalid contact information"
+
+
+{--
+----------------
+
+data ContactInformation = ContactInformation {
+      address       :: PostalAddress
+    , contactMethod :: ContactMethod
+    } deriving (Eq, Ord, Show)
+
+
+data BothContactInfo = BothContactInfo {
+        emailInfo :: EmailAddress
+    ,   primTelephoneInfo :: Telephone
+    ,   secTelephoneInfo :: Maybe Telephone
+    } deriving (Eq, Ord, Show)
+
+
+data ContactMethod =
+      EmailOnly EmailAddress
+    | PhoneOnly Telephone (Maybe Telephone)
+    | EmailAndPhone BothContactInfo
+    deriving (Eq, Ord, Show)
+--}
 
 fromContactInformation :: 
     ContactInformation -> ContactInformationDto
-fromContactInformation = 
-    ContactInformationDto
-        <$> unwrapEmailAddress . email 
-        <*> unwrapPostalAddress . address 
-        <*> unwrapTelephone . primaryTel 
-        <*> unwrapTelephone . secondaryTel  
+fromContactInformation ci = 
+    let add = unwrapPostalAddress $ address ci
+        (email, primTel, secTel) = fromContactMethod $ contactMethod ci 
+    in ContactInformationDto {
+            dtoemail = email
+        ,   dtoaddress = add
+        ,   dtoprimaryTel = primTel
+        ,   dtosecondaryTel = secTel 
+        }
+  
+fromContactMethod :: ContactMethod -> (String, String, String) 
+fromContactMethod (EmailOnly email) = (unwrapEmailAddress email, "", "")  
+fromContactMethod (PhoneOnly primTel maybeSecTel) = 
+    case maybeSecTel  of 
+        Nothing -> ("", unwrapTelephone primTel, "")
+        Just wrappedSecTel -> ("", unwrapTelephone primTel, unwrapTelephone wrappedSecTel)
+fromContactMethod (EmailAndPhone  both) = 
+    let email = unwrapEmailAddress $ emailInfo both
+        primTel = unwrapTelephone $ primTelephoneInfo both
+        maybeSecTel = secTelephoneInfo both
+    in case maybeSecTel of 
+            Just (wrappedSecTel) -> (email, primTel, unwrapTelephone wrappedSecTel)
+            Nothing -> (email, primTel, "")
+
+
+
+
+{--
+data ContactInformation = ContactInformation {
+      address       :: PostalAddress
+    , contactMethod :: ContactMethod
+    } deriving (Eq, Ord, Show)
+
+
+data BothContactInfo = BothContactInfo {
+        emailInfo :: EmailAddress
+    ,   primTelephoneInfo :: Telephone
+    ,   secTelephoneInfo :: Maybe Telephone
+    } deriving (Eq, Ord, Show)
+
+
+data ContactMethod =
+      EmailOnly EmailAddress
+    | PhoneOnly Telephone (Maybe Telephone)
+    | EmailAndPhone BothContactInfo
+    deriving (Eq, Ord, Show)
     
-
-
+    --}
 
 -- ----------------------------------------------------------------------------
 -- DTO for FullName

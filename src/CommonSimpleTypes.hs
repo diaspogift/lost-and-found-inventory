@@ -8,16 +8,16 @@ module CommonSimpleTypes (
     , AttributeCode, AttributeName, AttributeValue, AttributeUnit
     , EmailAddress, PostalAddress, Telephone
     , FirstName, Middle, LastName
-    , Question, Answer, ErrorMessage, Reason
+    , Question, Answer, ErrorMessage, Reason, CityOrVillage (..) -- , Urban, Country
     , createFoundItemId, createLostItemId
     , createMatchedItemId, createClaimedItemId
     , createUserId, createTenantId, createCategoryId
     , createShortDescription, createLongDescription
     , createTenantName, createItemName, createCity, createVillage, createNeighborhood, createAddress
     , createAttributeCode, createAttributeName, createAttributeValue, createAttributeUnit
-    , createEmailAddress, createPostalAddress, createTelephone
+    , createEmailAddress, createPostalAddress, createTelephone, createOptionalTelephone, createOptionalNeighborhood
     , createFirstName, createMiddle, createLastName
-    , createQuestion, createAnswer, creatDateTimeSpan
+    , createQuestion, createAnswer, creatDateTimeSpan 
     
     , unwrapFoundItemId, unwrapLostItemId
     , unwrapMatchedItemId, unwrapClaimedItemId
@@ -91,6 +91,13 @@ newtype City =
     City String deriving (Eq, Ord, Show)
 newtype Village = 
     Village String deriving (Eq, Ord, Show)
+
+data CityOrVillage =
+      Urban City 
+    | Country Village
+    deriving (Eq, Ord, Show)
+
+
 newtype Neighborhood = 
     Neighborhood String deriving (Eq, Ord, Show)
 newtype Address = 
@@ -346,9 +353,13 @@ createVillage =
 unwrapVillage :: Village -> String
 unwrapVillage (Village str) = str
 
-createNeighborhood :: String -> Either ErrorMessage Neighborhood
+createNeighborhood :: String -> Either ErrorMessage (Maybe Neighborhood)
 createNeighborhood = 
-    createString "Neighborhood: " Neighborhood 500
+    createStringOption "Neighborhood: " Neighborhood 500
+
+createOptionalNeighborhood :: String -> Either ErrorMessage (Maybe Neighborhood)
+createOptionalNeighborhood = 
+    createStringOption "Neighborhood: " Neighborhood 500
 
 unwrapNeighborhood :: Neighborhood -> String
 unwrapNeighborhood (Neighborhood str) = str
@@ -407,7 +418,12 @@ unwrapPostalAddress (PostalAddress str) = str
 createTelephone :: String -> Either ErrorMessage Telephone
 createTelephone = 
     createString "Telephone: " Telephone 50  
-    
+  
+createOptionalTelephone :: String -> Either ErrorMessage (Maybe Telephone)
+createOptionalTelephone = 
+    createStringOption "Telephone: " Telephone 50 
+
+
 unwrapTelephone :: Telephone -> String
 unwrapTelephone (Telephone str) = str
     

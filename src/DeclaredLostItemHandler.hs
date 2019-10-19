@@ -62,30 +62,81 @@ type NextId = IO UnvalidatedLostItemId
 
 checkAdministrativeAreaInfoValidBase :: 
     AdministrativeMap
-    -> (Region, Division, SubDivision) 
+    -> (String, String, String) 
     -> Either AdminAreaValidationError (Region, Division, SubDivision)
 
-checkAdministrativeAreaInfoValidBase (AdministrativeMap regions) (aRegion, aDivision, aSubDivision) = 
-    let singRegion = filter (isRegionItemRegion aRegion) regions
-    in case singRegion of
-        [RegionItem freg divs] -> 
-            let singDivision = filter (isDivisionItemDivision aDivision) divs
-            in case singDivision of 
-                [DivisionItem fdiv subs] ->
-                    let singSub = filter ( == aSubDivision) subs
-                    in case singSub of 
-                        [fsub] -> Right (freg, fdiv, fsub)
-                        _ -> Left "given sub division not found"
-                _ -> Left "given division not found"
-        _ -> Left "given region not found"
+checkAdministrativeAreaInfoValidBase (AdministrativeMap regions) (strReg, strDiv, strSub) = 
+    do  reg <- toRegion strReg
+        div <- toDivision strDiv
+        sub <- toSubDivision strSub
+
+        let singRegion = filter (isRegionItemRegion reg) regions
+
+        case singRegion of
+            [RegionItem freg divs] -> 
+                let singDivision = filter (isDivisionItemDivision div) divs
+                in case singDivision of 
+                    [DivisionItem fdiv subs] ->
+                        let singSub = filter ( == sub) subs
+                        in case singSub of 
+                            [fsub] -> Right (freg, fdiv, fsub)
+                            _ -> Left "given sub division not found"
+                    _ -> Left "given division not found"
+            _ -> Left "given region not found"
 
 checkAdministrativeAreaInfoValid :: CheckAdministrativeAreaInfoValid
-checkAdministrativeAreaInfoValid (r, d, s) = 
-    return $ Just (Adamaoua, Djerem, Gouandal)
+checkAdministrativeAreaInfoValid = 
+    checkAdministrativeAreaInfoValidBase camerounAdministrativeMap
 
+
+{--
+    type CheckAttributeInfoValid = 
+    UnvalidatedAttribute 
+      -> UnvalidatedLostItem 
+      -> Either AttributeValidationError ValidatedAttribute
+
+          , urelatedCategories :: [(String, String)]
+
+--}
+
+checkAttributeInfoValidBase :: 
+    [Attribute]
+    -> UnvalidatedAttribute 
+    -> UnvalidatedLostItem 
+    -> Either AttributeValidationError ValidatedAttribute
+checkAttributeInfoValidBase refferedAttributes uattr ulositem = 
+    do  let foundAttribute = filter (isAttributesEqualTo uattr) refferedAttributes 
+        case foundAttribute of
+            [attribute] -> 
+                do  lostItemCatId <- createCategoryId $ uliCategoryId ulositem
+                    let maybeCatType = lookup lostItemCatId  (relatedCategories attribute)
+                    case maybeCatType of
+                        Just _ -> 
+                            do  code <- createAttributeCode $ uattrCode uattr
+                                name <- createAttributeName $ uattrName uattr
+                                desc <- createShortDescription $ uattrDescription uattr
+                                valu <- createAttributeValue $ uattrValue uattr
+                                unit <- createAttributeUnit $ uattrUnit uattr
+                                return  
+                                    ValidatedAttribute {
+                                            vattrCode = code
+                                        ,   vattrName = name
+                                        ,   vattrDescription = desc
+                                        ,   vattrValue = Just valu
+                                        ,   vattrUnit = Just unit
+                                        ,   vrelatedCategories = []
+                                        }
+                        Nothing -> Left "invalid referenced attribute"
+            _ -> Left "referenced attribute not found"
+
+
+        where isAttributesEqualTo unalidatedAttr attribute =
+                    (uattrCode unalidatedAttr) == (unwrapAttributeCode $ attrCode attribute)
+
+    
 
 checkAttributeInfoValid :: CheckAttributeInfoValid   
-checkAttributeInfoValid = undefined 
+checkAttributeInfoValid = checkAttributeInfoValidBase [] 
 
 checkContactInfoValid :: CheckContactInfoValid 
 checkContactInfoValid  =  return           

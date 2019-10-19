@@ -37,32 +37,39 @@ import Data.UUID hiding (null) -- Internal
 
 
 
+
 -- ----------------------------------------------------------------------------
 -- Validation step
 -- ----------------------------------------------------------------------------
 
 
 
+--- Dependencies types
+---
+---
 
--- Adminitrative data (Region, Division and Subdivison) validation
+
+--- Adminitrative data (Region, Division and Subdivison) validation
 
 type AdminAreaValidationError = String
 
 type CheckAdministrativeAreaInfoValid = 
   (String, String, String) 
-    -> Either AdminAreaValidationError (Maybe (Region, Division, SubDivision))
+    -> Either AdminAreaValidationError (Region, Division, SubDivision)
 
--- Contact Information (Phone number) validation
+
+--- Contact Information (Phone number) validation (Probably with an external service???)
+
 
 type ContactInfoValidationError = String
-
 
 type CheckContactInfoValid = 
   Telephone 
     -> Either ContactInfoValidationError Telephone 
 
 
--- Attribute Information (Are they consistent with the category they reference ?) validation
+--- Attribute Information (Are they consistent with the category they reference ?) validation
+
 
 type AttributeValidationError = String
     
@@ -73,7 +80,9 @@ type CheckAttributeInfoValid =
     -> Either AttributeValidationError ValidatedAttribute
 
 
--- Validated LostItem
+
+
+--- Validated LostItem
 
 data ValidatedLocation = ValidatedLocation {
         vadminArea :: Maybe AdministrativeAreaInfo
@@ -203,6 +212,10 @@ type CreateEvents =
 -- ==========================================================================================
 -- Section 2 : Implementation
 -- ==========================================================================================
+
+
+
+
 
 
 -- ----------------------------------------------------------------------------
@@ -336,44 +349,6 @@ toContactInfo checkContactInfoValid uc
             givenSecTel = usecondaryTel uc
             givenAddress = uaddress uc
 
-{--
-
-ValidatedContactInformation 
-    <$> (toPostalAddress . uaddress) uc
-    <*> (toEmail . uemail) ucinfo
-    <*> (toCheckedValidTelephone checkContactInfoValid . uprimaryTel) ucinfo
-    <*> (toCheckedValidTelephone checkContactInfoValid . usecondaryTel) ucinfo
-
-
-data UnvalidatedContactInformation = UnvalidatedContactInformation {
-        uemail :: String
-    ,   uaddress :: String
-    ,   uprimaryTel :: String
-    ,   usecondaryTel :: String 
-    } deriving (Eq, Ord, Show)
-
-
-data ValidatedContactInformation = ValidatedContactInformation {
-      vaddress       :: PostalAddress
-    , vContactMethod    :: ContactMethod
-    } deriving (Eq, Ord, Show)
-
-
-data BothContactInfo = BothContactInfo {
-        emailInfo :: EmailAddress
-    ,   primTelephoneInfo :: Telephone
-    ,   secTelephoneInfo :: Maybe Telephone
-    } deriving (Eq, Ord, Show)
-
-
-data ContactMethod =
-      EmailOnly EmailAddress
-    | PhoneOnly Telephone
-    | EmailAndPhone BothContactInfo
-    deriving (Eq, Ord, Show)
---}
-
-
 toCheckedValidTelephone :: 
   CheckContactInfoValid 
   -> String 
@@ -406,7 +381,6 @@ toFullName uFullName =
     <*> (toLast . ulast) uFullName
 
   
-
 toMiddle :: String -> Either ValidationError (Maybe Middle)
 toMiddle str = 
   mapLeft ValidationError $ createMiddle str
@@ -423,8 +397,7 @@ toValidatedAttribute ::
 toValidatedAttribute 
   checkAttributeInfoValid ulostitem uattr  =
   mapLeft ValidationError $ checkAttributeInfoValid uattr ulostitem 
-      
-     
+         
 toLostItemId :: String -> Either ValidationError LostItemId
 toLostItemId str = 
   mapLeft ValidationError $ createLostItemId str     
@@ -454,8 +427,7 @@ toCheckedValidAdminArea (reg, div, sub) checkAdministrativeAreaInfoValid =
             <- mapLeft 
                 ValidationError $
                 checkAdministrativeAreaInfoValid (reg, div, sub)
-        return resultCheck 
-    
+        return $ Just resultCheck 
         
 toCityOrVillage :: 
     (String, String) 
@@ -529,16 +501,13 @@ toLostItemLocation checkAdministrativeAreaInfoValid u =
           
 
 
-{--
- vadminArea :: Maybe AdministrativeAreaInfo
-    ,   vcityOrVillage :: Maybe CityOrVillage
-    ,   vneighborhood :: Maybe Neighborhood
-    ,   vlocationAddress :: [Address]
---}
+
 
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
+
+
 
 
 createLostItem :: CreateLostItem
@@ -556,7 +525,11 @@ createLostItem  =
 
 
 
+
 --- Helper functions
+---
+---
+
 
 toPerson :: ValidatedPerson -> Person
 toPerson = 
@@ -604,6 +577,10 @@ toLocation vLoc =
 -- ----------------------------------------------------------------------------
 
 
+
+
+
+
 acknowledgemenDeclaredLostItem :: AcknowledgemenDeclaredLostItem
 acknowledgemenDeclaredLostItem 
   createDeclarationAcknowledgment
@@ -631,10 +608,11 @@ acknowledgemenDeclaredLostItem
 
 
 
-
 -- ----------------------------------------------------------------------------
 -- Create Events step
 -- ----------------------------------------------------------------------------
+
+
 
 
 
@@ -651,6 +629,8 @@ createEvents declaredLosItem optionDeclarationAcknowledgmentSent =
 
 
 --- Helper functions 
+---
+---
 
 createLostItemDeclaredEvent :: DeclaredLostItem -> DeclaredLostItem
 createLostItemDeclaredEvent declaredLostItem = declaredLostItem
@@ -662,11 +642,16 @@ createSearchableLostItemDeclaredEvent declaredLostItem = declaredLostItem
 
 
 
--- ---------------------------------------------------------------------------- ---
--- ---------------------------------------------------------------------------- ---
+-- ---------------------------------------------------------------------------- --
+-- ---------------------------------------------------------------------------- --
                          -- Overall workflow --
--- ---------------------------------------------------------------------------- ---
--- ---------------------------------------------------------------------------- ---
+-- ---------------------------------------------------------------------------- --
+-- ---------------------------------------------------------------------------- --
+
+
+
+
+
 declareLostItem ::
   CheckAdministrativeAreaInfoValid
   -> CheckAttributeInfoValid
@@ -686,7 +671,7 @@ declareLostItem
   sendAcknowledgment                -- Dependency
   unvalidatedLostItem               -- Input
   lostItemCreationTime              -- Input
-  unValidatedlostItemUuid =                    -- Input
+  unValidatedlostItemUuid =         -- Input
       do  
           -- Validation step
           validatedLostItem 

@@ -8,7 +8,7 @@ import Data.Set
 import Data.Time
 import Data.Char
 import qualified Data.Map as M
-import Data.List.NonEmpty
+import Data.Either
 
 
 
@@ -64,7 +64,7 @@ instance Show CategoryType where
             Humans -> "Humans Being"
             Documents -> "Ducument Items"
             Electronics -> "Electronic Items"
-            PersonalItems -> "PersonalItems"
+            PersonalItems -> "Personal Items"
 
 
 
@@ -1173,8 +1173,8 @@ data AttributeRef = AttributeRef {
       attrCodeRef             :: AttributeCode
     , attrNameRef             :: AttributeName
     , attrDescriptionRef      :: ShortDescription
-    , attrValueRef           :: Maybe AttributeValue
-    , attrUnitRef             :: Maybe AttributeUnit
+    , attrValueRef           :: Maybe [AttributeValue]
+    , attrUnitRef             :: Maybe [AttributeUnit]
     , relatedCategoriesRef    :: [(CategoryId, CategoryType)]
     } deriving (Eq, Ord, Show)
 
@@ -1651,3 +1651,134 @@ wouriDivision = DivisionItem Wouri wouriSubDivisions
             , DoualaVIe
             , Manoka
             ]
+
+
+
+
+-- =============================================================================
+-- Application Sample Data
+-- =============================================================================
+
+
+
+
+-- -----------------------------------------------------------------------------
+-- Categories sample data
+--
+
+categories = rights [humansCategory, documentsCategory, personalItemsCategory, electronicsCategory]
+allCategories = 
+    fmap toTuple categories
+        where toTuple cat = (unwrapCategoryId $ categoryId cat, cat) 
+
+
+hCatId = "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
+dCatId = "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+pCatId = "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP"
+eCatId = "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+
+
+humansCategory = 
+    do  catid <- createCategoryId "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
+        catdesc <- createLongDescription "Human Category: It captures anything related to lost humans"
+        return $
+            Category {
+                categoryId = catid
+            ,   categoryType = Humans
+            ,   parentalStatus = Parent
+            ,   enablementStatus = Enabled
+            ,   categoryDesc = catdesc
+            ,   subCategories = fromList []  
+            }
+                
+documentsCategory = 
+    do  catid <- createCategoryId "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+        catdesc <- createLongDescription "Document Category: It captures anything related to lost documents"
+        return $
+            Category {
+                    categoryId = catid
+                ,   categoryType = Humans
+                ,   parentalStatus = Parent
+                ,   enablementStatus = Enabled
+                ,   categoryDesc = catdesc
+                ,   subCategories = fromList []  
+                }
+
+personalItemsCategory = 
+    do  catid <- createCategoryId "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP"
+        catdesc <- createLongDescription "HPersonal items Category: It captures anything related to lost personal items"
+        return $
+            Category {
+                    categoryId = catid
+                ,   categoryType = Humans
+                ,   parentalStatus = Parent
+                ,   enablementStatus = Enabled
+                ,   categoryDesc = catdesc
+                ,   subCategories = fromList []  
+                }
+
+electronicsCategory = 
+
+    do  catid <- createCategoryId "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+        catdesc <- createLongDescription "Electronics Category: It captures anything related to lost electronics"
+        return $
+            Category {
+                    categoryId = catid
+                ,   categoryType = Humans
+                ,   parentalStatus = Parent
+                ,   enablementStatus = Enabled
+                ,   categoryDesc = catdesc
+                ,   subCategories = fromList []  
+                }
+
+
+
+-- -----------------------------------------------------------------------------
+-- Attribute sample data
+--
+
+
+colorAttributeRef = 
+    do  code <- createAttributeCode "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+        name <- createAttributeName "Color"
+        desc <- createShortDescription "Describe the item/person color"
+        value0 <- createAttributeValue "Red"
+        value1 <- createAttributeValue "Green"
+        value2 <- createAttributeValue "Yello"
+        value3 <- createAttributeValue "White"
+        refCatId1 <- createCategoryId hCatId
+        refCatId2 <- createCategoryId eCatId
+        refCatId3 <- createCategoryId pCatId
+
+        return $
+            AttributeRef {
+                    attrCodeRef = code
+                ,   attrNameRef = name           
+                ,   attrDescriptionRef = desc
+                ,   attrValueRef = Just [value0, value1, value2, value3]
+                ,   attrUnitRef = Nothing
+                ,   relatedCategoriesRef = [(refCatId1, Humans), (refCatId2, Electronics), (refCatId3, PersonalItems)]
+                }
+
+weightAttributeRef = 
+    do  code <- createAttributeCode "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+        name <- createAttributeName "Weight"
+        desc <- createShortDescription "Describe the item/person weight"
+        unit <- createAttributeUnit "Kg"
+        refCatId1 <- createCategoryId hCatId
+        refCatId3 <- createCategoryId pCatId
+
+        return $
+            AttributeRef {
+                    attrCodeRef = code
+                ,   attrNameRef = name           
+                ,   attrDescriptionRef = desc
+                ,   attrValueRef = Nothing
+                ,   attrUnitRef = Just [unit]
+                ,   relatedCategoriesRef = [(refCatId1, Humans), (refCatId3, PersonalItems)]
+                }
+
+attributes = rights [colorAttributeRef, weightAttributeRef]
+allAttributes = 
+    fmap catToTuple attributes
+        where catToTuple attr = (unwrapAttributeCode $ attrCodeRef attr, attr) 

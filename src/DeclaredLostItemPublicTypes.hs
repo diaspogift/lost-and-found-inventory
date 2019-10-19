@@ -39,7 +39,6 @@ data UnvalidatedAttribute = UnvalidatedAttribute {
     , uattrDescription :: String
     , uattrValue :: String
     , uattrUnit ::   String
-    , urelatedCategories :: [(String, String)]
     } deriving (Eq, Ord, Show)
 
 data UnvalidatedPerson = UnvalidatedPerson {

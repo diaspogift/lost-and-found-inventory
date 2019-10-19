@@ -1166,11 +1166,17 @@ data Attribute = Attribute {
     , attrDescription      :: ShortDescription
     , attrValue            :: Maybe AttributeValue
     , attrUnit             :: Maybe AttributeUnit
-    , relatedCategories    :: [(CategoryId, CategoryType)]
     } deriving (Eq, Ord, Show)
 
 
-
+data AttributeRef = AttributeRef {
+      attrCodeRef             :: AttributeCode
+    , attrNameRef             :: AttributeName
+    , attrDescriptionRef      :: ShortDescription
+    , attrValueRef           :: Maybe AttributeValue
+    , attrUnitRef             :: Maybe AttributeUnit
+    , relatedCategoriesRef    :: [(CategoryId, CategoryType)]
+    } deriving (Eq, Ord, Show)
 
 -- ===============================================
 -- Owner / Contact-related types

@@ -97,7 +97,6 @@ data ValidatedAttribute = ValidatedAttribute {
     , vattrDescription      :: ShortDescription
     , vattrValue            :: Maybe AttributeValue
     , vattrUnit             :: Maybe AttributeUnit
-    , vrelatedCategories    :: [(CategoryId, CategoryType)]
     } deriving (Eq, Ord, Show)
 
 data ValidatedPerson = ValidatedPerson {
@@ -554,7 +553,6 @@ toAttribute valAttr =
     , attrDescription = vattrDescription valAttr
     , attrValue = vattrValue valAttr  
     , attrUnit = vattrUnit valAttr    
-    , relatedCategories = vrelatedCategories valAttr
     }
 
 

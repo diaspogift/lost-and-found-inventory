@@ -152,7 +152,6 @@ data AttributeDto = AttributeDto {
     , dtoattrDescription      :: String
     , dtoattrValue            :: String
     , dtoattrUnit             :: String
-    , dtorelatedCategories    :: [(String, String)] 
     } deriving (Eq, Ord, Show)
 
 
@@ -166,7 +165,6 @@ toUnvalidatedAttribute =
         <*> dtoattrDescription 
         <*> dtoattrValue 
         <*> dtoattrUnit 
-        <*> dtorelatedCategories 
     
 
 toAttribute :: AttributeDto -> Either ErrorMessage Attribute
@@ -176,7 +174,6 @@ toAttribute dto =
         desc <- createShortDescription $ dtoattrDescription dto
         val <- createAttributeValue $ dtoattrValue dto
         unit <- createAttributeUnit $ dtoattrUnit dto
-        catIds <- traverse toCatIdCatTypePair $ dtorelatedCategories dto
 
         return  Attribute {
                   attrCode = code
@@ -184,7 +181,6 @@ toAttribute dto =
                 , attrDescription = desc
                 , attrValue = Just val
                 , attrUnit = Just unit
-                , relatedCategories = catIds
                 }
         where 
             toCatIdCatTypePair (strCatId, strCatType) =
@@ -200,10 +196,7 @@ fromAttribute  =
         <*> unwrapShortDescription . attrDescription 
         <*> unwrapAttributeValue . attrValue 
         <*> unwrapAttributeUnit . attrUnit 
-        <*> fmap fromCategoryIdAndCategoryType . relatedCategories 
-    
-    where fromCategoryIdAndCategoryType (catId, catType) =
-            (unwrapCategoryId catId, fromCategoryType catType)
+
 
 
 

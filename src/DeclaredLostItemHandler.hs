@@ -89,27 +89,17 @@ checkAdministrativeAreaInfoValid =
     checkAdministrativeAreaInfoValidBase camerounAdministrativeMap
 
 
-{--
-    type CheckAttributeInfoValid = 
-    UnvalidatedAttribute 
-      -> UnvalidatedLostItem 
-      -> Either AttributeValidationError ValidatedAttribute
-
-          , urelatedCategories :: [(String, String)]
-
---}
-
 checkAttributeInfoValidBase :: 
-    [Attribute]
+    [AttributeRef]
     -> UnvalidatedAttribute 
     -> UnvalidatedLostItem 
     -> Either AttributeValidationError ValidatedAttribute
 checkAttributeInfoValidBase refferedAttributes uattr ulositem = 
     do  let foundAttribute = filter (isAttributesEqualTo uattr) refferedAttributes 
         case foundAttribute of
-            [attribute] -> 
+            [attributeRef] -> 
                 do  lostItemCatId <- createCategoryId $ uliCategoryId ulositem
-                    let maybeCatType = lookup lostItemCatId  (relatedCategories attribute)
+                    let maybeCatType = lookup lostItemCatId  (relatedCategoriesRef attributeRef)
                     case maybeCatType of
                         Just _ -> 
                             do  code <- createAttributeCode $ uattrCode uattr
@@ -124,14 +114,13 @@ checkAttributeInfoValidBase refferedAttributes uattr ulositem =
                                         ,   vattrDescription = desc
                                         ,   vattrValue = Just valu
                                         ,   vattrUnit = Just unit
-                                        ,   vrelatedCategories = []
                                         }
                         Nothing -> Left "invalid referenced attribute"
             _ -> Left "referenced attribute not found"
 
 
         where isAttributesEqualTo unalidatedAttr attribute =
-                    (uattrCode unalidatedAttr) == (unwrapAttributeCode $ attrCode attribute)
+                    (uattrCode unalidatedAttr) == (unwrapAttributeCode $ attrCodeRef attribute)
 
     
 

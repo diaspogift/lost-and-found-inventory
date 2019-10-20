@@ -467,13 +467,13 @@ toAttributeDescpt :: String -> Either ValidationError ShortDescription
 toAttributeDescpt str = 
   mapLeft ValidationError $ createShortDescription str
 
-toAttributeValue :: String -> Either ValidationError AttributeValue
+toAttributeValue :: String -> Either ValidationError (Maybe AttributeValue)
 toAttributeValue str = 
-  mapLeft ValidationError $ createAttributeValue str
+  mapLeft ValidationError $ createOptionalAttributeValue str
 
-toAttributeUnit :: String -> Either ValidationError AttributeUnit
+toAttributeUnit :: String -> Either ValidationError (Maybe AttributeUnit)
 toAttributeUnit str = 
-  mapLeft ValidationError $ createAttributeUnit str
+  mapLeft ValidationError $ createOptionalAttributeUnit str
 
 toLostItemLocation ::  
   CheckAdministrativeAreaInfoValid 

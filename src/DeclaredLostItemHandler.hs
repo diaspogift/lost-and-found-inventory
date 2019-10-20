@@ -1,3 +1,7 @@
+{-# LANGUAGE OverloadedStrings #-} -- That library uses `Text` pervasively. This pragma permits to use
+                                   -- String literal when a Text is needed.
+
+
 module DeclaredLostItemHandler where
 
 import CommonSimpleTypes
@@ -7,8 +11,11 @@ import InventorySystemCommands
 import DeclaredLostItemPublicTypes
 
 import DeclareLostItemImplementation
+import DeclareLostItemDto
 
 import Data.Time
+
+import Data.Text (pack)
 
 import Data.UUID.V4
 import Data.UUID  -- Internal
@@ -18,6 +25,14 @@ import Data.Set hiding (filter)
 import Data.Either.Combinators
 
 import Control.Applicative
+
+
+import Control.Concurrent.Async 
+
+import Database.EventStore
+
+
+import Data.Aeson
 
 
 
@@ -41,11 +56,14 @@ import Control.Applicative
 type LookupOneCategory = 
     String -> IO (Either DbError Category)
 
-type LockupAttributes = 
+type LookupAttributes = 
     [String] -> IO (Either DbError [AttributeRef])
 
-type SaveOneCategory = 
-    Category -> IO (Either DbError ())
+type WriteEvent = 
+    Connection -> DeclareLostItemEvent -> IO ()
+
+type WriteEvent1 = 
+    DeclareLostItemEvent -> IO ()
 
 type LoadAdministrativeAreaMap =
     String -> IO (Either DbError AdministrativeMap)
@@ -59,6 +77,9 @@ type NextId = IO UnvalidatedLostItemId
 -- =============================================================================
 -- Workflow dependencies Dummy Implementations
 -- =============================================================================
+
+
+
 
 checkAdministrativeAreaInfoValidBase :: 
     AdministrativeMap
@@ -82,9 +103,9 @@ checkAdministrativeAreaInfoValidBase (AdministrativeMap regions) (strReg, strDiv
                     _ -> Left "given division not found"
             _ -> Left "given region not found"
 
+
 checkAdministrativeAreaInfoValid :: CheckAdministrativeAreaInfoValid
-checkAdministrativeAreaInfoValid = 
-    checkAdministrativeAreaInfoValidBase camerounAdministrativeMap
+checkAdministrativeAreaInfoValid = checkAdministrativeAreaInfoValidBase camerounAdministrativeMap
 
 checkAttributeInfoValidBase :: 
     [AttributeRef]
@@ -100,15 +121,15 @@ checkAttributeInfoValidBase refferedAttributes uattr ulositem =
                             do  code <- createAttributeCode $ uattrCode uattr
                                 name <- createAttributeName $ uattrName uattr
                                 desc <- createShortDescription $ uattrDescription uattr
-                                valu <- createAttributeValue $ uattrValue uattr
-                                unit <- createAttributeUnit $ uattrUnit uattr
+                                valu <- createOptionalAttributeValue $ uattrValue uattr
+                                unit <- createOptionalAttributeUnit $ uattrUnit uattr
                                 return  
                                     ValidatedAttribute {
                                             vattrCode = code
                                         ,   vattrName = name
                                         ,   vattrDescription = desc
-                                        ,   vattrValue = Just valu
-                                        ,   vattrUnit = Just unit
+                                        ,   vattrValue = valu
+                                        ,   vattrUnit = unit
                                         }
                         Nothing -> Left "invalid referenced attribute"
             _ -> Left "referenced attribute not found"
@@ -117,38 +138,45 @@ checkAttributeInfoValidBase refferedAttributes uattr ulositem =
         where isAttributesEqualTo unalidatedAttr attribute =
                     (uattrCode unalidatedAttr) == (unwrapAttributeCode $ attrCodeRef attribute)
 
+
 checkAttributeInfoValid :: CheckAttributeInfoValid   
-checkAttributeInfoValid = checkAttributeInfoValidBase [] 
+checkAttributeInfoValid = checkAttributeInfoValidBase attributes
+
 
 checkContactInfoValid :: CheckContactInfoValid 
 checkContactInfoValid  =  return           
     
+
 createDeclarationAcknowledgment :: CreateDeclarationAcknowledgment  
 createDeclarationAcknowledgment item = 
     HtmlString "Letter content"
     
+
 sendAcknowledgment :: SendAcknowledgment 
 sendAcknowledgment declarationAcknowledgment = 
     Sent  -- DeclarationAcknowledgment -> SendResult             
-            
+        
+    
 lookupOneCategoryBase :: 
     [(String, Category)] -> LookupOneCategory
 lookupOneCategoryBase categories categoryId = 
     do  let maybeCategory = lookup categoryId categories
-        print maybeCategory
+        --print maybeCategory
         case maybeCategory of
             Just category -> return $ Right category
             Nothing -> return $ Left $ DbError "category not found"
 
+
 lookupOneCategory :: LookupOneCategory 
 lookupOneCategory = lookupOneCategoryBase allCategories 
 
-lockupAttributesBase :: 
+
+lookupAttributesBase :: 
     [(String, AttributeRef)]
-    -> LockupAttributes
-lockupAttributesBase attributeRefs attrCodes =
+    -> LookupAttributes
+lookupAttributesBase attributeRefs attrCodes =
     do  let maybeAttributeRefs =   sequence $ recursiveLookup attrCodes attributeRefs
-        print maybeAttributeRefs
+        --print maybeAttributeRefs
         case maybeAttributeRefs of
             Just attributes -> return $ Right attributes
             Nothing -> return $ Left $ DbError "attribute not found"
@@ -159,14 +187,14 @@ recursiveLookup [] _ = []
 recursiveLookup (x:xs) attrRefs = (lookup x attrRefs) : (recursiveLookup xs attrRefs)
 
                 
+lookupAttributes :: LookupAttributes
+lookupAttributes = lookupAttributesBase allAttributes
 
-    
-lockupAttributes :: LockupAttributes
-lockupAttributes = lockupAttributesBase allAttributes
 
 loadAdministrativeAreaMap :: LoadAdministrativeAreaMap
 loadAdministrativeAreaMap country = 
     return $ Right camerounAdministrativeMap
+
 
 nextId :: NextId
 nextId = 
@@ -175,7 +203,51 @@ nextId =
 
 
 
-    
+writeEventToStore :: WriteEvent
+writeEventToStore conn (LostItemDeclared lostItemDeclared) = 
+    do  let lostItemDeclaredDto = fromLostItemDeclared lostItemDeclared
+            lostItemDeclaredEvent = createEvent "LostItemDeclared" Nothing $ withJson lostItemDeclaredDto
+            id = dtoitemId lostItemDeclaredDto
+        as <- sendEvent conn (StreamName $ pack id) anyVersion lostItemDeclaredEvent Nothing
+        _  <- wait as
+        shutdown conn
+        waitTillClosed conn
+
+{--
+writeEventToStore2 :: WriteEvent1
+writeEventToStore2 (LostItemDeclared lostItemDeclared) = 
+    do  let lostItemDeclaredDto = fromLostItemDeclared lostItemDeclared
+            lostItemDeclaredEvent = createEvent "LostItemDeclared" Nothing $ withJson lostItemDeclaredDto
+            id = dtoitemId lostItemDeclaredDto
+        conn <- connect defaultSettings (Static "localhost" 1113)
+        as <- sendEvent conn (StreamName $ pack id) anyVersion lostItemDeclaredEvent Nothing
+        _  <- wait as
+        shutdown conn
+        waitTillClosed conn
+
+
+
+
+writeEventToStore :: WriteEvent
+writeEventToStore conn event = 
+    do
+        case event of
+            LostItemDeclared lostItemDeclared
+                ->     let  lostItemDeclaredDto = fromLostItemDeclared lostItemDeclared
+                            lostItemDeclaredEvent = createEvent "LostItemDeclared" Nothing $ withJson lostItemDeclaredDto
+                            id = dtoitemId lostItemDeclaredDto
+                        in do
+                            as <- sendEvent conn (StreamName $ pack id) anyVersion lostItemDeclaredEvent Nothing
+                            _  <- wait as
+                            shutdown conn
+                            waitTillClosed conn
+                            return ()
+            _ 
+                -> return ()
+
+--}
+
+            
 
 -- =============================================================================
 -- Declare / Register Lost Item Command Handler Implementation
@@ -188,40 +260,77 @@ nextId =
 
 declareLostItemHandler :: 
     LookupOneCategory 
-    -> LockupAttributes
-    -> SaveOneCategory
+    -> LookupAttributes
+    -> WriteEvent
     -> NextId
     -> DeclareLostItemCmd 
     -> IO (Either DeclareLostItemError [DeclareLostItemEvent])
     
 declareLostItemHandler 
     lookupOneCategory
-    lockupAttributes
-    saveOneCategory
+    lookupAttributes
+    writeEventToStore
     nextId
     (Command unvalidatedLostItem curTime userId) = 
      
-    do  -- retrieve adminitrative map area
+    do  -- get event store connection // TODO: lookup env ...
+        conn <- connect defaultSettings (Static "localhost" 1113)
+
+        -- retrieve adminitrative map area
         adminAreaMap <- loadAdministrativeAreaMap "Cameroun"
+
         -- retrieve referenced category
-        refCategory <- lookupOneCategory $ uliCategoryId unvalidatedLostItem
-        -- retrieve referenced attribute
-        -- refAttributes <- lockupAttributes $ fmap toAttributeAndCategoryInfo $ uliattributes unvalidatedLostItem
+        refCategory <- lookupOneCategory 
+                            $ uliCategoryId unvalidatedLostItem
+
+        -- retrieve referenced attributes
+        refAttributes <- lookupAttributes 
+                            $ fmap uattrCode 
+                            $ uliattributes unvalidatedLostItem
         -- get creation time
         declarationTime <- getCurrentTime
+
         -- get randon uuid 
         lostItemUuid <- nextId
+
         -- call workflow
-        return $
-            declareLostItem 
-                checkAdministrativeAreaInfoValid  -- Dependency
-                checkAttributeInfoValid           -- Dependency
-                checkContactInfoValid             -- Dependency
-                createDeclarationAcknowledgment   -- Dependency
-                sendAcknowledgment                -- Dependency
-                unvalidatedLostItem               -- Input
-                declarationTime                   -- Input
-                lostItemUuid
+        let events =
+                declareLostItem 
+                    checkAdministrativeAreaInfoValid  -- Dependency
+                    checkAttributeInfoValid           -- Dependency
+                    checkContactInfoValid             -- Dependency
+                    createDeclarationAcknowledgment   -- Dependency
+                    sendAcknowledgment                -- Dependency
+                    unvalidatedLostItem               -- Input
+                    declarationTime                   -- Input
+                    lostItemUuid
+
+        
+
+        case events of 
+            Right allEvents -> 
+                do
+                    let declLostItemEvt = filter isDeclLostItemEvent allEvents
+                        evt = declLostItemEvt!!0
+                    res <- writeEventToStore conn evt
+                    print declLostItemEvt
+
+                    return events
+            Left errorMsg -> return $ Left errorMsg
+
+            where isDeclLostItemEvent (LostItemDeclared lostItemDeclared) = True
+                  isDeclLostItemEvent _ = False
+
+
+publicDeclareLostItemHandler :: 
+    DeclareLostItemCmd 
+    -> IO (Either DeclareLostItemError [DeclareLostItemEvent])
+publicDeclareLostItemHandler = 
+    declareLostItemHandler 
+        lookupOneCategory
+        lookupAttributes
+        writeEventToStore
+        nextId
 
         
    
@@ -230,7 +339,7 @@ declareLostItemHandler
 
 ---- TODO: Transform     IO (Either e a)  into EitherIO e a  
 
--- Getting thereeee :) - This is Monad trasformer LANDDDD!!!  
+---- Getting thereeee :) - This is Monad trasformer LANNNNNNNNDDDD!!!  
 
 
 

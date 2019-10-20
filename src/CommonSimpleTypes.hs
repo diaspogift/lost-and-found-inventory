@@ -14,12 +14,12 @@ module CommonSimpleTypes (
     , createUserId, createTenantId, createCategoryId
     , createShortDescription, createLongDescription
     , createTenantName, createItemName, createCity, createVillage, createNeighborhood, createAddress
-    , createAttributeCode, createAttributeName, createAttributeValue, createAttributeUnit
+    , createAttributeCode, createAttributeName, createOptionalAttributeValue, createOptionalAttributeUnit
     , createEmailAddress, createPostalAddress, createTelephone, createOptionalTelephone, createOptionalNeighborhood
     , createFirstName, createMiddle, createLastName
     , createQuestion, createAnswer, creatDateTimeSpan 
     
-    , unwrapFoundItemId, unwrapLostItemId
+    , unwrapFoundItemId, unwrapLostItemId, unwrapDateTimeSpan
     , unwrapMatchedItemId, unwrapClaimedItemId
     , unwrapUserId, unwrapTenantId, unwrapCategoryId
     , unwrapShortDescription, unwrapLongDescription
@@ -385,17 +385,17 @@ createAttributeName =
 unwrapAttributeName :: AttributeName -> String
 unwrapAttributeName (AttributeName str) = str
 
-createAttributeValue :: String -> Either ErrorMessage AttributeValue
-createAttributeValue = 
-    createString "Attribute Value: " AttributeValue 50
+createOptionalAttributeValue :: String -> Either ErrorMessage (Maybe AttributeValue)
+createOptionalAttributeValue = 
+    createStringOption "Attribute Value: " AttributeValue 50
 
 unwrapAttributeValue :: Maybe AttributeValue -> String
 unwrapAttributeValue (Just (AttributeValue str)) = str
 unwrapAttributeValue Nothing = ""
 
-createAttributeUnit :: String -> Either ErrorMessage AttributeUnit
-createAttributeUnit = 
-    createString "Attribute Unit: " AttributeUnit 50
+createOptionalAttributeUnit :: String -> Either ErrorMessage (Maybe AttributeUnit)
+createOptionalAttributeUnit = 
+    createStringOption "Attribute Unit: " AttributeUnit 50
 
 unwrapAttributeUnit :: Maybe AttributeUnit -> String
 unwrapAttributeUnit (Just (AttributeUnit str)) = str
@@ -485,4 +485,7 @@ creatDateTimeSpan strdtStart strdtEnd separator =
                else Right $ DateTimeSpan (d1, d2)
         else Left "Invalid date format"
                 
+unwrapDateTimeSpan :: DateTimeSpan -> (String, String)
+unwrapDateTimeSpan (DateTimeSpan (start, end)) = 
+    ( show start, show end)
 -- Check Interval library

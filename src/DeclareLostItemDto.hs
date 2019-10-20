@@ -1,5 +1,10 @@
+{-# LANGUAGE DeriveGeneric #-}
+
+
 module DeclareLostItemDto where
 
+
+import Data.Aeson
 import CommonSimpleTypes
 import CommonCompoundTypes
 import DeclaredLostItemPublicTypes
@@ -8,6 +13,8 @@ import DeclaredLostItemPublicTypes
 import Prelude hiding (last, id)
 import Data.Time
 import Data.Set hiding (null)
+
+import GHC.Generics
 
 
 
@@ -44,7 +51,11 @@ data LocationDto = LocationDto {
     ,   dtovillage :: String
     ,   dtoneighborhood :: String
     ,   dtolocationAddress :: [String]
-    } deriving (Eq, Ord, Show)
+    } deriving (Generic, Show)
+
+instance ToJSON LocationDto where
+    toEncoding = genericToEncoding defaultOptions
+
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -152,7 +163,10 @@ data AttributeDto = AttributeDto {
     , dtoattrDescription      :: String
     , dtoattrValue            :: String
     , dtoattrUnit             :: String
-    } deriving (Eq, Ord, Show)
+    } deriving (Generic, Show)
+
+instance ToJSON AttributeDto where
+    toEncoding = genericToEncoding defaultOptions
 
 
 -- Helper functions for converting from / to domain as well as to other states
@@ -172,15 +186,15 @@ toAttribute dto =
     do  code <- createAttributeCode $ dtoattrCode dto
         name <- createAttributeName $ dtoattrName dto
         desc <- createShortDescription $ dtoattrDescription dto
-        val <- createAttributeValue $ dtoattrValue dto
-        unit <- createAttributeUnit $ dtoattrUnit dto
+        val <- createOptionalAttributeValue $ dtoattrValue dto
+        unit <- createOptionalAttributeUnit $ dtoattrUnit dto
 
         return  Attribute {
                   attrCode = code
                 , attrName = name
                 , attrDescription = desc
-                , attrValue = Just val
-                , attrUnit = Just unit
+                , attrValue = val
+                , attrUnit = unit
                 }
         where 
             toCatIdCatTypePair (strCatId, strCatType) =
@@ -209,8 +223,12 @@ data PersonDto = PersonDto {
         dtouserId :: String
     ,   dtocontact :: ContactInformationDto
     ,   dtofullname :: FullNameDto
-    }
+    } deriving (Generic, Show)
 
+
+instance ToJSON PersonDto where
+    toEncoding = genericToEncoding defaultOptions
+    
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -242,8 +260,11 @@ data ContactInformationDto = ContactInformationDto {
     ,   dtoaddress :: String
     ,   dtoprimaryTel :: String
     ,   dtosecondaryTel :: String 
-    } deriving (Eq, Ord, Show)
+    } deriving (Generic, Show)
 
+
+instance ToJSON ContactInformationDto where
+    toEncoding = genericToEncoding defaultOptions
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -268,9 +289,6 @@ toContactInformation dto =
                 ,   contactMethod = contact
                 }
         
-
-
-
 
 toContactMethod :: (String, String, String) -> Either ErrorMessage ContactMethod
 toContactMethod (givenEmail, givenPrimTel, givenSecTel)
@@ -327,29 +345,6 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
     | otherwise = error "Invalid contact information"
 
 
-{--
-----------------
-
-data ContactInformation = ContactInformation {
-      address       :: PostalAddress
-    , contactMethod :: ContactMethod
-    } deriving (Eq, Ord, Show)
-
-
-data BothContactInfo = BothContactInfo {
-        emailInfo :: EmailAddress
-    ,   primTelephoneInfo :: Telephone
-    ,   secTelephoneInfo :: Maybe Telephone
-    } deriving (Eq, Ord, Show)
-
-
-data ContactMethod =
-      EmailOnly EmailAddress
-    | PhoneOnly Telephone (Maybe Telephone)
-    | EmailAndPhone BothContactInfo
-    deriving (Eq, Ord, Show)
---}
-
 fromContactInformation :: 
     ContactInformation -> ContactInformationDto
 fromContactInformation ci = 
@@ -379,28 +374,6 @@ fromContactMethod (EmailAndPhone  both) =
 
 
 
-{--
-data ContactInformation = ContactInformation {
-      address       :: PostalAddress
-    , contactMethod :: ContactMethod
-    } deriving (Eq, Ord, Show)
-
-
-data BothContactInfo = BothContactInfo {
-        emailInfo :: EmailAddress
-    ,   primTelephoneInfo :: Telephone
-    ,   secTelephoneInfo :: Maybe Telephone
-    } deriving (Eq, Ord, Show)
-
-
-data ContactMethod =
-      EmailOnly EmailAddress
-    | PhoneOnly Telephone (Maybe Telephone)
-    | EmailAndPhone BothContactInfo
-    deriving (Eq, Ord, Show)
-    
-    --}
-
 -- ----------------------------------------------------------------------------
 -- DTO for FullName
 -- ----------------------------------------------------------------------------
@@ -410,7 +383,10 @@ data FullNameDto = FullNameDto {
       dtofirst     :: String
     , dtomiddle    :: String
     , dtolast      :: String
-    } deriving (Eq, Ord, Show)
+    } deriving (Generic, Show)
+
+instance ToJSON FullNameDto where
+    toEncoding = genericToEncoding defaultOptions
 
 
 -- Helper functions for converting from / to domain as well as to other states
@@ -457,8 +433,10 @@ data DeclareLostItemForm = DeclareLostItemForm {
     ,   fDateAndTimeSpan :: (String, String)
     ,   fattributes :: [AttributeDto]
     ,   fowner :: PersonDto   
-    }
+    } deriving (Generic, Show)
 
+instance ToJSON DeclareLostItemForm where
+    toEncoding = genericToEncoding defaultOptions
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -485,11 +463,14 @@ data LostItemDeclaredDto = LostItemDeclaredDto {
     ,   dtoescription :: String
     ,   dtolocations :: [LocationDto]
     ,   dtotimeRegistered :: UTCTime
-    ,   dtodatetimeSpan :: DateTimeSpan
+    ,   dtodatetimeSpan :: (String, String)
     ,   dtoattributes :: [AttributeDto]
     ,   dtoowner :: PersonDto 
-    }
+    } deriving (Generic, Show)
 
+
+instance ToJSON LostItemDeclaredDto where
+    toEncoding = genericToEncoding defaultOptions
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -502,9 +483,14 @@ fromLostItemDeclared =
         <*> unwrapLongDescription . lostItemDesc 
         <*> (fmap fromLocation) . toList . lostItemLocation 
         <*> lostItemRegistrationTime 
-        <*> lostItemDateAndTimeSpan 
+        <*> unwrapDateTimeSpan . lostItemDateAndTimeSpan 
         <*> (fmap fromAttribute) . toList . lostItemAttributes 
         <*> fromPerson . lostItemOwner  
+
+fromDateTimeSpan :: DateTimeSpan -> (String, String)
+fromDateTimeSpan dateTimeSpan = 
+    unwrapDateTimeSpan dateTimeSpan
+
 
 
 -- ----------------------------------------------------------------------------
@@ -515,7 +501,11 @@ data DeclarationAcknowledgmentSentDto =
     DeclarationAcknowledgmentSentDto {
         id :: String
     ,   declarantContact :: ContactInformationDto
-    }
+    } deriving (Generic, Show)
+
+
+instance ToJSON DeclarationAcknowledgmentSentDto where
+    toEncoding = genericToEncoding defaultOptions
 
 
 -- Helper functions for converting from / to domain as well as to other states
@@ -539,11 +529,13 @@ fromDeclarationAcknowledgmentSent  =
 
 
 
-data DeclareLostItemErrorDto = 
-    DeclareLostItemErrorDto {
+data DeclareLostItemErrorDto = DeclareLostItemErrorDto {
         code :: String
     ,   message :: String
-    }
+    } deriving (Generic, Show)
+
+instance ToJSON DeclareLostItemErrorDto where
+    toEncoding = genericToEncoding defaultOptions
 
 
 -- Helper functions for converting from / to domain as well as to other states
@@ -563,3 +555,54 @@ fromDeclareLostItemError domainError =
                 code = "RemoteServiceError"
             ,   message = serviceName serv
             }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- =============================================================================
+--  Playground area 
+-- =============================================================================
+    
+
+data PersonTest = PersonTest {
+      tname :: String
+    , tage  :: Int
+    } deriving (Generic, Show)
+
+
+
+
+instance ToJSON PersonTest where
+    -- No need to provide a toJSON implementation.
+
+    -- For efficiency, we write a simple toEncoding implementation, as
+    -- the default version uses toJSON.
+    toEncoding = genericToEncoding defaultOptions
+

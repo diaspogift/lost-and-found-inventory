@@ -80,7 +80,7 @@ data UnvalidatedLostItem = UnvalidatedLostItem {
 data DeclarationAcknowledgmentSent = DeclarationAcknowledgmentSent {
         declaredLostItemId :: LostItemId
     ,   ownerContactInfo :: ContactInformation 
-    }
+    } deriving (Eq, Ord, Show)
 
 -- Event to send to search context
 type LostItemDeclared = DeclaredLostItem
@@ -105,6 +105,7 @@ data DeclareLostItemEvent =
       LostItemDeclared LostItemDeclared
     | SearchableItemDeclared LostItemDeclared 
     | AcknowledgmentSent DeclarationAcknowledgmentSent
+    deriving (Eq, Ord, Show)
 
 
 
@@ -114,26 +115,29 @@ data DeclareLostItemEvent =
 
 
 -- All the things that can go wrong in this workflow
-newtype ValidationError = ValidationError String
+newtype ValidationError = 
+    ValidationError String deriving (Eq, Ord, Show)
 
 
-newtype DbError = DbError String
+newtype DbError = 
+    DbError String deriving (Eq, Ord, Show)
 
 
 data ServiceInfo = ServiceInfo {
         serviceName :: String
     ,   endpoint :: String
-    }
+    } deriving (Eq, Ord, Show)
 
 data RemoteServiceError = RemoteServiceError {
         service :: ServiceInfo
-    ,   execption :: SomeException
-    }
+    ,   execption ::  String -- SomeException
+    } deriving (Eq, Ord, Show)
 
 data DeclareLostItemError =
       Validation ValidationError 
     | Remote RemoteServiceError
     | Db DbError 
+    deriving (Eq, Ord, Show)
 
 
 -- --------------------------------------------------------------------------

@@ -23,6 +23,8 @@ library
                      , DeclareLostItemDto
                      , InventorySystemCommands
                      , DeclaredLostItemHandler
+                     , InventorySystemCommandsHandler
+                     , EventStore
 
   build-depends:       base >= 4.7 && < 5
                      , containers
@@ -35,11 +37,19 @@ library
                      , either
                      , uuid
                      , split
+                     , text
+
+
 
                      , aeson
                      , servant-server
                      , wai
                      , warp
+
+
+                     , eventstore
+                     , async
+
   default-language:    Haskell2010
 
 executable Inventory-exe

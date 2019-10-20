@@ -1295,6 +1295,7 @@ fromRegion region =
 
 toDivision :: String -> Either ErrorMessage Division
 toDivision str
+    | "djerem" == lowerStr = Right Djerem
     | "faroetdeo" == lowerStr = Right FaroEtDeo
     | "mayobanyo" == lowerStr = Right MayoBanyo
     | "mbere" == lowerStr =     Right Mbere
@@ -1307,6 +1308,7 @@ toDivision str
 fromDivision :: Division -> String
 fromDivision division =
     case division of
+        Djerem -> show Djerem
         FaroEtDeo -> show FaroEtDeo
         MayoBanyo -> show MayoBanyo
         Mbere -> show Mbere
@@ -1742,10 +1744,10 @@ colorAttributeRef =
     do  code <- createAttributeCode "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
         name <- createAttributeName "Color"
         desc <- createShortDescription "Describe the item/person color"
-        value0 <- createAttributeValue "Red"
-        value1 <- createAttributeValue "Green"
-        value2 <- createAttributeValue "Yello"
-        value3 <- createAttributeValue "White"
+        value0 <- createOptionalAttributeValue "Red"
+        value1 <- createOptionalAttributeValue "Green"
+        value2 <- createOptionalAttributeValue "Yello"
+        value3 <- createOptionalAttributeValue "White"
         refCatId1 <- createCategoryId hCatId
         refCatId2 <- createCategoryId eCatId
         refCatId3 <- createCategoryId pCatId
@@ -1755,7 +1757,7 @@ colorAttributeRef =
                     attrCodeRef = code
                 ,   attrNameRef = name           
                 ,   attrDescriptionRef = desc
-                ,   attrValueRef = Just [value0, value1, value2, value3]
+                ,   attrValueRef = sequence [value0, value1, value2, value3]
                 ,   attrUnitRef = Nothing
                 ,   relatedCategoriesRef = [(refCatId1, Humans), (refCatId2, Electronics), (refCatId3, PersonalItems)]
                 }
@@ -1764,7 +1766,7 @@ weightAttributeRef =
     do  code <- createAttributeCode "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         name <- createAttributeName "Weight"
         desc <- createShortDescription "Describe the item/person weight"
-        unit <- createAttributeUnit "Kg"
+        unit <- createOptionalAttributeUnit "Kg"
         refCatId1 <- createCategoryId hCatId
         refCatId3 <- createCategoryId pCatId
 
@@ -1774,7 +1776,7 @@ weightAttributeRef =
                 ,   attrNameRef = name           
                 ,   attrDescriptionRef = desc
                 ,   attrValueRef = Nothing
-                ,   attrUnitRef = Just [unit]
+                ,   attrUnitRef = sequence [unit]
                 ,   relatedCategoriesRef = [(refCatId1, Humans), (refCatId3, PersonalItems)]
                 }
 

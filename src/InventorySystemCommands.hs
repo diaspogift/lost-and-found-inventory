@@ -5,7 +5,6 @@ import CommonCompoundTypes
 import DeclaredLostItemPublicTypes
 import DeclareLostItemImplementation
 
-
 import Data.Time
 import Prelude hiding (last)
 import Data.Maybe
@@ -30,7 +29,7 @@ import Data.UUID
 -- =============================================================================
     
 
-data InventoryCommand d = Command d UTCTime String
+data InventoryCommand d = Command d String String deriving (Eq, Ord, Show)
 
 type DeclareLostItemCmd = InventoryCommand UnvalidatedLostItem 
 type DeclareFoundItemCmd = InventoryCommand UnvalidatedLostItem
@@ -44,15 +43,12 @@ data LostAndFoundInventoryCmd =
     | Declare DeclareFoundItemCmd
     | Claim ClaimFoundItemCmd
     | Match MatchFoundItemCmd 
+    deriving (Eq, Ord, Show)
 
 data Event = 
    LostItem DeclareLostItemEvent
 
 
-
--- =============================================================================
--- Handlers Implementation
--- =============================================================================
 
 
 

@@ -188,8 +188,8 @@ toAttribute u =
   do code <- createAttributeCode $ uattrCode  u
      name <- createAttributeName $ uattrName u
      description <- createShortDescription $ uattrDescription u
-     value <- createAttributeValue $ uattrValue u
-     unit <- createAttributeUnit $ uattrUnit u
+     value <- createOptionalAttributeValue $ uattrValue u
+     unit <- createOptionalAttributeUnit $ uattrUnit u
      categoryId <- createCategoryId $ urelatedCategory u
      categoryType <- toCategoryType $ urelatedCategoryType u
      return $ Attribute code name description (Just value) (Just unit) 

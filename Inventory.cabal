@@ -15,16 +15,16 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     InventorySystemApplication
-                     , CommonSimpleTypes
+  exposed-modules:     CommonSimpleTypes
                      , CommonCompoundTypes
                      , DeclaredLostItemPublicTypes
                      , DeclareLostItemImplementation
                      , DeclareLostItemDto
-                     , InventorySystemCommands
                      , DeclaredLostItemHandler
+                     , InventorySystemCommands
                      , InventorySystemCommandsHandler
-                     , EventStore
+                     , EventStorePlayGround
+                     , InventorySystemApplication
 
   build-depends:       base >= 4.7 && < 5
                      , containers

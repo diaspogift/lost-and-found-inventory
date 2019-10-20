@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-} -- That library uses `Text` pervasively. This pragma permits to use
                                    -- String literal when a Text is needed.
-module EventStore where
+module EventStorePlayGround where
 
 import Control.Concurrent.Async (wait)
 import Data.Aeson

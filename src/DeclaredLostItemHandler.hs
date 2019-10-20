@@ -18,9 +18,9 @@ import Data.Time
 import Data.Text (pack)
 
 import Data.UUID.V4
-import Data.UUID  -- Internal
+import Data.UUID hiding (null) -- Internal
 
-import Data.Set hiding (filter)
+import Data.Set hiding (filter, null)
 
 import Data.Either.Combinators
 
@@ -84,24 +84,27 @@ type NextId = IO UnvalidatedLostItemId
 checkAdministrativeAreaInfoValidBase :: 
     AdministrativeMap
     -> CheckAdministrativeAreaInfoValid
-checkAdministrativeAreaInfoValidBase (AdministrativeMap regions) (strReg, strDiv, strSub) = 
-    do  reg <- toRegion strReg
-        div <- toDivision strDiv
-        sub <- toSubDivision strSub
+checkAdministrativeAreaInfoValidBase (AdministrativeMap regions) (strReg, strDiv, strSub)  
+    | null strReg && null strDiv && null strSub = 
+        Right Nothing
+    | otherwise =
+        do  reg <- toRegion strReg
+            div <- toDivision strDiv
+            sub <- toSubDivision strSub
 
-        let singRegion = filter (isRegionItemRegion reg) regions
+            let singRegion = filter (isRegionItemRegion reg) regions
 
-        case singRegion of
-            [RegionItem freg divs] -> 
-                let singDivision = filter (isDivisionItemDivision div) divs
-                in case singDivision of 
-                    [DivisionItem fdiv subs] ->
-                        let singSub = filter ( == sub) subs
-                        in case singSub of 
-                            [fsub] -> Right (freg, fdiv, fsub)
-                            _ -> Left "given sub division not found"
-                    _ -> Left "given division not found"
-            _ -> Left "given region not found"
+            case singRegion of
+                [RegionItem freg divs] -> 
+                    let singDivision = filter (isDivisionItemDivision div) divs
+                    in case singDivision of 
+                        [DivisionItem fdiv subs] ->
+                            let singSub = filter ( == sub) subs
+                            in case singSub of 
+                                [fsub] -> Right $ Just (freg, fdiv, fsub)
+                                _ -> Left "given sub division not found"
+                        _ -> Left "given division not found"
+                _ -> Left "given region not found"
 
 
 checkAdministrativeAreaInfoValid :: CheckAdministrativeAreaInfoValid

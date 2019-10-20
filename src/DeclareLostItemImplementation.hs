@@ -55,7 +55,7 @@ type AdminAreaValidationError = String
 
 type CheckAdministrativeAreaInfoValid = 
   (String, String, String) 
-    -> Either AdminAreaValidationError (Region, Division, SubDivision)
+    -> Either AdminAreaValidationError (Maybe (Region, Division, SubDivision))
 
 
 --- Contact Information (Phone number) validation (Probably with an external service???)
@@ -426,7 +426,7 @@ toCheckedValidAdminArea (reg, div, sub) checkAdministrativeAreaInfoValid =
             <- mapLeft 
                 ValidationError $
                 checkAdministrativeAreaInfoValid (reg, div, sub)
-        return $ Just resultCheck 
+        return resultCheck 
         
 toCityOrVillage :: 
     (String, String) 

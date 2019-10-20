@@ -45,7 +45,9 @@ unvalidatedLocation = UnvalidatedLocation {
     ,   uloaddresses = ["Carrefour 3 boutiques", "Maison Bleu", "Rond Point Maetur"]
 }
 
-unvalidatedAminitrativeArea = ("adamaoua", "djerem", "gouandal")
+-- unvalidatedAminitrativeArea = ("adamaoua", "djerem", "gouandal")
+
+unvalidatedAminitrativeArea = ("", "", "")
 
 
 

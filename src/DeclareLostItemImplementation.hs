@@ -440,6 +440,8 @@ toCityOrVillage (cityStr, villageStr)
     | (not . null) cityStr && null villageStr = 
         do  city <- mapLeft ValidationError $ createCity cityStr
             return $ Just $ Urban city
+    | (not . null) cityStr && (not . null) villageStr = 
+        Left $ ValidationError "provide either a city or a village not both"
     | otherwise = return Nothing
 
 

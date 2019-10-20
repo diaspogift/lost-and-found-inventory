@@ -103,60 +103,6 @@ declareLostItemCmd :: LostAndFoundInventoryCmd
 declareLostItemCmd = Register (Command unvalidateLostItem "11:01pm" "felicien@gmail.com")
 
 
---res = handle declareLostItemCmd
-
-
-{--
-type UnvalidatedLostItemId = String
-
-type UnvalidatedAminitrativeArea = (String, String, String)
-
-
-data UnvalidatedLocation = UnvalidatedLocation {
-        uadminArea :: UnvalidatedAminitrativeArea
-    ,   ucity :: String
-    ,   uvillage :: String
-    ,   uneighborhood :: String
-    ,   uloaddresses :: [String]
-    } deriving (Eq, Ord, Show)
-
-data UnvalidatedAttribute = UnvalidatedAttribute {
-      uattrCode :: String
-    , uattrName :: String
-    , uattrDescription :: String
-    , uattrValue :: String
-    , uattrUnit ::   String
-    } deriving (Eq, Ord, Show)
-
-data UnvalidatedPerson = UnvalidatedPerson {
-        uuserId :: String
-    ,   ucontact :: UnvalidatedContactInformation
-    ,   ufullname :: UnvalidatedFullName
-    } deriving (Eq, Ord, Show)
-
-data UnvalidatedContactInformation = UnvalidatedContactInformation {
-        uemail :: String
-    ,   uaddress :: String
-    ,   uprimaryTel :: String
-    ,   usecondaryTel :: String 
-    } deriving (Eq, Ord, Show)
-
-data UnvalidatedFullName = UnvalidatedFullName {
-        ufirst :: String
-    ,   umiddle :: String
-    ,   ulast :: String  
-    } deriving (Eq, Ord, Show)
-
-data UnvalidatedLostItem = UnvalidatedLostItem {
-        uliName :: String
-    ,   uliCategoryId :: String
-    ,   uliDescription :: String
-    ,   uliDateAndTimeSpan :: (String, String)
-    ,   ulocations :: [UnvalidatedLocation]
-    ,   uliattributes :: [UnvalidatedAttribute]
-    ,   uowner :: UnvalidatedPerson   
-    } deriving (Eq, Ord, Show)
---}
 
 
 

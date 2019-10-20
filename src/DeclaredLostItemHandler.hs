@@ -208,7 +208,7 @@ writeEventToStore conn (LostItemDeclared lostItemDeclared) =
     do  let lostItemDeclaredDto = fromLostItemDeclared lostItemDeclared
             lostItemDeclaredEvent = createEvent "LostItemDeclared" Nothing $ withJson lostItemDeclaredDto
             id = dtoitemId lostItemDeclaredDto
-        as <- sendEvent conn (StreamName $ pack id) anyVersion lostItemDeclaredEvent Nothing
+        as <- sendEvent conn (StreamName $ pack ( "lost-item-id-:" <> id)) anyVersion lostItemDeclaredEvent Nothing
         _  <- wait as
         shutdown conn
         waitTillClosed conn
@@ -303,7 +303,7 @@ declareLostItemHandler
                     sendAcknowledgment                -- Dependency
                     unvalidatedLostItem               -- Input
                     declarationTime                   -- Input
-                    lostItemUuid
+                    lostItemUuid                      -- Input
 
         
 

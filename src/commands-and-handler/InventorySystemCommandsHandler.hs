@@ -35,7 +35,7 @@ import Data.UUID
 
 handle :: 
     LostAndFoundInventoryCmd 
-    -> IO (Either DeclareLostItemError [DeclareLostItemEvent])
+    -> EitherIO DeclareLostItemError [DeclareLostItemEvent]
 handle cmd = 
     case cmd of
         Register declareLostItemCmd ->

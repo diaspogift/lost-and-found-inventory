@@ -53,19 +53,17 @@ import Data.Aeson
 
 
 type LookupOneCategory = 
-    String -> IO (Either DbError Category)
+    String -> EitherIO DeclareLostItemError Category
 
 type LookupAttributes = 
-    [String] -> IO (Either DbError [AttributeRef])
+    [String] -> EitherIO DeclareLostItemError [AttributeRef]
 
 type WriteEvent = 
     Connection -> DeclareLostItemEvent -> IO ()
 
-type WriteEvent1 = 
-    DeclareLostItemEvent -> IO ()
 
 type LoadAdministrativeAreaMap =
-    String -> IO (Either DbError AdministrativeMap)
+    String -> EitherIO DeclareLostItemError AdministrativeMap
 
 type NextId = IO UnvalidatedLostItemId
 
@@ -80,10 +78,10 @@ type NextId = IO UnvalidatedLostItemId
 
 
 
-checkAdministrativeAreaInfoValidBase :: 
+checkAdministrativeAreaInfoValid :: 
     AdministrativeMap
     -> CheckAdministrativeAreaInfoValid
-checkAdministrativeAreaInfoValidBase (AdministrativeMap regions) (strReg, strDiv, strSub)  
+checkAdministrativeAreaInfoValid (AdministrativeMap regions) (strReg, strDiv, strSub)  
     | null strReg && null strDiv && null strSub = 
         Right Nothing
     | otherwise =
@@ -106,13 +104,11 @@ checkAdministrativeAreaInfoValidBase (AdministrativeMap regions) (strReg, strDiv
                 _ -> Left "given region not found"
 
 
-checkAdministrativeAreaInfoValid :: CheckAdministrativeAreaInfoValid
-checkAdministrativeAreaInfoValid = checkAdministrativeAreaInfoValidBase camerounAdministrativeMap
 
-checkAttributeInfoValidBase :: 
+checkAttributeInfoValid :: 
     [AttributeRef]
     -> CheckAttributeInfoValid
-checkAttributeInfoValidBase refferedAttributes uattr ulositem = 
+checkAttributeInfoValid refferedAttributes uattr ulositem = 
     do  let foundAttribute = filter (isAttributesEqualTo uattr) refferedAttributes 
         case foundAttribute of
             [attributeRef] -> 
@@ -141,8 +137,6 @@ checkAttributeInfoValidBase refferedAttributes uattr ulositem =
                     (uattrCode unalidatedAttr) == (unwrapAttributeCode $ attrCodeRef attribute)
 
 
-checkAttributeInfoValid :: CheckAttributeInfoValid   
-checkAttributeInfoValid = checkAttributeInfoValidBase attributes
 
 
 checkContactInfoValid :: CheckContactInfoValid 
@@ -165,8 +159,8 @@ lookupOneCategoryBase categories categoryId =
     do  let maybeCategory = lookup categoryId categories
         --print maybeCategory
         case maybeCategory of
-            Just category -> return $ Right category
-            Nothing -> return $ Left $ DbError "category not found"
+            Just category -> liftEither $ Right category
+            Nothing -> liftEither $ mapLeft Db $ Left $ DbError "category not found"
 
 
 lookupOneCategory :: LookupOneCategory 
@@ -180,8 +174,8 @@ lookupAttributesBase attributeRefs attrCodes =
     do  let maybeAttributeRefs =   sequence $ recursiveLookup attrCodes attributeRefs
         --print maybeAttributeRefs
         case maybeAttributeRefs of
-            Just attributes -> return $ Right attributes
-            Nothing -> return $ Left $ DbError "attribute not found"
+            Just attributes -> liftEither $ Right attributes
+            Nothing -> liftEither $ mapLeft Db $ Left $ DbError "attribute not found"
 
 
 recursiveLookup :: [String] -> [(String, AttributeRef)] -> [Maybe AttributeRef]
@@ -195,7 +189,7 @@ lookupAttributes = lookupAttributesBase allAttributes
 
 loadAdministrativeAreaMap :: LoadAdministrativeAreaMap
 loadAdministrativeAreaMap country = 
-    return $ Right camerounAdministrativeMap
+    liftEither $ Right camerounAdministrativeMap
 
 
 nextId :: NextId
@@ -255,7 +249,7 @@ declareLostItemHandler ::
     -> WriteEvent
     -> NextId
     -> DeclareLostItemCmd 
-    -> IO (Either DeclareLostItemError [DeclareLostItemEvent])
+    -> EitherIO DeclareLostItemError [DeclareLostItemEvent]
     
 declareLostItemHandler 
     loadAdministrativeAreaMap
@@ -264,12 +258,14 @@ declareLostItemHandler
     writeEventToStore
     nextId
     (Command unvalidatedLostItem curTime userId) = 
+
+    ---------------------------------------- IO at the boundary start -----------------------------------------
      
     do  -- get event store connection // TODO: lookup env ... or Reader Monad ??????
-        conn <- connect defaultSettings (Static "localhost" 1113)
+        conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)
 
         -- retrieve adminitrative area map 
-        adminAreaMap <- loadAdministrativeAreaMap "Cameroun"
+        adminAreaMap <-  loadAdministrativeAreaMap "Cameroun"
 
         -- retrieve referenced category
         refCategory <- lookupOneCategory 
@@ -281,43 +277,69 @@ declareLostItemHandler
                             $ uliattributes unvalidatedLostItem
 
         -- get creation time
-        declarationTime <- getCurrentTime
+        declarationTime <- liftIO $ getCurrentTime
 
         -- get randon uuid 
-        lostItemUuid <- nextId
+        lostItemUuid <- liftIO $ nextId
+
+        -- Arranging final dependencies
+        let checkAdministrativeArea = 
+                checkAdministrativeAreaInfoValid adminAreaMap
+        let checkAttributeInfo =
+                checkAttributeInfoValid refAttributes
+
+        ---------------------------------------- IO at the boundary end -----------------------------------------
+    
+        
+
+
+        
+        ---------------------------------------- Core business logic start ----------------------------------------
 
         -- call workflow
         let events =
                 declareLostItem 
-                    checkAdministrativeAreaInfoValid  -- Dependency
-                    checkAttributeInfoValid           -- Dependency
-                    checkContactInfoValid             -- Dependency
-                    createDeclarationAcknowledgment   -- Dependency
-                    sendAcknowledgment                -- Dependency
-                    unvalidatedLostItem               -- Input
-                    declarationTime                   -- Input
-                    lostItemUuid                      -- Input
+                    checkAdministrativeArea             -- Dependency
+                    checkAttributeInfo                  -- Dependency
+                    checkContactInfoValid               -- Dependency
+                    createDeclarationAcknowledgment     -- Dependency
+                    sendAcknowledgment                  -- Dependency
+                    unvalidatedLostItem                 -- Input
+                    declarationTime                     -- Input
+                    lostItemUuid                        -- Input
 
-        
-        -- publish / persit event into the event store
+        ---------------------------------------- Core business logic end ----------------------------------------
+
+
+
+
+
+
+        ---------------------------------------- Side effects handling start ----------------------------------------
+
+        -- publish / persit event(s) into the event store
         case events of 
             Right allEvents -> 
                 do
                     let declLostItemEvt = filter isDeclLostItemEvent allEvents
                         evt = declLostItemEvt!!0
-                    res <- writeEventToStore conn evt
-                    print declLostItemEvt
+                    res <- liftIO $ writeEventToStore conn evt
+                    -- print declLostItemEvt
 
-                    return events
-            Left errorMsg -> return $ Left errorMsg
+                    liftEither events
+            Left errorMsg -> liftEither $ Left errorMsg
 
             where isDeclLostItemEvent (LostItemDeclared lostItemDeclared) = True
                   isDeclLostItemEvent _ = False
 
+        ---------------------------------------- Side effects handling end ----------------------------------------
+
+
+
 
 publicDeclareLostItemHandler :: 
     DeclareLostItemCmd 
-    -> IO (Either DeclareLostItemError [DeclareLostItemEvent])
+    -> EitherIO DeclareLostItemError [DeclareLostItemEvent]
 publicDeclareLostItemHandler = 
     declareLostItemHandler 
         loadAdministrativeAreaMap
@@ -355,3 +377,8 @@ instance Monad (EitherIO e) where
   return  = pure
   x >>= f = EitherIO $ runEitherIO x >>= either (return . Left) (runEitherIO . f)
 
+liftEither :: Either e a -> EitherIO e a
+liftEither x = EitherIO (return x)
+  
+liftIO :: IO a -> EitherIO e a
+liftIO x = EitherIO (fmap Right x)

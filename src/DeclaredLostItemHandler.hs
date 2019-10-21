@@ -46,10 +46,9 @@ import Data.Aeson
 
 
 -- =============================================================================
--- IO Dependencies
+-- IO Dependencies types
 -- =============================================================================
 
---- Dependencies
 
 
 
@@ -211,25 +210,12 @@ writeEventToStore conn (LostItemDeclared lostItemDeclared) =
     do  let lostItemDeclaredDto = fromLostItemDeclared lostItemDeclared
             lostItemDeclaredEvent = createEvent "LostItemDeclared" Nothing $ withJson lostItemDeclaredDto
             id = dtoitemId lostItemDeclaredDto
-        as <- sendEvent conn (StreamName $ pack ( "lost-item-id-:" <> id)) anyVersion lostItemDeclaredEvent Nothing
+        as <- sendEvent conn (StreamName $ pack ( "lost-item-id-: " <> id)) anyVersion lostItemDeclaredEvent Nothing
         _  <- wait as
         shutdown conn
         waitTillClosed conn
 
 {--
-writeEventToStore2 :: WriteEvent1
-writeEventToStore2 (LostItemDeclared lostItemDeclared) = 
-    do  let lostItemDeclaredDto = fromLostItemDeclared lostItemDeclared
-            lostItemDeclaredEvent = createEvent "LostItemDeclared" Nothing $ withJson lostItemDeclaredDto
-            id = dtoitemId lostItemDeclaredDto
-        conn <- connect defaultSettings (Static "localhost" 1113)
-        as <- sendEvent conn (StreamName $ pack id) anyVersion lostItemDeclaredEvent Nothing
-        _  <- wait as
-        shutdown conn
-        waitTillClosed conn
-
-
-
 
 writeEventToStore :: WriteEvent
 writeEventToStore conn event = 
@@ -260,6 +246,7 @@ writeEventToStore conn event =
 
 
 ---- TODO: NEEDS LOTS OF IMPROVEMENTS
+---- 1- Transform IO (Either DeclareLostItemError [DeclareLostItemEvent]) into EitherIO DeclareLostItemError [DeclareLostItemEvent] 
 
 declareLostItemHandler :: 
     LookupOneCategory 
@@ -276,10 +263,10 @@ declareLostItemHandler
     nextId
     (Command unvalidatedLostItem curTime userId) = 
      
-    do  -- get event store connection // TODO: lookup env ...
+    do  -- get event store connection // TODO: lookup env ... or Reader Monad ??????
         conn <- connect defaultSettings (Static "localhost" 1113)
 
-        -- retrieve adminitrative map area
+        -- retrieve adminitrative area map 
         adminAreaMap <- loadAdministrativeAreaMap "Cameroun"
 
         -- retrieve referenced category
@@ -290,6 +277,7 @@ declareLostItemHandler
         refAttributes <- lookupAttributes 
                             $ fmap uattrCode 
                             $ uliattributes unvalidatedLostItem
+
         -- get creation time
         declarationTime <- getCurrentTime
 
@@ -309,7 +297,7 @@ declareLostItemHandler
                     lostItemUuid                      -- Input
 
         
-
+        -- publish / persit event into the event store
         case events of 
             Right allEvents -> 
                 do

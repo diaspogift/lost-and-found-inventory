@@ -74,7 +74,7 @@ type NextId = IO UnvalidatedLostItemId
 
 
 -- =============================================================================
--- Workflow dependencies Dummy Implementations
+-- Workflow dependencies dummy Implementations
 -- =============================================================================
 
 
@@ -249,7 +249,8 @@ writeEventToStore conn event =
 ---- 1- Transform IO (Either DeclareLostItemError [DeclareLostItemEvent]) into EitherIO DeclareLostItemError [DeclareLostItemEvent] 
 
 declareLostItemHandler :: 
-    LookupOneCategory 
+    LoadAdministrativeAreaMap
+    -> LookupOneCategory 
     -> LookupAttributes
     -> WriteEvent
     -> NextId
@@ -257,6 +258,7 @@ declareLostItemHandler ::
     -> IO (Either DeclareLostItemError [DeclareLostItemEvent])
     
 declareLostItemHandler 
+    loadAdministrativeAreaMap
     lookupOneCategory
     lookupAttributes
     writeEventToStore
@@ -318,6 +320,7 @@ publicDeclareLostItemHandler ::
     -> IO (Either DeclareLostItemError [DeclareLostItemEvent])
 publicDeclareLostItemHandler = 
     declareLostItemHandler 
+        loadAdministrativeAreaMap
         lookupOneCategory
         lookupAttributes
         writeEventToStore

@@ -259,7 +259,7 @@ declareLostItemHandler
     nextId
     (Command unvalidatedLostItem curTime userId) = 
 
-    ---------------------------------------- IO at the boundary start -----------------------------------------
+        ---------------------------------------- IO at the boundary start -----------------------------------------
      
     do  -- get event store connection // TODO: lookup env ... or Reader Monad ??????
         conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)

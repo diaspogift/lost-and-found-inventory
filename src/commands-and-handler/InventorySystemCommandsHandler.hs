@@ -41,6 +41,12 @@ handle cmd =
         Register declareLostItemCmd ->
            do res <- publicDeclareLostItemHandler declareLostItemCmd
               return res
+        Declare declareFoundItemCmd ->
+            return undefined
+        Claim claimFoundItemCmd ->
+            return undefined
+        Match catchFoundItemCmd ->
+            return undefined
 
 
 

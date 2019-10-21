@@ -15,6 +15,9 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
+                     , src/common-domain-types
+                     , src/domain-workflow-impls/declare-lost-item
+                     , src/commands-and-handler
   exposed-modules:     CommonSimpleTypes
                      , CommonCompoundTypes
                      , DeclaredLostItemPublicTypes

@@ -1,6 +1,7 @@
-{-# LANGUAGE DataKinds       #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeOperators   #-}
+{-# LANGUAGE DataKinds          #-}
+{-# LANGUAGE TemplateHaskell    #-}
+{-# LANGUAGE TypeOperators      #-}
+{-# LANGUAGE OverloadedStrings  #-}
 module InventorySystemApplication
     ( startApp
     , app
@@ -12,29 +13,76 @@ import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant
 
+
+import DeclareLostItemDto
+
+
+------
+import Data.Text.Lazy (Text)
+
 data User = User
   { userId        :: Int
   , userFirstName :: String
   , userLastName  :: String
   } deriving (Eq, Show)
-
+  
 $(deriveJSON defaultOptions ''User)
 
-type API = "users" :> Get '[JSON] [User]
+data Welcome = Welcome {
+    message :: String
+} deriving (Eq, Show)
+
+$(deriveJSON defaultOptions ''Welcome)
+
+
+
+
+
+--------
+
+
+
+
+
+--------
+
+type API = 
+    "users" :> Get '[JSON] [User]
+    :<|> "home" :> Get '[JSON] Welcome
+    :<|> "lost-items" 
+            :> ReqBody '[JSON] DeclareLostItemForm
+            :> Post '[JSON] DeclareLostItemForm
+
 
 startApp :: IO ()
-startApp = run 8080 app
+startApp = run 8000 app
+
+
+
+
 
 app :: Application
-app = serve api server
+app = serve proxy routes
 
-api :: Proxy API
-api = Proxy
+proxy :: Proxy API
+proxy = Proxy
 
-server :: Server API
-server = return users
+routes :: Server API
+routes = 
+    return users
+    :<|> return welcomeMesg
+    :<|> handlerDeclareLostItem
+
+
+
+
+handlerDeclareLostItem :: 
+    DeclareLostItemForm -> Handler DeclareLostItemForm
+handlerDeclareLostItem declareLostItemForm = return declareLostItemForm
 
 users :: [User]
 users = [ User 1 "Isaac" "Newton"
         , User 2 "Albert" "Einstein"
         ]
+
+welcomeMesg = Welcome "Welcome home"

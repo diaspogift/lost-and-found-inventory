@@ -56,6 +56,8 @@ data LocationDto = LocationDto {
 instance ToJSON LocationDto where
     toEncoding = genericToEncoding defaultOptions
 
+instance FromJSON LocationDto
+
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -168,6 +170,7 @@ data AttributeDto = AttributeDto {
 instance ToJSON AttributeDto where
     toEncoding = genericToEncoding defaultOptions
 
+instance FromJSON AttributeDto
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -229,6 +232,7 @@ data PersonDto = PersonDto {
 instance ToJSON PersonDto where
     toEncoding = genericToEncoding defaultOptions
     
+instance FromJSON PersonDto
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -265,6 +269,8 @@ data ContactInformationDto = ContactInformationDto {
 
 instance ToJSON ContactInformationDto where
     toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON ContactInformationDto
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -388,6 +394,7 @@ data FullNameDto = FullNameDto {
 instance ToJSON FullNameDto where
     toEncoding = genericToEncoding defaultOptions
 
+instance FromJSON FullNameDto
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -438,6 +445,8 @@ data DeclareLostItemForm = DeclareLostItemForm {
 instance ToJSON DeclareLostItemForm where
     toEncoding = genericToEncoding defaultOptions
 
+instance FromJSON DeclareLostItemForm
+
 -- Helper functions for converting from / to domain as well as to other states
 
 
@@ -471,6 +480,8 @@ data LostItemDeclaredDto = LostItemDeclaredDto {
 
 instance ToJSON LostItemDeclaredDto where
     toEncoding = genericToEncoding defaultOptions
+
+instance FromJSON LostItemDeclaredDto
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -507,6 +518,7 @@ data DeclarationAcknowledgmentSentDto =
 instance ToJSON DeclarationAcknowledgmentSentDto where
     toEncoding = genericToEncoding defaultOptions
 
+instance FromJSON DeclarationAcknowledgmentSentDto
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -537,6 +549,7 @@ data DeclareLostItemErrorDto = DeclareLostItemErrorDto {
 instance ToJSON DeclareLostItemErrorDto where
     toEncoding = genericToEncoding defaultOptions
 
+instance FromJSON DeclareLostItemErrorDto
 
 -- Helper functions for converting from / to domain as well as to other states
 
@@ -606,3 +619,4 @@ instance ToJSON PersonTest where
     -- the default version uses toJSON.
     toEncoding = genericToEncoding defaultOptions
 
+instance FromJSON PersonTest

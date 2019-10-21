@@ -1,4 +1,9 @@
-# LOST |&| FOUND
+# LOST |&| FOUND   /   OBJETS PERDUS ET RETROUVÉS
+
+
+```
+French Description
+```
 
 Ce projet vise à mettre sur pied une plate-forme électronique permettant aux utilisateurs
 d’entrer en possession de leurs objets perdus et retrouvés.
@@ -13,6 +18,14 @@ prétendu propriétaire est le propriétaire réel de l’objet. La plate-forme 
 public un moteur de recherche des objets perdu et retrouvés où tout utilisateur pourra
 chercher un objet égaré suivant des critères définis.
 
+
+
+```
+English Description
+```
+
+ToDo
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
@@ -22,34 +35,27 @@ These instructions will get you a copy of the project up and running on your loc
 What things you need to install the software and how to install them
 
 ```
-Give examples
+Examples go here
 ```
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
 
 ```
 Give the example
 ```
 
-And repeat
-
 ```
-until finished
+Give a little demo?
 ```
-
-End with an example of getting some data out of the system or using it for a little demo
 
 ## Running the tests
 
-Explain how to run the automated tests for this system
+Explaination on how to run the automated tests for this system go here
 
 ### Break down into end to end tests
 
-Explain what these tests test and why
+Explaination of what these tests test and why go here
 
 ```
 Give an example
@@ -57,7 +63,7 @@ Give an example
 
 ### And coding style tests
 
-Explain what these tests test and why
+Explaination of what these tests test and why go here
 
 ```
 Give an example
@@ -65,30 +71,33 @@ Give an example
 
 ## Deployment
 
-Add additional notes about how to deploy this on a live system
+Additional notes about how to deploy this on a live system go here
 
 ## Built With
 
-* [Haskell](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Event Store](https://maven.apache.org/) - Dependency Management
-* [Servant](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+* [Haskell](http://haskell.org) - The back end language used
+* [Elm](https://guide.elm-lang.org/) - The language used for the front end
+* [Servant](https://www.servant.dev/) - The server used for the API
+* [Event Store](https://eventstore.org) - Used for the persistance layer
+
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+Please read [CONTRIBUTING.md](https://github.com/diaspogift/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
+```
+Provide details
+```
 ## Authors
 
-* **Félicien FOTIO MANFO** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-* **Didier Junior EHAWE EHAWE** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-* **Fabrice FOTHE FOPA** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-* **Arnauld Pierre NYAMBETE** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
+* **Félicien FOTIO MANFO** - *Initial work* - [DiaspoGift](https://github.com/diaspogift)
+* **Didier Junior EHAWE EHAWE** - *Initial work* - [DiaspoGift](https://github.com/diaspogift)
+* **Fabrice FOTHE FOPA** - *Initial work* - [DiaspoGift](https://github.com/diaspogift)
+* **Arnauld Pierre NYAMBETE** - *Initial work* - [DiaspoGift](https://github.com/diaspogift)
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/diaspogift/contributors) who participated in this project.
 
 ## License
 

@@ -209,26 +209,6 @@ writeEventToStore conn (LostItemDeclared lostItemDeclared) =
         shutdown conn
         waitTillClosed conn
 
-{--
-
-writeEventToStore :: WriteEvent
-writeEventToStore conn event = 
-    do
-        case event of
-            LostItemDeclared lostItemDeclared
-                ->     let  lostItemDeclaredDto = fromLostItemDeclared lostItemDeclared
-                            lostItemDeclaredEvent = createEvent "LostItemDeclared" Nothing $ withJson lostItemDeclaredDto
-                            id = dtoitemId lostItemDeclaredDto
-                        in do
-                            as <- sendEvent conn (StreamName $ pack id) anyVersion lostItemDeclaredEvent Nothing
-                            _  <- wait as
-                            shutdown conn
-                            waitTillClosed conn
-                            return ()
-            _ 
-                -> return ()
-
---}
 
             
 

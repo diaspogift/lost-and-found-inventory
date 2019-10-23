@@ -52,8 +52,7 @@ $(deriveJSON defaultOptions ''Welcome)
 --------
 
 type API = 
-    "users" :> Get '[JSON] [User]
-    :<|> "home" :> Get '[JSON] Welcome
+    "home" :> Get '[JSON] Welcome
     :<|> "lost-items" 
             :> ReqBody '[JSON] DeclareLostItemForm
             :> Post '[JSON] Resp
@@ -74,8 +73,7 @@ proxy = Proxy
 
 routes :: Server API
 routes = 
-    return users
-    :<|> return welcomeMesg
+    return welcomeMesg
     :<|> handlerDeclareLostItem
 
 
@@ -84,9 +82,17 @@ handlerDeclareLostItem ::
     DeclareLostItemForm -> Handler Resp
 handlerDeclareLostItem declareLostItemForm = 
     do
+        -- setting up the declare lost item command
+
         let unvalidatedLostItem = toUnvalidatedLostItem declareLostItemForm
             declareLostItemCmd = Register (Command unvalidatedLostItem "2019 10 10 12:34:56" "111111111111111111111111111111111111")
+
+        -- calling the command handler and lifting the result into the Handler Tranformer 
+
         res <- liftIO $ runExceptT $ handle declareLostItemCmd
+
+        -- Handling the response
+
         case res of 
             Right events -> 
                 let resp = fmap fromDomain events
@@ -95,11 +101,6 @@ handlerDeclareLostItem declareLostItemForm =
                 let resp = fromDeclareLostItemError error
                 in return $ Error resp
 
-      
 
-users :: [User]
-users = [ User 1 "Isaac" "Newton"
-        , User 2 "Albert" "Einstein"
-        ]
 
-welcomeMesg = Welcome "Welcome home"
+welcomeMesg = Welcome "LOST |&| FOUND: INVENTORY"

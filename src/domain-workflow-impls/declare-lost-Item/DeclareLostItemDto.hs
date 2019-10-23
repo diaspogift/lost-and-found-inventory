@@ -1,10 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 
 module DeclareLostItemDto where
 
 
 import Data.Aeson
+--import Data.Aeson.Extra.Map
 import CommonSimpleTypes
 import CommonCompoundTypes
 import DeclaredLostItemPublicTypes
@@ -12,7 +15,8 @@ import DeclaredLostItemPublicTypes
 
 import Prelude hiding (last, id)
 import Data.Time
-import Data.Set hiding (null)
+import Data.Set hiding (null, singleton)
+import Data.Map hiding (null, toList)
 
 import GHC.Generics
 
@@ -568,10 +572,51 @@ fromDeclareLostItemError domainError =
                 code = "RemoteServiceError"
             ,   message = serviceName serv
             }
+        Db (DbError errorMessage) ->
+            DeclareLostItemErrorDto {
+                    code = "DbError"
+                ,   message = errorMessage
+                } 
+
+--- 
+
+data DeclareLostItemEventDto = 
+    LI LostItemDeclaredDto | DA DeclarationAcknowledgmentSentDto deriving (Generic, Show)
+
+instance ToJSON DeclareLostItemEventDto
+
+---
+
+type DeclareLostItemEventResponse = Map String DeclareLostItemEventDto
+
+instance ToJSONKey DeclareLostItemEventResponse
+
+---
+
+data Resp = 
+        Success [DeclareLostItemEventResponse] | Error DeclareLostItemErrorDto deriving (Generic, Show)
+
+instance ToJSON Resp
 
 
+fromDomain :: DeclareLostItemEvent -> DeclareLostItemEventResponse
+fromDomain evt = 
+    case evt of
+        LostItemDeclared lid ->
+            let key = "declaredLostItem"
+                val = fromLostItemDeclared lid
+            in  singleton key (LI val)
+        SearchableItemDeclared sid ->
+            let key = "searchableLostItem"
+                val = fromLostItemDeclared sid
+            in  singleton key (LI val)
+        AcknowledgmentSent as -> 
+            let key = "acknowledgmentSent"
+                val = fromDeclarationAcknowledgmentSent as
+            in  singleton key (DA val)
+        
 
-
+        
 
 
 
@@ -604,19 +649,13 @@ fromDeclareLostItemError domainError =
 -- =============================================================================
     
 
-data PersonTest = PersonTest {
-      tname :: String
-    , tage  :: Int
-    } deriving (Generic, Show)
+{--
+
+data DeclareLostItemEvent =
+      LostItemDeclared LostItemDeclared
+    | SearchableItemDeclared LostItemDeclared 
+    | AcknowledgmentSent DeclarationAcknowledgmentSent
+    deriving (Eq, Ord, Show)
 
 
-
-
-instance ToJSON PersonTest where
-    -- No need to provide a toJSON implementation.
-
-    -- For efficiency, we write a simple toEncoding implementation, as
-    -- the default version uses toJSON.
-    toEncoding = genericToEncoding defaultOptions
-
-instance FromJSON PersonTest
+--}

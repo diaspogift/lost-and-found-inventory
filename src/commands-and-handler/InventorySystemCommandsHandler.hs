@@ -16,6 +16,9 @@ import Data.Either.Combinators
 
 import Data.UUID
 
+import Control.Monad.Except
+
+
 
 -- ==========================================================================================
 --
@@ -35,7 +38,7 @@ import Data.UUID
 
 handle :: 
     LostAndFoundInventoryCmd 
-    -> EitherIO DeclareLostItemError [DeclareLostItemEvent]
+    -> ExceptT DeclareLostItemError IO [DeclareLostItemEvent]
 handle cmd = 
     case cmd of
         Register declareLostItemCmd ->

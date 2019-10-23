@@ -22,6 +22,9 @@ import Data.UUID hiding (null) -- Internal
 
 import Data.Set hiding (filter, null)
 
+import Control.Monad.Except
+
+
 import Data.Either.Combinators
 
 import Control.Applicative
@@ -53,17 +56,17 @@ import Data.Aeson
 
 
 type LookupOneCategory = 
-    String -> EitherIO DeclareLostItemError Category
+    String -> ExceptT DeclareLostItemError IO Category
 
 type LookupAttributes = 
-    [String] -> EitherIO DeclareLostItemError [AttributeRef]
+    [String] -> ExceptT DeclareLostItemError IO [AttributeRef]
 
 type WriteEvent = 
     Connection -> DeclareLostItemEvent -> IO ()
 
 
 type LoadAdministrativeAreaMap =
-    String -> EitherIO DeclareLostItemError AdministrativeMap
+    String -> ExceptT DeclareLostItemError IO AdministrativeMap
 
 type NextId = IO UnvalidatedLostItemId
 
@@ -220,7 +223,7 @@ writeEventToStore conn (LostItemDeclared lostItemDeclared) =
 
 
 ---- TODO: NEEDS LOTS OF IMPROVEMENTS
----- 1- Transform IO (Either DeclareLostItemError [DeclareLostItemEvent]) into EitherIO DeclareLostItemError [DeclareLostItemEvent] 
+---- 1- Transform IO (Either DeclareLostItemError [DeclareLostItemEvent]) into ExceptT DeclareLostItemError [DeclareLostItemEvent] 
 
 declareLostItemHandler :: 
     LoadAdministrativeAreaMap
@@ -229,7 +232,7 @@ declareLostItemHandler ::
     -> WriteEvent
     -> NextId
     -> DeclareLostItemCmd 
-    -> EitherIO DeclareLostItemError [DeclareLostItemEvent]
+    -> ExceptT DeclareLostItemError IO [DeclareLostItemEvent]
     
 declareLostItemHandler 
     loadAdministrativeAreaMap
@@ -319,7 +322,7 @@ declareLostItemHandler
 
 publicDeclareLostItemHandler :: 
     DeclareLostItemCmd 
-    -> EitherIO DeclareLostItemError [DeclareLostItemEvent]
+    -> ExceptT DeclareLostItemError IO [DeclareLostItemEvent]
 publicDeclareLostItemHandler = 
     declareLostItemHandler 
         loadAdministrativeAreaMap
@@ -333,32 +336,37 @@ publicDeclareLostItemHandler =
 
 
 
----- TODO: Transform     IO (Either e a)  into EitherIO e a  
+---- TODO: Transform     IO (Either e a)  into ExceptT e a  
 
 ---- Getting thereeee :) - This is Monad trasformer LANNNNNNNNDDDD!!!  
 
+{--
 
-
-data EitherIO e a = EitherIO {
-    runEitherIO :: IO (Either e a)
+newtype ExceptT e a = ExceptT {
+    runExceptT :: IO (Either e a)
 }
 
+-- 
+instance MonadIO (ExceptT e) where
+    liftIO :: IO a -> m a
+
 
 --
-instance Functor (EitherIO e) where
-  fmap f = EitherIO . fmap (fmap f) . runEitherIO
+instance Functor (ExceptT e) where
+  fmap f = ExceptT . fmap (fmap f) . runExceptT
 
 --
-instance Applicative (EitherIO e) where
-  pure    = EitherIO . return . Right
-  f <*> x = EitherIO $ liftA2 (<*>) (runEitherIO f) (runEitherIO x)
+instance Applicative (ExceptT e) where
+  pure    = ExceptT . return . Right
+  f <*> x = ExceptT $ liftA2 (<*>) (runExceptT f) (runExceptT x)
 --
-instance Monad (EitherIO e) where
+instance Monad (ExceptT e) where
   return  = pure
-  x >>= f = EitherIO $ runEitherIO x >>= either (return . Left) (runEitherIO . f)
+  x >>= f = ExceptT $ runExceptT x >>= either (return . Left) (runExceptT . f)
 
-liftEither :: Either e a -> EitherIO e a
-liftEither x = EitherIO (return x)
+liftEither :: Either e a -> ExceptT e a
+liftEither x = ExceptT (return x)
   
-liftIO :: IO a -> EitherIO e a
-liftIO x = EitherIO (fmap Right x)
+liftIO :: IO a -> ExceptT e a
+liftIO x = ExceptT (fmap Right x)
+--}

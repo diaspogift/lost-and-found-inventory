@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 
 module DeclareLostItemDto where
@@ -463,15 +464,15 @@ toUnvalidatedLostItem =
 -- DTO for LostItemDeclared  and SearchableItemDeclared Events
 -- ----------------------------------------------------------------------------
 data LostItemDeclaredDto = LostItemDeclaredDto {
-        dtoitemId :: String
-    ,   dtoname :: String
-    ,   dtocategoryId :: String
-    ,   dtoescription :: String
-    ,   dtolocations :: [LocationDto]
-    ,   dtotimeRegistered :: UTCTime
-    ,   dtodatetimeSpan :: (String, String)
-    ,   dtoattributes :: [AttributeDto]
-    ,   dtoowner :: PersonDto 
+        itemId :: String
+    ,   itemName :: String
+    ,   itemCategoryId :: String
+    ,   itemDescription :: String
+    ,   itemLocations :: [LocationDto]
+    ,   itemTimeRegistered :: UTCTime
+    ,   itemDateTimeSpan :: (String, String)
+    ,   itemAttributes :: [AttributeDto]
+    ,   itemOwner :: PersonDto 
     } deriving (Generic, Show)
 
 

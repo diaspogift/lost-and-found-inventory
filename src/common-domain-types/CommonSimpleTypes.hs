@@ -36,6 +36,8 @@ import qualified Text.Email.Validate as EmailVal
 import qualified Data.ByteString.Char8 as Char8
 import Data.Dates
 import Data.List.Split
+import Text.Read
+import Data.Maybe
 
 
 
@@ -463,27 +465,54 @@ createAnswer =
 unwrapAnswer :: Answer -> String
 unwrapAnswer (Answer str) = str
 
+--- TODO: MIGHT STILL NEED SOME IMPROVEMENTS
 
-
---- TODO NEED LOTS OF IMPROVEMENTS
---- TODO NEED LOTS OF IMPROVEMENTS
---- TODO NEED LOTS OF IMPROVEMENTS
---- TODO NEED LOTS OF IMPROVEMENTS
 creatDateTimeSpan :: String -> String -> String -> Either ErrorMessage DateTimeSpan
 creatDateTimeSpan strdtStart strdtEnd separator =
     let                 
-        dtstart = fmap (read::String->Int) $ splitOn separator strdtStart  
-        dtend = fmap (read::String->Int) $ splitOn separator strdtEnd  
+        maybeDtstart = fmap (readMaybe :: String-> Maybe Int) $ splitOn separator strdtStart  
+        maybeDtend = fmap (readMaybe :: String-> Maybe Int) $ splitOn separator strdtEnd  
+        dtstart = catMaybes maybeDtstart
+        dtend = catMaybes maybeDtend
+        
     
     in  if ((length dtstart == 6) && (length dtend == 6))
-        then  
+        then 
             let  
-                d1 = DateTime (dtstart!!0) (dtstart!!1) (dtstart!!2) (dtstart!!3) (dtstart!!4) (dtstart!!5)
-                d2 = DateTime (dtend!!0) (dtend!!1) (dtend!!2) (dtend!!3) (dtend!!4) (dtend!!5)    
-            in if d1 > d2 
-               then Left "Invalid date time span"
-               else Right $ DateTimeSpan (d1, d2)
-        else Left "Invalid date format: y m d h m s"
+                dsy = dtstart!!0
+                dsmo = dtstart!!1
+                dsd = dtstart!!2
+                dsh = dtstart!!3
+                dsmi = dtstart!!4
+                dss = dtstart!!5
+
+                dey = dtend!!0
+                demo = dtend!!1
+                ded = dtend!!2
+                deh = dtend!!3
+                demi = dtend!!4
+                des = dtend!!5
+
+                
+                
+            in  if (checkDateAttrRanges (dsy, dsmo, dsd, dsh, dsmi, dss) && checkDateAttrRanges (dey, demo, ded, deh, demi, des)) 
+                then    
+                        let d1 = DateTime dsy dsmo dsd dsh dsmi dss
+                            d2 = DateTime dey demo ded deh demi des
+                
+                        in  if d1 > d2 
+                            then Left "Invalid date time span order"
+                            else Right $ DateTimeSpan (d1, d2)
+                else Left "Invalid date time span range (1 < month 12) (1 < day 31) (00 < hour < 23) (00 < min < 59) (00 < sec < 59)"
+
+        else Left "Invalid date format: y m d h m s are required and must all be numbers"
+    where checkDateAttrRanges (y, mo, d, h, mi, s)
+            | mo > 12 || mo < 1 = False
+            | d > 31 || d < 1 = False
+            | h > 23 || h < 0 = False
+            | mi > 59 || mi < 0 = False
+            | s > 59 || s < 0 = False
+            | otherwise = True
                 
 unwrapDateTimeSpan :: DateTimeSpan -> (String, String)
 unwrapDateTimeSpan (DateTimeSpan (start, end)) = 

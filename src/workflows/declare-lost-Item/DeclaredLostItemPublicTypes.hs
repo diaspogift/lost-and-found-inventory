@@ -130,7 +130,8 @@ data ServiceInfo = ServiceInfo {
 
 data RemoteServiceError = RemoteServiceError {
         service :: ServiceInfo
-    ,   execption ::  String -- SomeException
+    ,   execption :: String -- SomeException
+    ,   errorCode :: Int
     } deriving (Eq, Ord, Show)
 
 data DeclareLostItemError =

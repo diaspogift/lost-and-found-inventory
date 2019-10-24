@@ -560,10 +560,11 @@ fromDeclareLostItemError domainError =
             }
         Remote remoteServiceError ->
             let serv = service remoteServiceError 
-                -- errorMessage = message $ execption remoteServiceError
+                httpCd = errorCode remoteServiceError
+                errorMessage = execption remoteServiceError
             in DeclareLostItemErrorDto {
-                code = "RemoteServiceError"
-            ,   message = serviceName serv
+                code = show httpCd
+            ,   message = serviceName serv  
             }
         Db (DbError errorMessage) ->
             DeclareLostItemErrorDto {

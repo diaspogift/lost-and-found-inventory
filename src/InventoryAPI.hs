@@ -17,7 +17,10 @@ import Servant
 import DeclareLostItemDto
 import InventorySystemCommands
 import InventorySystemCommandsHandler
+import DeclaredLostItemPublicTypes
+
 import Control.Monad.Except
+import Data.ByteString.Lazy.Char8
 
 
 
@@ -35,7 +38,7 @@ import Control.Monad.Except
 
 
 data Welcome = Welcome {
-    message :: String
+    greeting :: String
 } deriving (Eq, Show)
 
 $(deriveJSON defaultOptions ''Welcome)
@@ -113,8 +116,54 @@ handlerDeclareLostItem declareLostItemForm =
                 let resp = fmap fromDomain events
                 in return $ Success resp
             Left error -> 
-                let errorMsg = fromDeclareLostItemError error
-                in return $ Error errorMsg
+                case error of
+                    Validation (ValidationError err) ->
+                        let errorMsg = fromDeclareLostItemError error
+                            cd = code errorMsg
+                            msg = message errorMsg
+                            body = cd ++ ": " ++ msg
+                            servantError = 
+                                ServerError {
+                                    errHTTPCode = 400 ,
+                                    errReasonPhrase = code errorMsg,
+                                    errBody = (pack . message) errorMsg,
+                                    errHeaders = []
+                                    }
+
+                        in throwError servantError
+                    Db (DbError err) ->
+                        let errorMsg = fromDeclareLostItemError error
+                            cd = code errorMsg
+                            msg = message errorMsg
+                            body = cd ++ ": " ++ msg
+                            servantError = 
+                                ServerError {
+                                    errHTTPCode = 404 ,
+                                    errReasonPhrase = code errorMsg,
+                                    errBody = (pack . message) errorMsg,
+                                    errHeaders = []
+                                    }
+
+                        in throwError servantError
+
+                    Remote err ->
+                        let errorMsg = fromDeclareLostItemError error
+                            cd = code errorMsg
+                            msg = message errorMsg
+                            body = cd ++ ": " ++ msg
+                            servantError = 
+                                ServerError {
+                                    errHTTPCode = 400 ,
+                                    errReasonPhrase = code errorMsg,
+                                    errBody = (pack . message) errorMsg,
+                                    errHeaders = []
+                                    }
+
+                        in throwError servantError
+
+
+                         
+
 
 
 

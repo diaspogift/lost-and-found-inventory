@@ -87,9 +87,9 @@ handlerDeclareLostItem declareLostItemForm =
         let unvalidatedLostItem = toUnvalidatedLostItem declareLostItemForm
             declareLostItemCmd = Register (Command unvalidatedLostItem "2019 10 10 12:34:56" "111111111111111111111111111111111111")
 
-        -- calling the command handler and lifting the result into the Handler Tranformer 
+        -- calling the command handler and lifting the result into the Handler Transformer 
 
-        res <- liftIO $ runExceptT $ handle declareLostItemCmd
+        res <- (liftIO . runExceptT) $ handle declareLostItemCmd
 
         -- Handling the response
 
@@ -98,8 +98,8 @@ handlerDeclareLostItem declareLostItemForm =
                 let resp = fmap fromDomain events
                 in return $ Success resp
             Left error -> 
-                let resp = fromDeclareLostItemError error
-                in return $ Error resp
+                let errorMsg = fromDeclareLostItemError error
+                in return $ Error errorMsg
 
 
 

@@ -472,8 +472,8 @@ unwrapAnswer (Answer str) = str
 creatDateTimeSpan :: String -> String -> String -> Either ErrorMessage DateTimeSpan
 creatDateTimeSpan strdtStart strdtEnd separator =
     let                 
-        dtstart = fmap read $ splitOn separator strdtStart  
-        dtend = fmap read $ splitOn separator strdtEnd  
+        dtstart = fmap (read::String->Int) $ splitOn separator strdtStart  
+        dtend = fmap (read::String->Int) $ splitOn separator strdtEnd  
     
     in  if ((length dtstart == 6) && (length dtend == 6))
         then  
@@ -481,9 +481,9 @@ creatDateTimeSpan strdtStart strdtEnd separator =
                 d1 = DateTime (dtstart!!0) (dtstart!!1) (dtstart!!2) (dtstart!!3) (dtstart!!4) (dtstart!!5)
                 d2 = DateTime (dtend!!0) (dtend!!1) (dtend!!2) (dtend!!3) (dtend!!4) (dtend!!5)    
             in if d1 > d2 
-               then Left "Invalid date span"
+               then Left "Invalid date time span"
                else Right $ DateTimeSpan (d1, d2)
-        else Left "Invalid date format"
+        else Left "Invalid date format: y m d h m s"
                 
 unwrapDateTimeSpan :: DateTimeSpan -> (String, String)
 unwrapDateTimeSpan (DateTimeSpan (start, end)) = 

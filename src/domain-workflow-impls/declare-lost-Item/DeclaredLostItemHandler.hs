@@ -80,6 +80,9 @@ type NextId = IO UnvalidatedLostItemId
 
 
 
+--- ToDo: Consider using a Tree Structure
+---
+---
 
 checkAdministrativeAreaInfoValid :: 
     AdministrativeMap
@@ -301,7 +304,7 @@ declareLostItemHandler
         ---------------------------------------- Side effects handling start ----------------------------------------
 
         -- publish / persit event(s) into the event store
-        case events of 
+        case events of  -- Either erro [evts]
             Right allEvents -> 
                 do
                     let declLostItemEvt = filter isDeclLostItemEvent allEvents
@@ -320,9 +323,7 @@ declareLostItemHandler
 
 
 
-publicDeclareLostItemHandler :: 
-    DeclareLostItemCmd 
-    -> ExceptT DeclareLostItemError IO [DeclareLostItemEvent]
+publicDeclareLostItemHandler :: DeclareLostItemCmd -> ExceptT DeclareLostItemError IO [DeclareLostItemEvent]
 publicDeclareLostItemHandler = 
     declareLostItemHandler 
         loadAdministrativeAreaMap

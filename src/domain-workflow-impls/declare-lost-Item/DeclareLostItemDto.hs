@@ -292,7 +292,7 @@ toUnvalidatedContactInformation =
 toContactInformation ::
      ContactInformationDto -> Either ErrorMessage ContactInformation
 toContactInformation dto = 
-    do add <- (createPostalAddress . dtoaddress) dto
+    do add <- (createOptionalPostalAddress . dtoaddress) dto
        contact <- toContactMethod (dtoemail dto, dtoprimaryTel dto, dtosecondaryTel dto)
        return ContactInformation {
                     address = add
@@ -358,7 +358,7 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
 fromContactInformation :: 
     ContactInformation -> ContactInformationDto
 fromContactInformation ci = 
-    let add = unwrapPostalAddress $ address ci
+    let add = unwrapOptionalPostalAddress $ address ci
         (email, primTel, secTel) = fromContactMethod $ contactMethod ci 
     in ContactInformationDto {
             dtoemail = email

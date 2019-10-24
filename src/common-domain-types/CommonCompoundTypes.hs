@@ -1193,9 +1193,7 @@ data Person = Person {
 
 
 data ContactInformation = ContactInformation {
-    -- address required ????
-      address       :: PostalAddress
-    -- address required ???? maybe consider this with found items
+      address       :: Maybe PostalAddress
     , contactMethod :: ContactMethod
     } deriving (Eq, Ord, Show)
 

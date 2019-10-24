@@ -80,7 +80,7 @@ type NextId = IO UnvalidatedLostItemId
 
 
 
---- ToDo: Consider using a Tree Structure
+--- TODO: Consider using a Tree Structure for the  AdministrativeMap data type
 ---
 ---
 
@@ -108,7 +108,6 @@ checkAdministrativeAreaInfoValid (AdministrativeMap regions) (strReg, strDiv, st
                                 _ -> Left "given sub division not found"
                         _ -> Left "given division not found"
                 _ -> Left "given region not found"
-
 
 
 checkAttributeInfoValid :: 
@@ -141,8 +140,6 @@ checkAttributeInfoValid refferedAttributes uattr ulositem =
 
         where isAttributesEqualTo unalidatedAttr attribute =
                     (uattrCode unalidatedAttr) == (unwrapAttributeCode $ attrCodeRef attribute)
-
-
 
 
 checkContactInfoValid :: CheckContactInfoValid 
@@ -204,7 +201,6 @@ nextId =
 
 
 
-
 writeEventToStore :: WriteEvent
 writeEventToStore conn (LostItemDeclared lostItemDeclared) = 
     do  let lostItemDeclaredDto = fromLostItemDeclared lostItemDeclared
@@ -224,9 +220,6 @@ writeEventToStore conn (LostItemDeclared lostItemDeclared) =
 
 
 
-
----- TODO: NEEDS LOTS OF IMPROVEMENTS
----- 1- Transform IO (Either DeclareLostItemError [DeclareLostItemEvent]) into ExceptT DeclareLostItemError [DeclareLostItemEvent] 
 
 declareLostItemHandler :: 
     LoadAdministrativeAreaMap
@@ -303,15 +296,13 @@ declareLostItemHandler
 
         ---------------------------------------- Side effects handling start ----------------------------------------
 
-        -- publish / persit event(s) into the event store
-        case events of  -- Either erro [evts]
+        -- publish / persit event(s) into the event store and other inteested third parties 
+        case events of  
             Right allEvents -> 
                 do
                     let declLostItemEvt = filter isDeclLostItemEvent allEvents
                         evt = declLostItemEvt!!0
                     res <- liftIO $ writeEventToStore conn evt
-                    -- print declLostItemEvt
-
                     liftEither events
             Left errorMsg -> liftEither $ Left errorMsg
 
@@ -322,6 +313,9 @@ declareLostItemHandler
 
 
 
+--- partially applied function for the api laye - hinding depencies 
+---
+---
 
 publicDeclareLostItemHandler :: DeclareLostItemCmd -> ExceptT DeclareLostItemError IO [DeclareLostItemEvent]
 publicDeclareLostItemHandler = 
@@ -334,40 +328,3 @@ publicDeclareLostItemHandler =
 
         
    
-
-
-
----- TODO: Transform     IO (Either e a)  into ExceptT e a  
-
----- Getting thereeee :) - This is Monad trasformer LANNNNNNNNDDDD!!!  
-
-{--
-
-newtype ExceptT e a = ExceptT {
-    runExceptT :: IO (Either e a)
-}
-
--- 
-instance MonadIO (ExceptT e) where
-    liftIO :: IO a -> m a
-
-
---
-instance Functor (ExceptT e) where
-  fmap f = ExceptT . fmap (fmap f) . runExceptT
-
---
-instance Applicative (ExceptT e) where
-  pure    = ExceptT . return . Right
-  f <*> x = ExceptT $ liftA2 (<*>) (runExceptT f) (runExceptT x)
---
-instance Monad (ExceptT e) where
-  return  = pure
-  x >>= f = ExceptT $ runExceptT x >>= either (return . Left) (runExceptT . f)
-
-liftEither :: Either e a -> ExceptT e a
-liftEither x = ExceptT (return x)
-  
-liftIO :: IO a -> ExceptT e a
-liftIO x = ExceptT (fmap Right x)
---}

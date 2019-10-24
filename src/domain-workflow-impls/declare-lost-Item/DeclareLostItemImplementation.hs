@@ -106,7 +106,7 @@ data ValidatedPerson = ValidatedPerson {
     } deriving (Eq, Ord, Show)
 
 data ValidatedContactInformation = ValidatedContactInformation {
-      vaddress       :: PostalAddress
+      vaddress       :: Maybe PostalAddress
     , vContactMethod    :: ContactMethod
     } deriving (Eq, Ord, Show)
 
@@ -270,7 +270,7 @@ toContactInfo checkContactInfoValid uc
     | null givenEmail 
       && (not . null) givenPrimTel 
       && (not . null) givenSecTel =
-        do  adress <- mapLeft ValidationError $ createPostalAddress givenAddress
+        do  adress <- mapLeft ValidationError $ createOptionalPostalAddress givenAddress
             primTel <- mapLeft ValidationError $ createTelephone givenPrimTel
             secTel <- mapLeft ValidationError $ createOptionalTelephone givenSecTel
 
@@ -284,7 +284,7 @@ toContactInfo checkContactInfoValid uc
     | null givenEmail
       && (not . null) givenPrimTel 
       && null givenSecTel =
-        do  adress <- mapLeft ValidationError $ createPostalAddress givenAddress
+        do  adress <- mapLeft ValidationError $ createOptionalPostalAddress givenAddress
             primTel <- mapLeft ValidationError $ createTelephone givenPrimTel
             let contactMethod = PhoneOnly primTel Nothing
             return  ValidatedContactInformation {
@@ -296,7 +296,7 @@ toContactInfo checkContactInfoValid uc
     | (not. null) givenEmail
       && null givenPrimTel 
       && null givenSecTel =
-        do  adress <- mapLeft ValidationError $ createPostalAddress givenAddress
+        do  adress <- mapLeft ValidationError $ createOptionalPostalAddress givenAddress
             email <- mapLeft ValidationError $ createEmailAddress givenEmail
             let contactMethod = EmailOnly email
             return  ValidatedContactInformation {
@@ -308,7 +308,7 @@ toContactInfo checkContactInfoValid uc
     | (not . null) givenEmail
       && (not . null) givenPrimTel
       && null givenSecTel =
-        do  adress <- mapLeft ValidationError $ createPostalAddress givenAddress
+        do  adress <- mapLeft ValidationError $ createOptionalPostalAddress givenAddress
             primTel <- mapLeft ValidationError $ createTelephone givenPrimTel
             email <- mapLeft ValidationError $ createEmailAddress givenEmail
             let contactMethod = EmailAndPhone BothContactInfo {
@@ -325,7 +325,7 @@ toContactInfo checkContactInfoValid uc
     | (not . null) givenEmail 
       && (not . null)  givenPrimTel  
       && (not . null) givenSecTel =
-        do  adress <- mapLeft ValidationError $ createPostalAddress givenAddress
+        do  adress <- mapLeft ValidationError $ createOptionalPostalAddress givenAddress
             primTel <- mapLeft ValidationError $ createTelephone givenPrimTel
             email <- mapLeft ValidationError $ createEmailAddress givenEmail
             secTel <- mapLeft ValidationError $ createOptionalTelephone givenSecTel

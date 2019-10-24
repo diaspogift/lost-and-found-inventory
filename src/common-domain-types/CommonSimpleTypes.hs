@@ -17,7 +17,7 @@ module CommonSimpleTypes (
     , createAttributeCode, createAttributeName, createOptionalAttributeValue, createOptionalAttributeUnit
     , createEmailAddress, createPostalAddress, createTelephone, createOptionalTelephone, createOptionalNeighborhood
     , createFirstName, createMiddle, createLastName
-    , createQuestion, createAnswer, creatDateTimeSpan 
+    , createQuestion, createAnswer, creatDateTimeSpan , createOptionalPostalAddress
     
     , unwrapFoundItemId, unwrapLostItemId, unwrapDateTimeSpan
     , unwrapMatchedItemId, unwrapClaimedItemId
@@ -27,7 +27,7 @@ module CommonSimpleTypes (
     , unwrapAttributeCode, unwrapAttributeName, unwrapAttributeValue, unwrapAttributeUnit
     , unwrapEmailAddress, unwrapPostalAddress, unwrapTelephone
     , unwrapFirstName, unwrapMiddle, unwrapLastName
-    , unwrapQuestion, unwrapAnswer
+    , unwrapQuestion, unwrapAnswer,  unwrapOptionalPostalAddress
     ) where 
 
 
@@ -416,6 +416,15 @@ createPostalAddress =
 
 unwrapPostalAddress :: PostalAddress -> String
 unwrapPostalAddress (PostalAddress str) = str
+
+
+createOptionalPostalAddress :: String -> Either ErrorMessage (Maybe PostalAddress)
+createOptionalPostalAddress = 
+    createStringOption "Postal Address: " PostalAddress 500
+
+unwrapOptionalPostalAddress :: Maybe PostalAddress -> String
+unwrapOptionalPostalAddress (Just (PostalAddress str)) = str
+unwrapOptionalPostalAddress Nothing = ""
 
 createTelephone :: String -> Either ErrorMessage Telephone
 createTelephone = 

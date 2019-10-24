@@ -15,7 +15,6 @@ import Data.Either.Combinators
 import Data.UUID.V4
 import Data.UUID hiding (null) -- Internal
 
--- import Data.List.NonEmpty
 
 
 
@@ -81,7 +80,6 @@ type CheckAttributeInfoValid =
 
 
 
-
 --- Validated LostItem
 
 data ValidatedLocation = ValidatedLocation {
@@ -142,10 +140,6 @@ type ValidateUnvalidatedLostItem =
 
 
 
-type CreateLostItem =
-  ValidatedLostItem -> DeclaredLostItem
-
-
 
 
 -- ----------------------------------------------------------------------------
@@ -189,19 +183,6 @@ type AcknowledgemenDeclaredLostItem =
 -- ----------------------------------------------------------------------------
 -- Create events step
 -- ----------------------------------------------------------------------------
-
-
-
-type CreateEvents = 
-  DeclaredLostItem 
-  -> Maybe DeclarationAcknowledgmentSent 
-  -> [DeclareLostItemEvent]
-
-
-
-
-
-
 
 
 
@@ -251,7 +232,7 @@ validateUnvalidatedLostItem
 
 toDateTimeSpan :: (String, String) -> Either ValidationError DateTimeSpan
 toDateTimeSpan (startDate, endDate) = 
-  mapLeft ValidationError $ creatDateTimeSpan startDate endDate " "
+  mapLeft ValidationError $ crtDtTmSpan startDate endDate " "
 
 toOwner :: CheckContactInfoValid -> UnvalidatedPerson -> Either ValidationError ValidatedPerson
 toOwner checkContactInfoValid uperson =
@@ -270,9 +251,9 @@ toContactInfo checkContactInfoValid uc
     | null givenEmail 
       && (not . null) givenPrimTel 
       && (not . null) givenSecTel =
-        do  adress <- mapLeft ValidationError $ createOptionalPostalAddress givenAddress
-            primTel <- mapLeft ValidationError $ createTelephone givenPrimTel
-            secTel <- mapLeft ValidationError $ createOptionalTelephone givenSecTel
+        do  adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
+            primTel <- mapLeft ValidationError $ crtTel givenPrimTel
+            secTel <- mapLeft ValidationError $ crtOptTel givenSecTel
 
             let contactMethod = PhoneOnly primTel secTel
             return  ValidatedContactInformation {
@@ -284,8 +265,8 @@ toContactInfo checkContactInfoValid uc
     | null givenEmail
       && (not . null) givenPrimTel 
       && null givenSecTel =
-        do  adress <- mapLeft ValidationError $ createOptionalPostalAddress givenAddress
-            primTel <- mapLeft ValidationError $ createTelephone givenPrimTel
+        do  adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
+            primTel <- mapLeft ValidationError $ crtTel givenPrimTel
             let contactMethod = PhoneOnly primTel Nothing
             return  ValidatedContactInformation {
                         vaddress = adress
@@ -296,8 +277,8 @@ toContactInfo checkContactInfoValid uc
     | (not. null) givenEmail
       && null givenPrimTel 
       && null givenSecTel =
-        do  adress <- mapLeft ValidationError $ createOptionalPostalAddress givenAddress
-            email <- mapLeft ValidationError $ createEmailAddress givenEmail
+        do  adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
+            email <- mapLeft ValidationError $ crtEmailAddress givenEmail
             let contactMethod = EmailOnly email
             return  ValidatedContactInformation {
                         vaddress = adress
@@ -308,9 +289,9 @@ toContactInfo checkContactInfoValid uc
     | (not . null) givenEmail
       && (not . null) givenPrimTel
       && null givenSecTel =
-        do  adress <- mapLeft ValidationError $ createOptionalPostalAddress givenAddress
-            primTel <- mapLeft ValidationError $ createTelephone givenPrimTel
-            email <- mapLeft ValidationError $ createEmailAddress givenEmail
+        do  adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
+            primTel <- mapLeft ValidationError $ crtTel givenPrimTel
+            email <- mapLeft ValidationError $ crtEmailAddress givenEmail
             let contactMethod = EmailAndPhone BothContactInfo {
                     emailInfo = email
                 ,   primTelephoneInfo = primTel
@@ -325,10 +306,10 @@ toContactInfo checkContactInfoValid uc
     | (not . null) givenEmail 
       && (not . null)  givenPrimTel  
       && (not . null) givenSecTel =
-        do  adress <- mapLeft ValidationError $ createOptionalPostalAddress givenAddress
-            primTel <- mapLeft ValidationError $ createTelephone givenPrimTel
-            email <- mapLeft ValidationError $ createEmailAddress givenEmail
-            secTel <- mapLeft ValidationError $ createOptionalTelephone givenSecTel
+        do  adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
+            primTel <- mapLeft ValidationError $ crtTel givenPrimTel
+            email <- mapLeft ValidationError $ crtEmailAddress givenEmail
+            secTel <- mapLeft ValidationError $ crtOptTel givenSecTel
 
             let contactMethod = EmailAndPhone BothContactInfo {
                     emailInfo = email
@@ -358,19 +339,19 @@ toCheckedValidTelephone checkContactInfoValid str =
 
 toTelephone :: String -> Either ValidationError Telephone
 toTelephone str = 
-  mapLeft ValidationError $ createTelephone str
+  mapLeft ValidationError $ crtTel str
     
 toEmail :: String -> Either ValidationError EmailAddress
 toEmail str = 
-  mapLeft ValidationError $ createEmailAddress str
+  mapLeft ValidationError $ crtEmailAddress str
  
 toPostalAddress :: String -> Either ValidationError PostalAddress
 toPostalAddress str = 
-  mapLeft ValidationError $ createPostalAddress str
+  mapLeft ValidationError $ crtPstAddress str
     
 toFirst :: String -> Either ValidationError FirstName
 toFirst str = 
-  mapLeft ValidationError $ createFirstName str
+  mapLeft ValidationError $ crtFstNm str
 
 toFullName :: UnvalidatedFullName -> Either ValidationError FullName
 toFullName uFullName =
@@ -382,11 +363,11 @@ toFullName uFullName =
   
 toMiddle :: String -> Either ValidationError (Maybe Middle)
 toMiddle str = 
-  mapLeft ValidationError $ createMiddle str
+  mapLeft ValidationError $ crtMdleNm str
 
 toLast :: String -> Either ValidationError LastName
 toLast str = 
-  mapLeft ValidationError $ createLastName str
+  mapLeft ValidationError $ crtLstNm str
 
 toValidatedAttribute :: 
   CheckAttributeInfoValid 
@@ -399,23 +380,23 @@ toValidatedAttribute
          
 toLostItemId :: String -> Either ValidationError LostItemId
 toLostItemId str = 
-  mapLeft ValidationError $ createLostItemId str     
+  mapLeft ValidationError $ crtLstItmId str     
 
 toLostItemName :: String -> Either ValidationError ItemName
 toLostItemName str = 
-    mapLeft ValidationError $ createItemName str     
+    mapLeft ValidationError $ crtItmNm str     
 
 toCategoryId :: String -> Either ValidationError CategoryId
 toCategoryId str = 
-  mapLeft ValidationError $ createCategoryId str    
+  mapLeft ValidationError $ crtCatgrId str    
 
 toUserId :: String -> Either ValidationError UserId
 toUserId str = 
-  mapLeft ValidationError $ createUserId str    
+  mapLeft ValidationError $ crtUsrId str    
 
 toLostItemDescription :: String -> Either ValidationError LongDescription
 toLostItemDescription str = 
-  mapLeft ValidationError $ createLongDescription str     
+  mapLeft ValidationError $ crtLgDescpt str     
 
 toCheckedValidAdminArea :: 
   (String, String, String)  
@@ -431,10 +412,10 @@ toCityOrVillage (cityStr, villageStr)
     | null cityStr && null villageStr = 
         return Nothing
     | null cityStr && (not . null) villageStr = 
-        do  village <- mapLeft ValidationError $ createVillage villageStr
+        do  village <- mapLeft ValidationError $ crtVillage villageStr
             return $ Just $ Country village
     | (not . null) cityStr && null villageStr = 
-        do  city <- mapLeft ValidationError $ createCity cityStr
+        do  city <- mapLeft ValidationError $ crtCity cityStr
             return $ Just $ Urban city
     | (not . null) cityStr && (not . null) villageStr = 
         Left $ ValidationError "provide either a city or a village not both"
@@ -443,35 +424,35 @@ toCityOrVillage (cityStr, villageStr)
 
 toCity :: String -> Either ValidationError City
 toCity str = 
-  mapLeft ValidationError $ createCity str
+  mapLeft ValidationError $ crtCity str
 
 toVillage :: String -> Either ValidationError Village
 toVillage str = 
-  mapLeft ValidationError $ createVillage str
+  mapLeft ValidationError $ crtVillage str
 
 toNeighborhood :: String -> Either ValidationError (Maybe Neighborhood)
 toNeighborhood str = 
-  mapLeft ValidationError $ createNeighborhood str
+  mapLeft ValidationError $ crtNghbrhd str
 
 toAddress :: String -> Either ValidationError Address
 toAddress str = 
-  mapLeft ValidationError $ createAddress str
+  mapLeft ValidationError $ crtAddress str
 
 toAttributeName :: String -> Either ValidationError AttributeName
 toAttributeName str = 
-  mapLeft ValidationError $ createAttributeName str
+  mapLeft ValidationError $ crtAttrNm str
 
 toAttributeDescpt :: String -> Either ValidationError ShortDescription
 toAttributeDescpt str = 
-  mapLeft ValidationError $ createShortDescription str
+  mapLeft ValidationError $ crtShrtDescpt str
 
 toAttributeValue :: String -> Either ValidationError (Maybe AttributeValue)
 toAttributeValue str = 
-  mapLeft ValidationError $ createOptionalAttributeValue str
+  mapLeft ValidationError $ crtOptAttrVal str
 
 toAttributeUnit :: String -> Either ValidationError (Maybe AttributeUnit)
 toAttributeUnit str = 
-  mapLeft ValidationError $ createOptionalAttributeUnit str
+  mapLeft ValidationError $ crtOptAttrUn str
 
 toLostItemLocation ::  
   CheckAdministrativeAreaInfoValid 
@@ -507,8 +488,8 @@ toLostItemLocation checkAdministrativeAreaInfoValid u =
 
 
 
-createLostItem :: CreateLostItem
-createLostItem  =
+crtLostItem :: ValidatedLostItem -> DeclaredLostItem
+crtLostItem  =
   DeclaredLostItem 
     <$> vlostItemId
     <*> vlostItemName
@@ -579,11 +560,11 @@ toLocation vLoc =
 
 acknowledgemenDeclaredLostItem :: AcknowledgemenDeclaredLostItem
 acknowledgemenDeclaredLostItem 
-  createDeclarationAcknowledgment
+  crtDeclarationAcknowledgment
   sendAcknowledgment
   declaredLostItem = 
 
-  let letter = createDeclarationAcknowledgment declaredLostItem
+  let letter = crtDeclarationAcknowledgment declaredLostItem
       acknoledgment = DeclarationAcknowledgment {
            ownerEmail =  contact $ lostItemOwner declaredLostItem
          , letter = letter
@@ -612,14 +593,14 @@ acknowledgemenDeclaredLostItem
 
 
 
-createEvents :: CreateEvents
-createEvents declaredLosItem optionDeclarationAcknowledgmentSent =
+crtEvents :: DeclaredLostItem -> Maybe DeclarationAcknowledgmentSent -> [DeclareLostItemEvent]
+crtEvents declaredLosItem optionDeclarationAcknowledgmentSent =
   let acknoledgmentEvents = 
         maybeToList $ fmap AcknowledgmentSent optionDeclarationAcknowledgmentSent
       lostDeclrationCreatedEvents = 
-        singleton $ LostItemDeclared $ createLostItemDeclaredEvent declaredLosItem
+        singleton $ LostItemDeclared $ crtLostItemDeclaredEvent declaredLosItem
       searchableItemDeclaredEvents = 
-        singleton $ SearchableItemDeclared $ createSearchableLostItemDeclaredEvent declaredLosItem
+        singleton $ SearchableItemDeclared $ crtSearchableLostItemDeclaredEvent declaredLosItem
   in  concat [acknoledgmentEvents, lostDeclrationCreatedEvents, searchableItemDeclaredEvents]
 
 
@@ -628,11 +609,11 @@ createEvents declaredLosItem optionDeclarationAcknowledgmentSent =
 ---
 ---
 
-createLostItemDeclaredEvent :: DeclaredLostItem -> DeclaredLostItem
-createLostItemDeclaredEvent declaredLostItem = declaredLostItem
+crtLostItemDeclaredEvent :: DeclaredLostItem -> DeclaredLostItem
+crtLostItemDeclaredEvent declaredLostItem = declaredLostItem
 
-createSearchableLostItemDeclaredEvent :: DeclaredLostItem -> DeclaredLostItem
-createSearchableLostItemDeclaredEvent declaredLostItem = declaredLostItem
+crtSearchableLostItemDeclaredEvent :: DeclaredLostItem -> DeclaredLostItem
+crtSearchableLostItemDeclaredEvent declaredLostItem = declaredLostItem
 
 
 
@@ -663,7 +644,7 @@ declareLostItem
   checkAdministrativeAreaInfoValid  -- Dependency
   checkAttributeInfoValid           -- Dependency
   checkContactInfoValid             -- Dependency
-  createDeclarationAcknowledgment   -- Dependency
+  crtDeclarationAcknowledgment   -- Dependency
   sendAcknowledgment                -- Dependency
   unvalidatedLostItem               -- Input
   lostItemCreationTime              -- Input
@@ -682,22 +663,22 @@ declareLostItem
                       unValidatedlostItemUuid
 
           -- Creation step
-          createdLostItem 
+          crtdLostItem 
               <- return 
-                  $ createLostItem validatedLostItem
+                  $ crtLostItem validatedLostItem
 
           -- Aknowledgment step
           maybeAcknowledgment 
             <- return 
                 $ acknowledgemenDeclaredLostItem
-                    createDeclarationAcknowledgment
+                    crtDeclarationAcknowledgment
                     sendAcknowledgment
-                    createdLostItem
+                    crtdLostItem
 
           -- Events creation step
           return 
-            $ createEvents 
-                createdLostItem
+            $ crtEvents 
+                crtdLostItem
                 maybeAcknowledgment   
 
           

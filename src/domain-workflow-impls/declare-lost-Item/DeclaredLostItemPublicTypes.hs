@@ -76,7 +76,7 @@ data UnvalidatedLostItem = UnvalidatedLostItem {
 -- --------------------------------------------------------------------------
 
 
--- Event will be created if the Acknowledgment was successfully posted
+-- Event will be crtd if the Acknowledgment was successfully posted
 data DeclarationAcknowledgmentSent = DeclarationAcknowledgmentSent {
         declaredLostItemId :: LostItemId
     ,   ownerContactInfo :: ContactInformation 

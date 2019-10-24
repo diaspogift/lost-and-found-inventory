@@ -1671,7 +1671,7 @@ wouriDivision = DivisionItem Wouri wouriSubDivisions
 categories = rights [humansCategory, documentsCategory, personalItemsCategory, electronicsCategory]
 allCategories = 
     fmap toTuple categories
-        where toTuple cat = (unwrapCategoryId $ categoryId cat, cat) 
+        where toTuple cat = (uwrpCatgrId $ categoryId cat, cat) 
 
 
 hCatId = "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
@@ -1681,8 +1681,8 @@ eCatId = "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
 
 
 humansCategory = 
-    do  catid <- createCategoryId "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
-        catdesc <- createLongDescription "Human Category: It captures anything related to lost humans"
+    do  catid <- crtCatgrId "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
+        catdesc <- crtLgDescpt "Human Category: It captures anything related to lost humans"
         return $
             Category {
                 categoryId = catid
@@ -1694,8 +1694,8 @@ humansCategory =
             }
                 
 documentsCategory = 
-    do  catid <- createCategoryId "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
-        catdesc <- createLongDescription "Document Category: It captures anything related to lost documents"
+    do  catid <- crtCatgrId "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+        catdesc <- crtLgDescpt "Document Category: It captures anything related to lost documents"
         return $
             Category {
                     categoryId = catid
@@ -1707,8 +1707,8 @@ documentsCategory =
                 }
 
 personalItemsCategory = 
-    do  catid <- createCategoryId "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP"
-        catdesc <- createLongDescription "HPersonal items Category: It captures anything related to lost personal items"
+    do  catid <- crtCatgrId "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP"
+        catdesc <- crtLgDescpt "HPersonal items Category: It captures anything related to lost personal items"
         return $
             Category {
                     categoryId = catid
@@ -1721,8 +1721,8 @@ personalItemsCategory =
 
 electronicsCategory = 
 
-    do  catid <- createCategoryId "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
-        catdesc <- createLongDescription "Electronics Category: It captures anything related to lost electronics"
+    do  catid <- crtCatgrId "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+        catdesc <- crtLgDescpt "Electronics Category: It captures anything related to lost electronics"
         return $
             Category {
                     categoryId = catid
@@ -1741,16 +1741,16 @@ electronicsCategory =
 
 
 colorAttributeRef = 
-    do  code <- createAttributeCode "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
-        name <- createAttributeName "Color"
-        desc <- createShortDescription "Describe the item/person color"
-        value0 <- createOptionalAttributeValue "Red"
-        value1 <- createOptionalAttributeValue "Green"
-        value2 <- createOptionalAttributeValue "Yello"
-        value3 <- createOptionalAttributeValue "White"
-        refCatId1 <- createCategoryId hCatId
-        refCatId2 <- createCategoryId eCatId
-        refCatId3 <- createCategoryId pCatId
+    do  code <- crtAttrCd "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+        name <- crtAttrNm "Color"
+        desc <- crtShrtDescpt "Describe the item/person color"
+        value0 <- crtOptAttrVal "Red"
+        value1 <- crtOptAttrVal "Green"
+        value2 <- crtOptAttrVal "Yello"
+        value3 <- crtOptAttrVal "White"
+        refCatId1 <- crtCatgrId hCatId
+        refCatId2 <- crtCatgrId eCatId
+        refCatId3 <- crtCatgrId pCatId
 
         return $
             AttributeRef {
@@ -1763,12 +1763,12 @@ colorAttributeRef =
                 }
 
 weightAttributeRef = 
-    do  code <- createAttributeCode "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
-        name <- createAttributeName "Weight"
-        desc <- createShortDescription "Describe the item/person weight"
-        unit <- createOptionalAttributeUnit "Kg"
-        refCatId1 <- createCategoryId hCatId
-        refCatId3 <- createCategoryId pCatId
+    do  code <- crtAttrCd "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
+        name <- crtAttrNm "Weight"
+        desc <- crtShrtDescpt "Describe the item/person weight"
+        unit <- crtOptAttrUn "Kg"
+        refCatId1 <- crtCatgrId hCatId
+        refCatId3 <- crtCatgrId pCatId
 
         return $
             AttributeRef {
@@ -1783,4 +1783,4 @@ weightAttributeRef =
 attributes = rights [colorAttributeRef, weightAttributeRef]
 allAttributes = 
     fmap catToTuple attributes
-        where catToTuple attr = (unwrapAttributeCode $ attrCodeRef attr, attr) 
+        where catToTuple attr = (uwrpAttrCd $ attrCodeRef attr, attr) 

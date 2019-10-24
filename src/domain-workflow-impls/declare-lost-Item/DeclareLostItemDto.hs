@@ -85,7 +85,7 @@ toLocation :: LocationDto -> Either ErrorMessage Location
 toLocation dto = 
     do  area <- toAdminAreaInfo (dtoregion dto, dtodivision dto, dtosubdivision dto)
         lieu <- toCityOrVillage (dtocity dto, dtovillage dto)
-        voisinage <- createOptionalNeighborhood $ dtoneighborhood dto
+        voisinage <- crtOptNghbrhd $ dtoneighborhood dto
         addresses <- traverse toAddress $ dtolocationAddress dto
         return Location  {
                     adminArea = area
@@ -112,10 +112,10 @@ toCityOrVillage (strCity, strVillage)
     | isStringNull strCity && isStringNull strVillage = 
         return Nothing
     | isStringNull strCity && isStringNotNull strVillage = 
-        do  village <- createVillage strVillage
+        do  village <- crtVillage strVillage
             return $ Just $ Country village
     | isStringNotNull strCity && isStringNull strVillage = 
-        do  city <- createCity strCity
+        do  city <- crtCity strCity
             return $ Just $ Urban city
     | otherwise = return Nothing 
     where   isStringNotNull = (not . null)
@@ -124,14 +124,14 @@ toCityOrVillage (strCity, strVillage)
 
 
 toAddress :: String -> Either ErrorMessage Address
-toAddress = createAddress 
+toAddress = crtAddress 
 
 fromLocation :: Location -> LocationDto
 fromLocation loc = 
     let (reg, div, sub) = fromMaybeAdminArea $ adminArea loc
         (city, village) = fromMaybeCityOrVillage $ cityOrVillage loc
         maybeNeighborhood = fromMaybeNeighborhood $ neighborhood loc
-        addresses = fmap unwrapAddress $ locationAddresses loc
+        addresses = fmap uwrpAddress $ locationAddresses loc
     in LocationDto {
             dtoregion = reg
         ,   dtodivision = div
@@ -147,13 +147,13 @@ fromMaybeAdminArea Nothing = ("", "", "")
 fromMaybeAdminArea (Just (reg, div, sub)) = (fromRegion reg, fromDivision div, fromSubDivision sub)
 
 fromMaybeCityOrVillage :: Maybe CityOrVillage -> (String, String)
-fromMaybeCityOrVillage (Just (Urban wCity))= (unwrapCity wCity, "")
-fromMaybeCityOrVillage (Just (Country wVillage))= ("", unwrapVillage wVillage)
+fromMaybeCityOrVillage (Just (Urban wCity))= (uwrpCity wCity, "")
+fromMaybeCityOrVillage (Just (Country wVillage))= ("", uwrpVillage wVillage)
 fromMaybeCityOrVillage Nothing = ("","")
 
 
 fromMaybeNeighborhood :: Maybe Neighborhood -> String
-fromMaybeNeighborhood (Just wNeighborhood) = unwrapNeighborhood wNeighborhood
+fromMaybeNeighborhood (Just wNeighborhood) = uwrpNghbrhd wNeighborhood
 fromMaybeNeighborhood Nothing = ""
 
 -- ----------------------------------------------------------------------------
@@ -189,11 +189,11 @@ toUnvalidatedAttribute =
 
 toAttribute :: AttributeDto -> Either ErrorMessage Attribute
 toAttribute dto = 
-    do  code <- createAttributeCode $ dtoattrCode dto
-        name <- createAttributeName $ dtoattrName dto
-        desc <- createShortDescription $ dtoattrDescription dto
-        val <- createOptionalAttributeValue $ dtoattrValue dto
-        unit <- createOptionalAttributeUnit $ dtoattrUnit dto
+    do  code <- crtAttrCd $ dtoattrCode dto
+        name <- crtAttrNm $ dtoattrName dto
+        desc <- crtShrtDescpt $ dtoattrDescription dto
+        val <- crtOptAttrVal $ dtoattrValue dto
+        unit <- crtOptAttrUn $ dtoattrUnit dto
 
         return  Attribute {
                   attrCode = code
@@ -204,18 +204,18 @@ toAttribute dto =
                 }
         where 
             toCatIdCatTypePair (strCatId, strCatType) =
-                do  catId <- createCategoryId strCatId
+                do  catId <- crtCatgrId strCatId
                     catType <- toCategoryType strCatType
                     return (catId, catType)
 
 fromAttribute :: Attribute -> AttributeDto
 fromAttribute  = 
     AttributeDto 
-        <$> unwrapAttributeCode . attrCode 
-        <*> unwrapAttributeName . attrName 
-        <*> unwrapShortDescription . attrDescription 
-        <*> unwrapAttributeValue . attrValue 
-        <*> unwrapAttributeUnit . attrUnit 
+        <$> uwrpAttrCd . attrCode 
+        <*> uwrpAttrNm . attrName 
+        <*> uwrpShrtDescpt . attrDescription 
+        <*> uwrpAttrVal . attrValue 
+        <*> uwrpAttrUn . attrUnit 
 
 
 
@@ -251,7 +251,7 @@ toUnvalidatedPerson =
 fromPerson :: Person -> PersonDto
 fromPerson = 
     PersonDto
-        <$> unwrapUserId . userId 
+        <$> uwrpUsrId . userId 
         <*> fromContactInformation . contact 
         <*> fromFullName . name 
     
@@ -291,7 +291,7 @@ toUnvalidatedContactInformation =
 toContactInformation ::
      ContactInformationDto -> Either ErrorMessage ContactInformation
 toContactInformation dto = 
-    do add <- (createOptionalPostalAddress . dtoaddress) dto
+    do add <- (crtOptPstAddrss . dtoaddress) dto
        contact <- toContactMethod (dtoemail dto, dtoprimaryTel dto, dtosecondaryTel dto)
        return ContactInformation {
                     address = add
@@ -305,8 +305,8 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
     | null givenEmail 
       && (not . null) givenPrimTel 
       && (not . null) givenSecTel =
-        do  primTel <- createTelephone givenPrimTel
-            secTel <- createOptionalTelephone givenSecTel
+        do  primTel <- crtTel givenPrimTel
+            secTel <- crtOptTel givenSecTel
             return $ PhoneOnly primTel secTel
           
 
@@ -314,7 +314,7 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
     | null givenEmail
       && (not . null) givenPrimTel 
       && null givenSecTel =
-        do  primTel <- createTelephone givenPrimTel
+        do  primTel <- crtTel givenPrimTel
             return $ PhoneOnly primTel Nothing
             
 
@@ -322,15 +322,15 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
     | (not. null) givenEmail
       && null givenPrimTel 
       && null givenSecTel =
-        do  email <- createEmailAddress givenEmail
+        do  email <- crtEmailAddress givenEmail
             return $ EmailOnly email
             
     -- email and prim phone given
     | (not . null) givenEmail
       && (not . null) givenPrimTel
       && null givenSecTel =
-        do  primTel <- createTelephone givenPrimTel
-            email <- createEmailAddress givenEmail
+        do  primTel <- crtTel givenPrimTel
+            email <- crtEmailAddress givenEmail
             return $ 
                 EmailAndPhone BothContactInfo {
                         emailInfo = email
@@ -342,9 +342,9 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
     | (not . null) givenEmail 
       && (not . null)  givenPrimTel  
       && (not . null) givenSecTel =
-        do  primTel <- createTelephone givenPrimTel
-            email <- createEmailAddress givenEmail
-            secTel <- createOptionalTelephone givenSecTel
+        do  primTel <- crtTel givenPrimTel
+            email <- crtEmailAddress givenEmail
+            secTel <- crtOptTel givenSecTel
             return $ 
                 EmailAndPhone BothContactInfo {
                         emailInfo = email
@@ -357,7 +357,7 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
 fromContactInformation :: 
     ContactInformation -> ContactInformationDto
 fromContactInformation ci = 
-    let add = unwrapOptionalPostalAddress $ address ci
+    let add = uwrpOptPstAddress $ address ci
         (email, primTel, secTel) = fromContactMethod $ contactMethod ci 
     in ContactInformationDto {
             dtoemail = email
@@ -367,17 +367,17 @@ fromContactInformation ci =
         }
   
 fromContactMethod :: ContactMethod -> (String, String, String) 
-fromContactMethod (EmailOnly email) = (unwrapEmailAddress email, "", "")  
+fromContactMethod (EmailOnly email) = (uwrpEmailAddress email, "", "")  
 fromContactMethod (PhoneOnly primTel maybeSecTel) = 
     case maybeSecTel  of 
-        Nothing -> ("", unwrapTelephone primTel, "")
-        Just wrappedSecTel -> ("", unwrapTelephone primTel, unwrapTelephone wrappedSecTel)
+        Nothing -> ("", uwrpTel primTel, "")
+        Just wrappedSecTel -> ("", uwrpTel primTel, uwrpTel wrappedSecTel)
 fromContactMethod (EmailAndPhone  both) = 
-    let email = unwrapEmailAddress $ emailInfo both
-        primTel = unwrapTelephone $ primTelephoneInfo both
+    let email = uwrpEmailAddress $ emailInfo both
+        primTel = uwrpTel $ primTelephoneInfo both
         maybeSecTel = secTelephoneInfo both
     in case maybeSecTel of 
-            Just wrappedSecTel -> (email, primTel, unwrapTelephone wrappedSecTel)
+            Just wrappedSecTel -> (email, primTel, uwrpTel wrappedSecTel)
             Nothing -> (email, primTel, "")
 
 
@@ -413,16 +413,16 @@ toUnvalidatedFullName =
 toFullName :: FullNameDto -> Either ErrorMessage FullName
 toFullName dto = 
     FullName  
-        <$> (createFirstName . dtofirst) dto
-        <*> (createMiddle . dtomiddle) dto
-        <*> (createLastName . dtolast) dto
+        <$> (crtFstNm . dtofirst) dto
+        <*> (crtMdleNm . dtomiddle) dto
+        <*> (crtLstNm . dtolast) dto
         
 fromFullName :: FullName -> FullNameDto
 fromFullName = 
     FullNameDto
-        <$> unwrapFirstName . first 
-        <*> unwrapMiddle . middle 
-        <*> unwrapLastName . last 
+        <$> uwrpFstNm . first 
+        <*> uwrpMdleNm . middle 
+        <*> uwrpLstNm . last 
     
 
 
@@ -491,18 +491,18 @@ instance FromJSON LostItemDeclaredDto
 fromLostItemDeclared :: LostItemDeclared -> LostItemDeclaredDto
 fromLostItemDeclared = 
     LostItemDeclaredDto
-        <$> unwrapLostItemId . lostItemId 
-        <*> unwrapItemName . lostItemName 
-        <*> unwrapCategoryId . lostItemCategoryId 
-        <*> unwrapLongDescription . lostItemDesc 
+        <$> uwrpLstItmId . lostItemId 
+        <*> uwrpItmNm . lostItemName 
+        <*> uwrpCatgrId . lostItemCategoryId 
+        <*> uwrpLgDescpt . lostItemDesc 
         <*> (fmap fromLocation) . toList . lostItemLocation 
         <*> lostItemRegistrationTime 
-        <*> unwrapDateTimeSpan . lostItemDateAndTimeSpan 
+        <*> uwrpDtTmSpan . lostItemDateAndTimeSpan 
         <*> (fmap fromAttribute) . toList . lostItemAttributes 
         <*> fromPerson . lostItemOwner  
 
 fromDateTimeSpan :: DateTimeSpan -> (String, String)
-fromDateTimeSpan = unwrapDateTimeSpan
+fromDateTimeSpan = uwrpDtTmSpan
 
 
 
@@ -528,7 +528,7 @@ fromDeclarationAcknowledgmentSent ::
     DeclarationAcknowledgmentSent -> DeclarationAcknowledgmentSentDto
 fromDeclarationAcknowledgmentSent  = 
     DeclarationAcknowledgmentSentDto
-        <$> unwrapLostItemId . declaredLostItemId 
+        <$> uwrpLstItmId . declaredLostItemId 
         <*> fromContactInformation . ownerContactInfo
     
 

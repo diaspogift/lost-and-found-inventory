@@ -9,25 +9,25 @@ module CommonSimpleTypes (
     , EmailAddress, PostalAddress, Telephone
     , FirstName, Middle, LastName
     , Question, Answer, ErrorMessage, Reason, CityOrVillage (..) -- , Urban, Country
-    , createFoundItemId, createLostItemId
-    , createMatchedItemId, createClaimedItemId
-    , createUserId, createTenantId, createCategoryId
-    , createShortDescription, createLongDescription
-    , createTenantName, createItemName, createCity, createVillage, createNeighborhood, createAddress
-    , createAttributeCode, createAttributeName, createOptionalAttributeValue, createOptionalAttributeUnit
-    , createEmailAddress, createPostalAddress, createTelephone, createOptionalTelephone, createOptionalNeighborhood
-    , createFirstName, createMiddle, createLastName
-    , createQuestion, createAnswer, creatDateTimeSpan , createOptionalPostalAddress
+    , crtFndItmId, crtLstItmId
+    , crtMtchdItmId, crtClmdItmId
+    , crtUsrId, crtTntId, crtCatgrId
+    , crtShrtDescpt, crtLgDescpt
+    , crtTntNm, crtItmNm, crtCity, crtVillage, crtNghbrhd, crtAddress
+    , crtAttrCd, crtAttrNm, crtOptAttrUn, crtOptAttrVal
+    , crtEmailAddress, crtPstAddress, crtTel, crtOptTel, crtOptNghbrhd
+    , crtFstNm, crtMdleNm, crtLstNm
+    , crtQuest, crtAns, crtDtTmSpan , crtOptPstAddrss
     
-    , unwrapFoundItemId, unwrapLostItemId, unwrapDateTimeSpan
-    , unwrapMatchedItemId, unwrapClaimedItemId
-    , unwrapUserId, unwrapTenantId, unwrapCategoryId
-    , unwrapShortDescription, unwrapLongDescription
-    , unwrapTenantName, unwrapItemName, unwrapCity, unwrapVillage, unwrapNeighborhood, unwrapAddress
-    , unwrapAttributeCode, unwrapAttributeName, unwrapAttributeValue, unwrapAttributeUnit
-    , unwrapEmailAddress, unwrapPostalAddress, unwrapTelephone
-    , unwrapFirstName, unwrapMiddle, unwrapLastName
-    , unwrapQuestion, unwrapAnswer,  unwrapOptionalPostalAddress
+    , uwrpFndItmId, uwrpLstItmId, uwrpDtTmSpan
+    , uwrpMtchdItmId, uwrpClmdItmId
+    , uwrpUsrId, uwrpTntId, uwrpCatgrId
+    , uwrpShrtDescpt, uwrpLgDescpt
+    , uwrpTntNm, uwrpItmNm, uwrpCity, uwrpVillage, uwrpNghbrhd, uwrpAddress
+    , uwrpAttrCd, uwrpAttrNm, uwrpAttrVal, uwrpAttrUn
+    , uwrpEmailAddress, uwrpPostalAddress, uwrpTel
+    , uwrpFstNm, uwrpMdleNm, uwrpLstNm
+    , uwrpQuest, uwrpAns,  uwrpOptPstAddress
     ) where 
 
 
@@ -142,19 +142,19 @@ type ErrorMessage
 
 -- ===================================================================================
 -- Reusable constructors and getters for constrained types
--- Reusable unwrappers to primitives types such as String, Int ..etc
+-- Reusable uwrppers to primitives types such as String, Int ..etc
 -- ===================================================================================
 
 
 
 
 
-createString :: String 
+crtString :: String 
                 -> (String -> a) 
                 -> Int 
                 -> String 
                 -> Either ErrorMessage a
-createString fieldName ctor maxLen str  
+crtString fieldName ctor maxLen str  
     | null str =
         let errorMsg =  
                 fieldName 
@@ -171,13 +171,13 @@ createString fieldName ctor maxLen str
         Right $ ctor str
 
 
-createStringWithBoundedLength :: String 
+crtBoundedString :: String 
                 -> (String -> a) 
                 -> Int 
                 -> Int
                 -> String 
                 -> Either ErrorMessage a
-createStringWithBoundedLength fieldName ctor minLen maxLen str       
+crtBoundedString fieldName ctor minLen maxLen str       
     | minLen > maxLen = 
         let errorMsg = 
                 "incoherent max and min length"
@@ -204,12 +204,12 @@ createStringWithBoundedLength fieldName ctor minLen maxLen str
         Right $ ctor str
 
              
-createStringOption :: String 
+crtStringOpt :: String 
                 -> (String -> a) 
                 -> Int 
                 -> String 
                 -> Either ErrorMessage (Maybe a)
-createStringOption fieldName ctor maxLen str
+crtStringOpt fieldName ctor maxLen str
     | null str =
         Right Nothing
     | length str > maxLen =
@@ -219,14 +219,14 @@ createStringOption fieldName ctor maxLen str
         Right $ Just $ ctor str 
 
 
-createNum :: (Num a, Eq a, Ord a, Show a) =>
+crtNum :: (Num a, Eq a, Ord a, Show a) =>
                String 
             -> (a -> a) 
             -> a 
             -> a
             -> a 
             -> Either ErrorMessage a
-createNum fieldName ctor minVal maxVal i
+crtNum fieldName ctor minVal maxVal i
     | minVal > maxVal =
         let errorMsg = "inconsitent minval and maxval"
         in Left errorMsg
@@ -246,11 +246,11 @@ createNum fieldName ctor minVal maxVal i
         Right (ctor i)
 
 
-createEmail :: String 
+crtEmail :: String 
             -> (String -> EmailAddress) 
             -> String 
             -> Either ErrorMessage EmailAddress
-createEmail fieldName  ctor  str 
+crtEmail fieldName  ctor  str 
     | null str =
         let errorMsg = 
                 fieldName 
@@ -263,221 +263,221 @@ createEmail fieldName  ctor  str
                 Left errorMsg -> Left errorMsg
 
 
-createLostItemId :: String -> Either ErrorMessage LostItemId
-createLostItemId = 
-    createStringWithBoundedLength "Lost Item Identifier: " LostItemId 36 36 
+crtLstItmId :: String -> Either ErrorMessage LostItemId
+crtLstItmId = 
+    crtBoundedString "Lost Item Identifier: " LostItemId 36 36 
 
-unwrapLostItemId :: LostItemId -> String
-unwrapLostItemId (LostItemId str) = str
+uwrpLstItmId :: LostItemId -> String
+uwrpLstItmId (LostItemId str) = str
 
-createFoundItemId :: String -> Either ErrorMessage FoundItemId
-createFoundItemId = 
-    createStringWithBoundedLength "Found Item Identifier: " FoundItemId 36 36
+crtFndItmId :: String -> Either ErrorMessage FoundItemId
+crtFndItmId = 
+    crtBoundedString "Found Item Identifier: " FoundItemId 36 36
 
-unwrapFoundItemId :: FoundItemId -> String
-unwrapFoundItemId (FoundItemId str) = str
+uwrpFndItmId :: FoundItemId -> String
+uwrpFndItmId (FoundItemId str) = str
 
-createMatchedItemId :: String -> Either ErrorMessage MatchedItemId
-createMatchedItemId = 
-    createStringWithBoundedLength "Matched Item Identifier: " MatchedItemId 36 36
+crtMtchdItmId :: String -> Either ErrorMessage MatchedItemId
+crtMtchdItmId = 
+    crtBoundedString "Matched Item Identifier: " MatchedItemId 36 36
 
-unwrapMatchedItemId :: MatchedItemId -> String
-unwrapMatchedItemId (MatchedItemId str) = str
+uwrpMtchdItmId :: MatchedItemId -> String
+uwrpMtchdItmId (MatchedItemId str) = str
 
-createClaimedItemId :: String -> Either ErrorMessage ClaimedItemId
-createClaimedItemId = 
-    createStringWithBoundedLength "Claimed Item Identifier: " ClaimedItemId 36 36
+crtClmdItmId :: String -> Either ErrorMessage ClaimedItemId
+crtClmdItmId = 
+    crtBoundedString "Claimed Item Identifier: " ClaimedItemId 36 36
 
-unwrapClaimedItemId :: ClaimedItemId -> String
-unwrapClaimedItemId (ClaimedItemId str) = str
+uwrpClmdItmId :: ClaimedItemId -> String
+uwrpClmdItmId (ClaimedItemId str) = str
 
-createUserId :: String -> Either ErrorMessage UserId
-createUserId = 
-    createStringWithBoundedLength "User Identifier: " UserId 36 36
+crtUsrId :: String -> Either ErrorMessage UserId
+crtUsrId = 
+    crtBoundedString "User Identifier: " UserId 36 36
 
-unwrapUserId :: UserId -> String
-unwrapUserId (UserId str) = str
+uwrpUsrId :: UserId -> String
+uwrpUsrId (UserId str) = str
 
-createTenantId :: String -> Either ErrorMessage TenantId
-createTenantId = 
-    createStringWithBoundedLength "Tenant Identifier: " TenantId 36 36
+crtTntId :: String -> Either ErrorMessage TenantId
+crtTntId = 
+    crtBoundedString "Tenant Identifier: " TenantId 36 36
 
-unwrapTenantId :: TenantId -> String
-unwrapTenantId (TenantId str) = str
+uwrpTntId :: TenantId -> String
+uwrpTntId (TenantId str) = str
 
 
-createCategoryId :: String -> Either ErrorMessage CategoryId
-createCategoryId = 
-    createStringWithBoundedLength "Category Identifier: " CategoryId 36 36
+crtCatgrId :: String -> Either ErrorMessage CategoryId
+crtCatgrId = 
+    crtBoundedString "Category Identifier: " CategoryId 36 36
 
-unwrapCategoryId :: CategoryId -> String
-unwrapCategoryId (CategoryId str) = str
+uwrpCatgrId :: CategoryId -> String
+uwrpCatgrId (CategoryId str) = str
 
-createShortDescription :: String -> Either ErrorMessage ShortDescription
-createShortDescription = 
-    createString "Short Description: " ShortDescription 250
+crtShrtDescpt :: String -> Either ErrorMessage ShortDescription
+crtShrtDescpt = 
+    crtString "Short Description: " ShortDescription 250
 
-unwrapShortDescription:: ShortDescription -> String
-unwrapShortDescription (ShortDescription str) = str
+uwrpShrtDescpt:: ShortDescription -> String
+uwrpShrtDescpt (ShortDescription str) = str
 
-createLongDescription :: String -> Either ErrorMessage LongDescription
-createLongDescription = 
-    createString "Long Description: " LongDescription 5000
+crtLgDescpt :: String -> Either ErrorMessage LongDescription
+crtLgDescpt = 
+    crtString "Long Description: " LongDescription 5000
 
-unwrapLongDescription:: LongDescription -> String
-unwrapLongDescription (LongDescription str) = str
+uwrpLgDescpt:: LongDescription -> String
+uwrpLgDescpt (LongDescription str) = str
     
-createTenantName :: String -> Either ErrorMessage TenantName
-createTenantName = 
-    createString "Tenant Name: " TenantName 100
+crtTntNm :: String -> Either ErrorMessage TenantName
+crtTntNm = 
+    crtString "Tenant Name: " TenantName 100
 
-unwrapTenantName :: TenantName -> String
-unwrapTenantName (TenantName str) = str
+uwrpTntNm :: TenantName -> String
+uwrpTntNm (TenantName str) = str
 
-createItemName :: String -> Either ErrorMessage ItemName
-createItemName = 
-    createString "Item Name: " ItemName 500
+crtItmNm :: String -> Either ErrorMessage ItemName
+crtItmNm = 
+    crtString "Item Name: " ItemName 500
 
-unwrapItemName :: ItemName -> String
-unwrapItemName (ItemName str) = str
+uwrpItmNm :: ItemName -> String
+uwrpItmNm (ItemName str) = str
 
-createCity :: String -> Either ErrorMessage City
-createCity = 
-    createString "City: " City 100
+crtCity :: String -> Either ErrorMessage City
+crtCity = 
+    crtString "City: " City 100
 
-unwrapCity:: City -> String
-unwrapCity (City str) = str
+uwrpCity:: City -> String
+uwrpCity (City str) = str
 
-createVillage :: String -> Either ErrorMessage Village
-createVillage = 
-    createString "Village: " Village 100
+crtVillage :: String -> Either ErrorMessage Village
+crtVillage = 
+    crtString "Village: " Village 100
 
-unwrapVillage :: Village -> String
-unwrapVillage (Village str) = str
+uwrpVillage :: Village -> String
+uwrpVillage (Village str) = str
 
-createNeighborhood :: String -> Either ErrorMessage (Maybe Neighborhood)
-createNeighborhood = 
-    createStringOption "Neighborhood: " Neighborhood 500
+crtNghbrhd :: String -> Either ErrorMessage (Maybe Neighborhood)
+crtNghbrhd = 
+    crtStringOpt "Neighborhood: " Neighborhood 500
 
-createOptionalNeighborhood :: String -> Either ErrorMessage (Maybe Neighborhood)
-createOptionalNeighborhood = 
-    createStringOption "Neighborhood: " Neighborhood 500
+crtOptNghbrhd :: String -> Either ErrorMessage (Maybe Neighborhood)
+crtOptNghbrhd = 
+    crtStringOpt "Neighborhood: " Neighborhood 500
 
-unwrapNeighborhood :: Neighborhood -> String
-unwrapNeighborhood (Neighborhood str) = str
+uwrpNghbrhd :: Neighborhood -> String
+uwrpNghbrhd (Neighborhood str) = str
 
-createAddress :: String -> Either ErrorMessage Address
-createAddress = 
-    createString "Address: " Address 500
+crtAddress :: String -> Either ErrorMessage Address
+crtAddress = 
+    crtString "Address: " Address 500
 
-unwrapAddress :: Address -> String
-unwrapAddress (Address str) = str
+uwrpAddress :: Address -> String
+uwrpAddress (Address str) = str
 
-createAttributeCode :: String -> Either ErrorMessage AttributeCode
-createAttributeCode = 
-    createString "Attribute Code: " AttributeCode 50
+crtAttrCd :: String -> Either ErrorMessage AttributeCode
+crtAttrCd = 
+    crtString "Attribute Code: " AttributeCode 50
 
-unwrapAttributeCode :: AttributeCode -> String
-unwrapAttributeCode (AttributeCode str) = str
+uwrpAttrCd :: AttributeCode -> String
+uwrpAttrCd (AttributeCode str) = str
 
-createAttributeName :: String -> Either ErrorMessage AttributeName
-createAttributeName = 
-    createString "Attribute Code: " AttributeName 50
+crtAttrNm :: String -> Either ErrorMessage AttributeName
+crtAttrNm = 
+    crtString "Attribute Code: " AttributeName 50
 
-unwrapAttributeName :: AttributeName -> String
-unwrapAttributeName (AttributeName str) = str
+uwrpAttrNm :: AttributeName -> String
+uwrpAttrNm (AttributeName str) = str
 
-createOptionalAttributeValue :: String -> Either ErrorMessage (Maybe AttributeValue)
-createOptionalAttributeValue = 
-    createStringOption "Attribute Value: " AttributeValue 50
+crtOptAttrVal :: String -> Either ErrorMessage (Maybe AttributeValue)
+crtOptAttrVal = 
+    crtStringOpt "Attribute Value: " AttributeValue 50
 
-unwrapAttributeValue :: Maybe AttributeValue -> String
-unwrapAttributeValue (Just (AttributeValue str)) = str
-unwrapAttributeValue Nothing = ""
+uwrpAttrVal :: Maybe AttributeValue -> String
+uwrpAttrVal (Just (AttributeValue str)) = str
+uwrpAttrVal Nothing = ""
 
-createOptionalAttributeUnit :: String -> Either ErrorMessage (Maybe AttributeUnit)
-createOptionalAttributeUnit = 
-    createStringOption "Attribute Unit: " AttributeUnit 50
+crtOptAttrUn :: String -> Either ErrorMessage (Maybe AttributeUnit)
+crtOptAttrUn = 
+    crtStringOpt "Attribute Unit: " AttributeUnit 50
 
-unwrapAttributeUnit :: Maybe AttributeUnit -> String
-unwrapAttributeUnit (Just (AttributeUnit str)) = str
-unwrapAttributeUnit Nothing = ""
+uwrpAttrUn :: Maybe AttributeUnit -> String
+uwrpAttrUn (Just (AttributeUnit str)) = str
+uwrpAttrUn Nothing = ""
 
-createEmailAddress :: String -> Either ErrorMessage EmailAddress
-createEmailAddress = 
-    createEmail "Email Address : " EmailAddress
+crtEmailAddress :: String -> Either ErrorMessage EmailAddress
+crtEmailAddress = 
+    crtEmail "Email Address : " EmailAddress
 
-unwrapEmailAddress :: EmailAddress -> String
-unwrapEmailAddress (EmailAddress str) = str
+uwrpEmailAddress :: EmailAddress -> String
+uwrpEmailAddress (EmailAddress str) = str
 
-createPostalAddress :: String -> Either ErrorMessage PostalAddress
-createPostalAddress = 
-    createString "Postal Address: " PostalAddress 500
+crtPstAddress :: String -> Either ErrorMessage PostalAddress
+crtPstAddress = 
+    crtString "Postal Address: " PostalAddress 500
 
-unwrapPostalAddress :: PostalAddress -> String
-unwrapPostalAddress (PostalAddress str) = str
+uwrpPostalAddress :: PostalAddress -> String
+uwrpPostalAddress (PostalAddress str) = str
 
 
-createOptionalPostalAddress :: String -> Either ErrorMessage (Maybe PostalAddress)
-createOptionalPostalAddress = 
-    createStringOption "Postal Address: " PostalAddress 500
+crtOptPstAddrss :: String -> Either ErrorMessage (Maybe PostalAddress)
+crtOptPstAddrss = 
+    crtStringOpt "Postal Address: " PostalAddress 500
 
-unwrapOptionalPostalAddress :: Maybe PostalAddress -> String
-unwrapOptionalPostalAddress (Just (PostalAddress str)) = str
-unwrapOptionalPostalAddress Nothing = ""
+uwrpOptPstAddress :: Maybe PostalAddress -> String
+uwrpOptPstAddress (Just (PostalAddress str)) = str
+uwrpOptPstAddress Nothing = ""
 
-createTelephone :: String -> Either ErrorMessage Telephone
-createTelephone = 
-    createString "Telephone: " Telephone 50  
+crtTel :: String -> Either ErrorMessage Telephone
+crtTel = 
+    crtString "Telephone: " Telephone 50  
   
-createOptionalTelephone :: String -> Either ErrorMessage (Maybe Telephone)
-createOptionalTelephone = 
-    createStringOption "Telephone: " Telephone 50 
+crtOptTel :: String -> Either ErrorMessage (Maybe Telephone)
+crtOptTel = 
+    crtStringOpt "Telephone: " Telephone 50 
 
 
-unwrapTelephone :: Telephone -> String
-unwrapTelephone (Telephone str) = str
+uwrpTel :: Telephone -> String
+uwrpTel (Telephone str) = str
     
-createFirstName :: String -> Either ErrorMessage FirstName
-createFirstName = 
-    createString "First Name : " FirstName 100
+crtFstNm :: String -> Either ErrorMessage FirstName
+crtFstNm = 
+    crtString "First Name : " FirstName 100
 
-unwrapFirstName:: FirstName -> String
-unwrapFirstName (FirstName str) = str
+uwrpFstNm:: FirstName -> String
+uwrpFstNm (FirstName str) = str
 
-createMiddle :: String -> Either ErrorMessage (Maybe Middle)
-createMiddle = 
-    createStringOption "Middle Name : " Middle 100
+crtMdleNm :: String -> Either ErrorMessage (Maybe Middle)
+crtMdleNm = 
+    crtStringOpt "Middle Name : " Middle 100
 
-unwrapMiddle :: Maybe Middle -> String
-unwrapMiddle (Just (Middle str)) = str
-unwrapMiddle Nothing = ""
+uwrpMdleNm :: Maybe Middle -> String
+uwrpMdleNm (Just (Middle str)) = str
+uwrpMdleNm Nothing = ""
 
-createLastName :: String -> Either ErrorMessage LastName
-createLastName = 
-    createString "Last Name : " LastName 100
+crtLstNm :: String -> Either ErrorMessage LastName
+crtLstNm = 
+    crtString "Last Name : " LastName 100
 
-unwrapLastName :: LastName -> String
-unwrapLastName (LastName str) = str
+uwrpLstNm :: LastName -> String
+uwrpLstNm (LastName str) = str
 
-createQuestion :: String -> Either ErrorMessage Question
-createQuestion = 
-    createString "Question : " Question 1000
+crtQuest :: String -> Either ErrorMessage Question
+crtQuest = 
+    crtString "Question : " Question 1000
 
-unwrapQuestion :: Question -> String
-unwrapQuestion (Question str) = str
+uwrpQuest :: Question -> String
+uwrpQuest (Question str) = str
 
-createAnswer :: String -> Either ErrorMessage Answer
-createAnswer = 
-    createString "Answer : " Answer 1000
+crtAns :: String -> Either ErrorMessage Answer
+crtAns = 
+    crtString "Answer : " Answer 1000
 
-unwrapAnswer :: Answer -> String
-unwrapAnswer (Answer str) = str
+uwrpAns :: Answer -> String
+uwrpAns (Answer str) = str
 
 --- TODO: MIGHT STILL NEED SOME IMPROVEMENTS
 
-creatDateTimeSpan :: String -> String -> String -> Either ErrorMessage DateTimeSpan
-creatDateTimeSpan strdtStart strdtEnd separator =
+crtDtTmSpan :: String -> String -> String -> Either ErrorMessage DateTimeSpan
+crtDtTmSpan strdtStart strdtEnd separator =
     let                 
         maybeDtstart = fmap (readMaybe :: String-> Maybe Int) $ splitOn separator strdtStart  
         maybeDtend = fmap (readMaybe :: String-> Maybe Int) $ splitOn separator strdtEnd  
@@ -523,7 +523,7 @@ creatDateTimeSpan strdtStart strdtEnd separator =
             | s > 59 || s < 0 = False
             | otherwise = True
                 
-unwrapDateTimeSpan :: DateTimeSpan -> (String, String)
-unwrapDateTimeSpan (DateTimeSpan (start, end)) = 
+uwrpDtTmSpan :: DateTimeSpan -> (String, String)
+uwrpDtTmSpan (DateTimeSpan (start, end)) = 
     ( show start, show end)
 -- Check Interval library

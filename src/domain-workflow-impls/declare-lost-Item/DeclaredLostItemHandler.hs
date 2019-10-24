@@ -117,15 +117,15 @@ checkAttributeInfoValid refferedAttributes uattr ulositem =
     do  let foundAttribute = filter (isAttributesEqualTo uattr) refferedAttributes 
         case foundAttribute of
             [attributeRef] -> 
-                do  lostItemCatId <- createCategoryId $ uliCategoryId ulositem
+                do  lostItemCatId <- crtCatgrId $ uliCategoryId ulositem
                     let maybeCatType = lookup lostItemCatId  (relatedCategoriesRef attributeRef)
                     case maybeCatType of
                         Just _ -> 
-                            do  code <- createAttributeCode $ uattrCode uattr
-                                name <- createAttributeName $ uattrName uattr
-                                desc <- createShortDescription $ uattrDescription uattr
-                                valu <- createOptionalAttributeValue $ uattrValue uattr
-                                unit <- createOptionalAttributeUnit $ uattrUnit uattr
+                            do  code <- crtAttrCd $ uattrCode uattr
+                                name <- crtAttrNm $ uattrName uattr
+                                desc <- crtShrtDescpt $ uattrDescription uattr
+                                valu <- crtOptAttrVal $ uattrValue uattr
+                                unit <- crtOptAttrUn $ uattrUnit uattr
                                 return  
                                     ValidatedAttribute {
                                             vattrCode = code
@@ -139,15 +139,15 @@ checkAttributeInfoValid refferedAttributes uattr ulositem =
 
 
         where isAttributesEqualTo unalidatedAttr attribute =
-                    (uattrCode unalidatedAttr) == (unwrapAttributeCode $ attrCodeRef attribute)
+                    (uattrCode unalidatedAttr) == (uwrpAttrCd $ attrCodeRef attribute)
 
 
 checkContactInfoValid :: CheckContactInfoValid 
 checkContactInfoValid  =  return           
     
 
-createDeclarationAcknowledgment :: CreateDeclarationAcknowledgment  
-createDeclarationAcknowledgment item = 
+crtDeclarationAcknowledgment :: CreateDeclarationAcknowledgment  
+crtDeclarationAcknowledgment item = 
     HtmlString "Letter content"
     
 
@@ -281,7 +281,7 @@ declareLostItemHandler
                     checkAdministrativeArea             -- Dependency
                     checkAttributeInfo                  -- Dependency
                     checkContactInfoValid               -- Dependency
-                    createDeclarationAcknowledgment     -- Dependency
+                    crtDeclarationAcknowledgment     -- Dependency
                     sendAcknowledgment                  -- Dependency
                     unvalidatedLostItem                 -- Input
                     declarationTime                     -- Input

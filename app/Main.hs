@@ -1,7 +1,5 @@
 module Main where
 
-import InventorySystemApplication
-
 
 import CommonSimpleTypes
 import CommonCompoundTypes
@@ -10,6 +8,7 @@ import DeclareLostItemImplementation
 import DeclaredLostItemHandler
 import InventorySystemCommands
 import InventorySystemCommandsHandler
+import InventoryAPI
 
 
 main :: IO ()

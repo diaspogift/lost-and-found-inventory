@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell    #-}
 {-# LANGUAGE TypeOperators      #-}
 {-# LANGUAGE OverloadedStrings  #-}
-module InventorySystemApplication
+module InventoryAPI
     ( startApp
     , app
     ) where
@@ -17,21 +17,22 @@ import Servant
 import DeclareLostItemDto
 import InventorySystemCommands
 import InventorySystemCommandsHandler
-import DeclaredLostItemHandler --- ????????? should not be here
 import Control.Monad.Except
 
 
 
-------
-import Data.Text.Lazy (Text)
 
-data User = User
-  { userId        :: Int
-  , userFirstName :: String
-  , userLastName  :: String
-  } deriving (Eq, Show)
-  
-$(deriveJSON defaultOptions ''User)
+-- ==========================================================================
+-- This file contains the definitions of the Inventory sub-system Rest API 
+-- exposed at the boundary of the bounded context
+-- ==========================================================================
+
+
+
+-- --------------------------------------------------------------------------
+-- API helper / return types
+-- --------------------------------------------------------------------------
+
 
 data Welcome = Welcome {
     message :: String
@@ -39,17 +40,13 @@ data Welcome = Welcome {
 
 $(deriveJSON defaultOptions ''Welcome)
 
+welcomeMesg = Welcome "LOST |&| FOUND: INVENTORY"
 
 
+-- --------------------------------------------------------------------------
+-- API types
+-- --------------------------------------------------------------------------
 
-
---------
-
-
-
-
-
---------
 
 type API = 
     "home" :> Get '[JSON] Welcome
@@ -58,18 +55,28 @@ type API =
             :> Post '[JSON] Resp
 
 
+
+-- --------------------------------------------------------------------------
+-- API server
+-- --------------------------------------------------------------------------
+
+
 startApp :: IO ()
 startApp = run 8000 app
-
-
-
 
 
 app :: Application
 app = serve proxy routes
 
+
 proxy :: Proxy API
 proxy = Proxy
+
+
+-- --------------------------------------------------------------------------
+-- API routes
+-- --------------------------------------------------------------------------
+
 
 routes :: Server API
 routes = 
@@ -77,6 +84,14 @@ routes =
     :<|> handlerDeclareLostItem
 
 
+
+-- --------------------------------------------------------------------------
+-- Routes handler functions
+-- --------------------------------------------------------------------------
+
+--- TODO: Need to return proper error codes :) No hack allowed 
+---
+---
 
 handlerDeclareLostItem :: 
     DeclareLostItemForm -> Handler Resp
@@ -103,4 +118,3 @@ handlerDeclareLostItem declareLostItemForm =
 
 
 
-welcomeMesg = Welcome "LOST |&| FOUND: INVENTORY"

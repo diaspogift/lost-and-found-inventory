@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 
 
@@ -125,7 +124,7 @@ toCityOrVillage (strCity, strVillage)
 
 
 toAddress :: String -> Either ErrorMessage Address
-toAddress strAddress = createAddress strAddress
+toAddress = createAddress 
 
 fromLocation :: Location -> LocationDto
 fromLocation loc = 
@@ -378,7 +377,7 @@ fromContactMethod (EmailAndPhone  both) =
         primTel = unwrapTelephone $ primTelephoneInfo both
         maybeSecTel = secTelephoneInfo both
     in case maybeSecTel of 
-            Just (wrappedSecTel) -> (email, primTel, unwrapTelephone wrappedSecTel)
+            Just wrappedSecTel -> (email, primTel, unwrapTelephone wrappedSecTel)
             Nothing -> (email, primTel, "")
 
 
@@ -503,8 +502,7 @@ fromLostItemDeclared =
         <*> fromPerson . lostItemOwner  
 
 fromDateTimeSpan :: DateTimeSpan -> (String, String)
-fromDateTimeSpan dateTimeSpan = 
-    unwrapDateTimeSpan dateTimeSpan
+fromDateTimeSpan = unwrapDateTimeSpan
 
 
 

@@ -422,11 +422,7 @@ toCheckedValidAdminArea ::
     -> CheckAdministrativeAreaInfoValid
     -> Either ValidationError (Maybe (Region, Division, SubDivision))
 toCheckedValidAdminArea (reg, div, sub) checkAdministrativeAreaInfoValid =
-    do  resultCheck 
-            <- mapLeft 
-                ValidationError $
-                checkAdministrativeAreaInfoValid (reg, div, sub)
-        return resultCheck 
+    mapLeft ValidationError $ checkAdministrativeAreaInfoValid (reg, div, sub)
         
 toCityOrVillage :: 
     (String, String) 
@@ -705,16 +701,6 @@ declareLostItem
                 maybeAcknowledgment   
 
           
-
-
-
---- Check out ThinkPad Lenonvo
---- Check out ThinkPad Lenonvo
---- Check out ThinkPad Lenonvo
---- Check out ThinkPad Lenonvo
---- Check out ThinkPad Lenonvo
---- Check out ThinkPad Lenonvo
---- Check out ThinkPad Lenonvo
 
 
 --- pramp.com 

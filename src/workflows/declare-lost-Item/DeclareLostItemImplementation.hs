@@ -322,7 +322,7 @@ toContactInfo checkContactInfoValid uc
                     ,   vContactMethod = contactMethod
                     }
 
-    | otherwise = Left $ ValidationError "Provide at least one contact method (Phonr or Email)"
+    | otherwise = Left $ ValidationError "Provide at least one contact method (Phone or Email)"
 
     where   givenEmail = uemail uc
             givenPrimTel = uprimaryTel uc

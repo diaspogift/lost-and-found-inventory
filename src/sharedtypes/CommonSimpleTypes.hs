@@ -417,7 +417,7 @@ uwrpAttrCd (AttributeCode str) = str
 
 crtAttrNm :: String -> Either ErrorMessage AttributeName
 crtAttrNm = 
-    crtString "Attribute Code: " AttributeName 50
+    crtString "Attribute Name: " AttributeName 50
 
 uwrpAttrNm :: AttributeName -> String
 uwrpAttrNm (AttributeName str) = str

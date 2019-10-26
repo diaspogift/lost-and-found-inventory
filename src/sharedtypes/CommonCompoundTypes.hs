@@ -1340,7 +1340,7 @@ toCategoryType str
     | "documents" == lowerStr = Right Documents
     | "electronics" == lowerStr = Right Electronics
     | "personalitems" == lowerStr = Right PersonalItems
-    | otherwise  = Left $ str <> ": is an invalid sub division code"
+    | otherwise  = Left $ str <> ": is an invalid category type"
     where lowerStr = fmap toLower str
 
 

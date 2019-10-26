@@ -63,6 +63,9 @@ type API =
     :<|> "lost-items" 
             :> ReqBody '[JSON] DeclareLostItemForm
             :> Post '[JSON] RespDclLstItemWorkflow
+    :<|> "attributes"
+            :> ReqBody '[JSON] CreateAttributeRefForm
+            :> Post '[JSON] RespCrtAttrRefWorkflow
 
 
 
@@ -92,6 +95,7 @@ routes :: Server API
 routes = 
     return welcomeMesg
     :<|> handlerDeclareLostItem
+    :<|> handlerCreateAttributeRef
 
 
 
@@ -169,13 +173,10 @@ handlerDeclareLostItem declareLostItemForm =
                         in throwError servantError
 
 
-                         
-
-
-
+                        
 
 handlerCreateAttributeRef :: 
-    AttributeRefForm -> Handler RespCrtAttrRefWorkflow
+    CreateAttributeRefForm -> Handler RespCrtAttrRefWorkflow
 handlerCreateAttributeRef attributeRefForm = 
     do
         -- setting up the create attribute command

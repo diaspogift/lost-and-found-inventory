@@ -54,6 +54,8 @@ import Data.Aeson
 -- =============================================================================
 
 
+type LookupOneCategory = 
+    String -> ExceptT WorkflowError IO Category
 
 
 type WriteEvent = 
@@ -71,6 +73,18 @@ type NextId = IO UnvalidatedAttributeCode
 -- =============================================================================
 
 
+lookupOneCategoryBase :: 
+    [(String, Category)] -> LookupOneCategory
+lookupOneCategoryBase categories categoryId = 
+    do  let maybeCategory = lookup categoryId categories
+        --print maybeCategory
+        case maybeCategory of
+            Just category -> liftEither $ Right category
+            Nothing -> liftEither $ mapLeft Db $ Left $ DbError "category not found"
+
+
+lookupOneCategory :: LookupOneCategory 
+lookupOneCategory = lookupOneCategoryBase allCategories 
 
 nextId :: NextId
 nextId = 
@@ -99,12 +113,14 @@ writeEventToStore conn (AttributeRefCreated createdAttribute) =
 
 
 createAttributeRefHandler :: 
-    WriteEvent
+    LookupOneCategory
+    -> WriteEvent
     -> NextId
     -> CreateAttributeRefCmd 
     -> ExceptT WorkflowError IO [CreateAttributeEvent]
     
 createAttributeRefHandler 
+    lookupOneCategory
     writeEventToStore
     nextId
     (Command unvalidatedAttributeRef curTime userId) = 
@@ -113,6 +129,13 @@ createAttributeRefHandler
      
     do  -- get event store connection // TODO: lookup env ... or Reader Monad ??????
         conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)
+
+
+
+        -- get all referenced category / verified they exist
+        let refCatIds = fmap fst $ urelatedCatgrs unvalidatedAttributeRef
+
+        refCatgrs <- traverse lookupOneCategory refCatIds
 
         -- get randon uuid for the attribute code 
         attributeCode <- liftIO $ nextId
@@ -161,6 +184,7 @@ createAttributeRefHandler
 publicCreateAttributeRefHandler :: CreateAttributeRefCmd -> ExceptT WorkflowError IO [CreateAttributeEvent]
 publicCreateAttributeRefHandler = 
     createAttributeRefHandler 
+        lookupOneCategory
         writeEventToStore
         nextId
 

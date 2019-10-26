@@ -45,13 +45,13 @@ import GHC.Generics
 
 
 -- ----------------------------------------------------------------------------
--- DTO for AttributeRefForm
+-- DTO for CreateAttributeRefForm
 -- ----------------------------------------------------------------------------
 
 
 
 
-data AttributeRefForm = AttributeRefForm {
+data CreateAttributeRefForm = CreateAttributeRefForm {
         name :: String
     ,   description :: String
     ,   values :: [String]
@@ -59,15 +59,15 @@ data AttributeRefForm = AttributeRefForm {
     ,   relatedCats :: [(String, String)]
     } deriving (Generic, Show)
 
-instance ToJSON AttributeRefForm 
+instance ToJSON CreateAttributeRefForm 
 
-instance FromJSON AttributeRefForm
+instance FromJSON CreateAttributeRefForm
 
 -- Helper functions for converting from / to domain as well as to other states
 
 
-toUnvalidatedAttributeRef :: AttributeRefForm -> UnvalidatedAttributeRef
-toUnvalidatedAttributeRef  AttributeRefForm{..}= 
+toUnvalidatedAttributeRef :: CreateAttributeRefForm -> UnvalidatedAttributeRef
+toUnvalidatedAttributeRef  CreateAttributeRefForm{..}= 
     UnvalidatedAttributeRef {
             uattrNm = name
         ,   uattrDescpt = description

@@ -2,6 +2,8 @@
 {-# LANGUAGE TemplateHaskell    #-}
 {-# LANGUAGE TypeOperators      #-}
 {-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE DeriveGeneric #-}
+
 module InventoryAPI
     ( startApp
     , app
@@ -28,6 +30,9 @@ import CreateAttributePublicTypes
 
 import Control.Monad.Except
 import Data.ByteString.Lazy.Char8
+
+import GHC.Generics
+
 
 
 
@@ -62,12 +67,20 @@ type API =
     "home" :> Get '[JSON] Welcome
     :<|> "lost-items" 
             :> ReqBody '[JSON] DeclareLostItemForm
-            :> Post '[JSON] RespDclLstItemWorkflow
+            :> Post '[JSON] RestCallResponse
     :<|> "attributes"
             :> ReqBody '[JSON] CreateAttributeRefForm
-            :> Post '[JSON] RespCrtAttrRefWorkflow
+            :> Post '[JSON] RestCallResponse
 
 
+
+data RestCallResponse =  
+      DclLstItemResp RespDclLstItemWorkflow 
+    | CrtAttrRefResp RespCrtAttrRefWorkflow
+    deriving (Generic, Show)
+
+
+instance ToJSON RestCallResponse
 
 -- --------------------------------------------------------------------------
 -- API server
@@ -108,7 +121,7 @@ routes =
 ---
 
 handlerDeclareLostItem :: 
-    DeclareLostItemForm -> Handler RespDclLstItemWorkflow
+    DeclareLostItemForm -> Handler RestCallResponse
 handlerDeclareLostItem declareLostItemForm = 
     do
         -- setting up the declare lost item command
@@ -124,59 +137,27 @@ handlerDeclareLostItem declareLostItemForm =
 
         case res of 
             Right (DclreLostItemEvt events) -> 
-                let resp = fmap fromDclLstItmEvtDomain events
-                in return $ resp
+                return $ DclLstItemResp $ fmap fromDclLstItmEvtDomain events
             Left (DclreLostItemErr error) -> 
-                case error of
-                    Validation (ValidationError err) ->
-                        let errorMsg = fromWorkflowError error
-                            cd = code errorMsg
-                            msg = message errorMsg
-                            body = cd ++ ": " ++ msg
-                            servantError = 
-                                ServerError {
-                                    errHTTPCode = 400 ,
-                                    errReasonPhrase = code errorMsg,
-                                    errBody = (pack . message) errorMsg,
-                                    errHeaders = []
-                                    }
+                let errorMsg = fromWorkflowError error
+                    cd = code errorMsg
+                    msg = message errorMsg
+                    body = cd ++ ": " ++ msg
+                in 
+                    case error of
+                        Validation (ValidationError err) ->
+                            throwError $ toServantError 400 cd msg
+                        Db (DbError err) ->
+                            throwError $ toServantError 404 cd msg
+                        Remote err ->
+                            throwError $ toServantError 404 cd msg
 
-                        in throwError servantError
-                    Db (DbError err) ->
-                        let errorMsg = fromWorkflowError error
-                            cd = code errorMsg
-                            msg = message errorMsg
-                            body = cd ++ ": " ++ msg
-                            servantError = 
-                                ServerError {
-                                    errHTTPCode = 404 ,
-                                    errReasonPhrase = code errorMsg,
-                                    errBody = (pack . message) errorMsg,
-                                    errHeaders = []
-                                    }
-
-                        in throwError servantError
-
-                    Remote err ->
-                        let errorMsg = fromWorkflowError error
-                            cd = code errorMsg
-                            msg = message errorMsg
-                            body = cd ++ ": " ++ msg
-                            servantError = 
-                                ServerError {
-                                    errHTTPCode = 400 ,
-                                    errReasonPhrase = code errorMsg,
-                                    errBody = (pack . message) errorMsg,
-                                    errHeaders = []
-                                    }
-
-                        in throwError servantError
 
 
                         
 
 handlerCreateAttributeRef :: 
-    CreateAttributeRefForm -> Handler RespCrtAttrRefWorkflow
+    CreateAttributeRefForm -> Handler RestCallResponse
 handlerCreateAttributeRef attributeRefForm = 
     do
         -- setting up the create attribute command
@@ -192,55 +173,29 @@ handlerCreateAttributeRef attributeRefForm =
 
         case res of 
             Right (CrteAttribueEvt events) -> 
-                let resp = fmap fromCrtAttrEvtDomain events
-                in return $ resp
+                return $ CrtAttrRefResp $ fmap fromCrtAttrEvtDomain events 
             Left (CrteAttribueErr error) -> 
-                case error of
-                    Validation (ValidationError err) ->
-                        let errorMsg = fromWorkflowError error
-                            cd = code errorMsg
-                            msg = message errorMsg
-                            body = cd ++ ": " ++ msg
-                            servantError = 
-                                ServerError {
-                                    errHTTPCode = 400 ,
-                                    errReasonPhrase = code errorMsg,
-                                    errBody = (pack . message) errorMsg,
-                                    errHeaders = []
-                                    }
-
-                        in throwError servantError
-                    Db (DbError err) ->
-                        let errorMsg = fromWorkflowError error
-                            cd = code errorMsg
-                            msg = message errorMsg
-                            body = cd ++ ": " ++ msg
-                            servantError = 
-                                ServerError {
-                                    errHTTPCode = 404 ,
-                                    errReasonPhrase = code errorMsg,
-                                    errBody = (pack . message) errorMsg,
-                                    errHeaders = []
-                                    }
-
-                        in throwError servantError
-
-                    Remote err ->
-                        let errorMsg = fromWorkflowError error
-                            cd = code errorMsg
-                            msg = message errorMsg
-                            body = cd ++ ": " ++ msg
-                            servantError = 
-                                ServerError {
-                                    errHTTPCode = 400 ,
-                                    errReasonPhrase = code errorMsg,
-                                    errBody = (pack . message) errorMsg,
-                                    errHeaders = []
-                                    }
-
-                        in throwError servantError
+                let errorMsg = fromWorkflowError error
+                    cd = code errorMsg
+                    msg = message errorMsg
+                    body = cd ++ ": " ++ msg
+                in
+                    case error of
+                        Validation (ValidationError err) ->
+                            throwError $ toServantError 400 cd msg
+                        Db (DbError err) ->
+                            throwError $ toServantError 404 cd msg
+                        Remote err ->
+                            throwError $ toServantError 400 cd msg
 
 
 
-
-
+toServantError :: Int -> String -> String -> ServerError
+toServantError code reason body = 
+    ServerError {
+        errHTTPCode = code ,
+        errReasonPhrase = reason,
+        errBody = pack body,
+        errHeaders = []
+        }
+                                    

@@ -125,7 +125,7 @@ handlerDeclareLostItem declareLostItemForm =
         case res of 
             Right (DclreLostItemEvt events) -> 
                 let resp = fmap fromDclLstItmEvtDomain events
-                in return $ Success resp
+                in return $ resp
             Left (DclreLostItemErr error) -> 
                 case error of
                     Validation (ValidationError err) ->
@@ -193,7 +193,7 @@ handlerCreateAttributeRef attributeRefForm =
         case res of 
             Right (CrteAttribueEvt events) -> 
                 let resp = fmap fromCrtAttrEvtDomain events
-                in return $ Succes resp
+                in return $ resp
             Left (CrteAttribueErr error) -> 
                 case error of
                     Validation (ValidationError err) ->

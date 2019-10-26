@@ -137,10 +137,7 @@ instance ToJSONKey CreateAttributeRefEventResponse
 
 ---
 
-data RespCrtAttrRefWorkflow = 
-        Succes [CreateAttributeRefEventResponse] | Erro WorkflowErrorDto deriving (Generic, Show)
-
-instance ToJSON RespCrtAttrRefWorkflow
+type RespCrtAttrRefWorkflow = [CreateAttributeRefEventResponse] 
 
 
 fromCrtAttrEvtDomain :: CreateAttributeEvent -> CreateAttributeRefEventResponse

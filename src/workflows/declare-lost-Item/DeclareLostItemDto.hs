@@ -552,10 +552,8 @@ instance ToJSONKey DeclareLostItemEventResponse
 
 ---
 
-data RespDclLstItemWorkflow = 
-        Success [DeclareLostItemEventResponse] | Error WorkflowErrorDto deriving (Generic, Show)
+type RespDclLstItemWorkflow = [DeclareLostItemEventResponse] 
 
-instance ToJSON RespDclLstItemWorkflow
 
 
 fromDclLstItmEvtDomain :: DeclareLostItemEvent -> DeclareLostItemEventResponse

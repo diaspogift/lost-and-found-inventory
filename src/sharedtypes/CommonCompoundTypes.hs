@@ -33,39 +33,28 @@ import Data.Either
 
 data Category = Category {
         categoryId          :: CategoryId
-    ,   categoryType        :: CategoryType
-    ,   parentalStatus      :: ParentalStatus
+    ,   categoryCode        :: CategoryCode
+    ,   rootStatus          :: RootStatus
     ,   enablementStatus    :: EnablementStatus
     ,   categoryDesc        :: LongDescription
-    ,   subCategories       :: Set Category
+    ,   subCategories       :: Set CategoryId
     } deriving (Eq, Ord, Show)
 
+data ParentInfo = ParentInfo {
+        parentId :: ParentCategoryId 
+    ,   parentCode :: CategoryCode
+} deriving (Eq, Ord, Show) 
 
-data ParentalStatus =
-      Parent
-    | Sub ParentCategoryId CategoryType
+
+data RootStatus =
+      Root
+    | Sub ParentInfo
     deriving (Eq, Ord, Show)
 
 data EnablementStatus =
       Enabled
     | Disabled Reason
     deriving (Eq, Ord, Show)
-
-
-data CategoryType =
-      Humans
-    | Documents
-    | Electronics
-    | PersonalItems
-    deriving (Eq, Ord)
-
-instance Show CategoryType where
-    show catType =
-        case catType of
-            Humans -> "Humans Being"
-            Documents -> "Ducument Items"
-            Electronics -> "Electronic Items"
-            PersonalItems -> "Personal Items"
 
 
 
@@ -1176,7 +1165,7 @@ data AttributeRef = AttributeRef {
     , attrDescriptionRef      :: ShortDescription
     , attrValueRefs            :: [AttributeValue]
     , attrUnitRefs             :: [AttributeUnit]
-    , relatedCategoriesRefs    :: [(CategoryId, CategoryType)]
+    , relatedCategoriesRefs    :: [(CategoryId, CategoryCode)]
     } deriving (Eq, Ord, Show)
 
 -- ===============================================
@@ -1332,26 +1321,6 @@ fromSubDivision subdivision =
         Gouandal -> show Gouandal
         Tibati -> show Tibati
         _ -> error "NOT IMPLEMENTED YET"
-
-
---- /// Category helper functions
-toCategoryType :: String -> Either ErrorMessage CategoryType
-toCategoryType str
-    | "humans" == lowerStr = Right Humans
-    | "documents" == lowerStr = Right Documents
-    | "electronics" == lowerStr = Right Electronics
-    | "personalitems" == lowerStr = Right PersonalItems
-    | otherwise  = Left $ str <> ": is an invalid category type"
-    where lowerStr = fmap toLower str
-
-
-fromCategoryType :: CategoryType -> String
-fromCategoryType cat =
-    case cat of
-        Humans -> show Humans
-        Documents -> show Documents
-        Electronics -> show Electronics
-        PersonalItems -> show PersonalItems
 
 
 ---  Admin Map Data Structure
@@ -1682,39 +1651,44 @@ eCatId = "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
 
 
 humansCategory = 
-    do  catid <- crtCatgrId "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
+    do  catid <- crtCatgrId hCatId
         catdesc <- crtLgDescpt "Human Category: It captures anything related to lost humans"
+        catCode <- crtCatgrCd "HUMAN-BEINGS"
         return $
             Category {
                 categoryId = catid
-            ,   categoryType = Humans
-            ,   parentalStatus = Parent
+            ,   categoryCode = catCode
+            ,   rootStatus = Root
             ,   enablementStatus = Enabled
             ,   categoryDesc = catdesc
             ,   subCategories = fromList []  
             }
                 
 documentsCategory = 
-    do  catid <- crtCatgrId "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+    do  catid <- crtCatgrId dCatId
         catdesc <- crtLgDescpt "Document Category: It captures anything related to lost documents"
+        catCode <- crtCatgrCd "DOCUMENTS-ITEMS"
+
         return $
             Category {
                     categoryId = catid
-                ,   categoryType = Humans
-                ,   parentalStatus = Parent
+                ,   categoryCode = catCode
+                ,   rootStatus = Root
                 ,   enablementStatus = Enabled
                 ,   categoryDesc = catdesc
                 ,   subCategories = fromList []  
                 }
 
 personalItemsCategory = 
-    do  catid <- crtCatgrId "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP"
+    do  catid <- crtCatgrId pCatId
         catdesc <- crtLgDescpt "HPersonal items Category: It captures anything related to lost personal items"
+        catCode <- crtCatgrCd "PERSONAL-ITEMS"
+
         return $
             Category {
                     categoryId = catid
-                ,   categoryType = Humans
-                ,   parentalStatus = Parent
+                ,   categoryCode = catCode
+                ,   rootStatus = Root
                 ,   enablementStatus = Enabled
                 ,   categoryDesc = catdesc
                 ,   subCategories = fromList []  
@@ -1722,13 +1696,15 @@ personalItemsCategory =
 
 electronicsCategory = 
 
-    do  catid <- crtCatgrId "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
+    do  catid <- crtCatgrId eCatId
         catdesc <- crtLgDescpt "Electronics Category: It captures anything related to lost electronics"
+        catCode <- crtCatgrCd "ELECTRONICS"
+
         return $
             Category {
                     categoryId = catid
-                ,   categoryType = Humans
-                ,   parentalStatus = Parent
+                ,   categoryCode = catCode
+                ,   rootStatus = Root
                 ,   enablementStatus = Enabled
                 ,   categoryDesc = catdesc
                 ,   subCategories = fromList []  
@@ -1745,6 +1721,11 @@ colorAttributeRef =
     do  code <- crtAttrCd "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
         name <- crtAttrNm "Color"
         desc <- crtShrtDescpt "Describe the item/person color"
+
+        hcatcode <- crtCatgrCd "HUMAN-BEINGS"
+        ecatcode <- crtCatgrCd "ELECTRONICS"
+        patcode <- crtCatgrCd "PERSONAL-ITEMS"
+
         value0 <- crtAttrVal "Red"
         value1 <- crtAttrVal "Green"
         value2 <- crtAttrVal "Yello"
@@ -1760,13 +1741,17 @@ colorAttributeRef =
                 ,   attrDescriptionRef = desc
                 ,   attrValueRefs = [value0, value1, value2, value3]
                 ,   attrUnitRefs = []
-                ,   relatedCategoriesRefs = [(refCatId1, Humans), (refCatId2, Electronics), (refCatId3, PersonalItems)]
+                ,   relatedCategoriesRefs = [(refCatId1, hcatcode), (refCatId2, ecatcode), (refCatId3, patcode)]
                 }
 
 weightAttributeRef = 
     do  code <- crtAttrCd "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         name <- crtAttrNm "Weight"
         desc <- crtShrtDescpt "Describe the item/person weight"
+
+        hcatcode <- crtCatgrCd "HUMAN-BEINGS"
+        patcode <- crtCatgrCd "PERSONAL-ITEMS"
+
         unit <- crtAttrUnt "Kg"
         refCatId1 <- crtCatgrId hCatId
         refCatId3 <- crtCatgrId pCatId
@@ -1778,7 +1763,7 @@ weightAttributeRef =
                 ,   attrDescriptionRef = desc
                 ,   attrValueRefs = []
                 ,   attrUnitRefs = [unit]
-                ,   relatedCategoriesRefs = [(refCatId1, Humans), (refCatId3, PersonalItems)]
+                ,   relatedCategoriesRefs = [(refCatId1, hcatcode), (refCatId3, patcode)]
                 }
 
 attributes = rights [colorAttributeRef, weightAttributeRef]

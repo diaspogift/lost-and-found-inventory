@@ -3,7 +3,7 @@ module CommonSimpleTypes (
     , MatchedItemId, ClaimedItemId
     , UserId, TenantId
     , RegionName, DivisionName, SubDivisionName
-    , CategoryId, ParentCategoryId, ShortDescription, LongDescription
+    , CategoryId, CategoryCode, ParentCategoryId, ShortDescription, LongDescription
     , TenantName, ItemName, City, Village, Neighborhood, Address
     , AttributeCode, AttributeName, AttributeValue, AttributeUnit
     , EmailAddress, PostalAddress, Telephone
@@ -12,7 +12,7 @@ module CommonSimpleTypes (
     , ValidationError (..), DbError (..), RemoteServiceError (..), ServiceInfo (..), WorkflowError (..)
     , crtFndItmId, crtLstItmId
     , crtMtchdItmId, crtClmdItmId
-    , crtUsrId, crtTntId, crtCatgrId
+    , crtUsrId, crtTntId, crtCatgrId, crtCatgrCd
     , crtShrtDescpt, crtLgDescpt
     , crtTntNm, crtItmNm, crtCity, crtVillage, crtNghbrhd, crtAddress
     , crtAttrCd, crtAttrNm, crtOptAttrUnt, crtOptAttrVal, crtAttrUnt, crtAttrVal
@@ -22,7 +22,7 @@ module CommonSimpleTypes (
     
     , uwrpFndItmId, uwrpLstItmId, uwrpDtTmSpan
     , uwrpMtchdItmId, uwrpClmdItmId
-    , uwrpUsrId, uwrpTntId, uwrpCatgrId
+    , uwrpUsrId, uwrpTntId, uwrpCatgrId, uwpCatgrCd
     , uwrpShrtDescpt, uwrpLgDescpt
     , uwrpTntNm, uwrpItmNm, uwrpCity, uwrpVillage, uwrpNghbrhd, uwrpAddress
     , uwrpAttrCd, uwrpAttrNm, uwrpOptAttrVal, uwrpOptAttrUnt, uwrpAttrVal, uwrpAttrUnt
@@ -348,6 +348,13 @@ crtCatgrId =
 uwrpCatgrId :: CategoryId -> String
 uwrpCatgrId (CategoryId str) = str
 
+crtCatgrCd :: String -> Either ErrorMessage CategoryCode
+crtCatgrCd = 
+    crtBoundedString "Category Code: " CategoryCode 10 20
+
+uwpCatgrCd :: CategoryCode -> String
+uwpCatgrCd (CategoryCode str) = str
+
 crtShrtDescpt :: String -> Either ErrorMessage ShortDescription
 crtShrtDescpt = 
     crtString "Short Description: " ShortDescription 250
@@ -578,4 +585,6 @@ crtDtTmSpan strdtStart strdtEnd separator =
 uwrpDtTmSpan :: DateTimeSpan -> (String, String)
 uwrpDtTmSpan (DateTimeSpan (start, end)) = 
     ( show start, show end)
+
 -- Check Interval library
+

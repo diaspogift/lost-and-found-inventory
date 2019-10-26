@@ -114,7 +114,7 @@ fromAttributeRefCreated =
           descpt = uwrpShrtDescpt . attrDescriptionRef
           values = (fmap uwrpAttrVal ) . attrValueRefs
           units = (fmap uwrpAttrUnt) . attrUnitRefs
-          relatedCatgrs = fmap ( \(catId, catType )-> (uwrpCatgrId catId, fromCategoryType catType)) . relatedCategoriesRefs
+          relatedCatgrs = fmap ( \(catId, catType )-> (uwrpCatgrId catId, uwpCatgrCd catType)) . relatedCategoriesRefs
 
 
 

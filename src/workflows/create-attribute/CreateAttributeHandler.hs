@@ -80,7 +80,7 @@ lookupOneCategoryBase categories categoryId =
         --print maybeCategory
         case maybeCategory of
             Just category -> liftEither $ Right category
-            Nothing -> liftEither $ mapLeft Db $ Left $ DbError "category not found"
+            Nothing -> liftEither $ mapLeft Db $ Left $ DbError "category not found nn"
 
 
 lookupOneCategory :: LookupOneCategory 
@@ -133,12 +133,12 @@ createAttributeRefHandler
 
 
         -- get all referenced category / verified they exist
-        let refCatIds = fmap fst $ urelatedCatgrs unvalidatedAttributeRef
+        let refCatIds = fst <$> urelatedCatgrs unvalidatedAttributeRef
 
         refCatgrs <- traverse lookupOneCategory refCatIds
 
         -- get randon uuid for the attribute code 
-        attributeCode <- liftIO $ nextId
+        attributeCode <- liftIO nextId
 
 
         ---------------------------------------- IO at the boundary end -----------------------------------------

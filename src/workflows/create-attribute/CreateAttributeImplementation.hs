@@ -61,7 +61,7 @@ data ValidatedAttributeRef = ValidatedAttributeRef {
     , vattrDescriptionRef       :: ShortDescription
     , vattrValueRefss            :: [AttributeValue]
     , vattrUnitRefss             :: [AttributeUnit]
-    , vrelatedCategoriesRefs    :: [(CategoryId, CategoryType)]
+    , vrelatedCategoriesRefs    :: [(CategoryId, CategoryCode)]
     } deriving (Eq, Ord, Show)
 
 
@@ -108,9 +108,7 @@ type CreateEvents =
 
 
 validateUnvalidatedAttributeRef :: ValidateUnvalidatedAttributeRef
-validateUnvalidatedAttributeRef 
-    uAttrRef
-    uUuidCd = 
+validateUnvalidatedAttributeRef uAttrRef uUuidCd = 
     ValidatedAttributeRef <$> code <*> name <*> desc <*> values <*> units <*> refCats
       where 
         code = toAttrCdRef uUuidCd
@@ -149,10 +147,10 @@ toAttrUnt str =
   mapLeft ValidationError $ crtAttrUnt str 
       
 
-toAttrRefCatgrs :: (String, String) -> Either ValidationError (CategoryId, CategoryType)
+toAttrRefCatgrs :: (String, String) -> Either ValidationError (CategoryId, CategoryCode)
 toAttrRefCatgrs (catId, catType) = 
     do  id <- mapLeft ValidationError $ crtCatgrId catId
-        typ <- mapLeft ValidationError $ toCategoryType catType
+        typ <- mapLeft ValidationError $ crtCatgrCd catType
         return (id, typ)
 
 

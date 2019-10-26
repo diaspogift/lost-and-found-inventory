@@ -201,7 +201,7 @@ toAttribute dto =
         where 
             toCatIdCatTypePair (strCatId, strCatType) =
                 do  catId <- crtCatgrId strCatId
-                    catType <- Cct.toCategoryType strCatType
+                    catType <- crtCatgrCd strCatType
                     return (catId, catType)
 
 fromAttribute :: Cct.Attribute -> AttributeDto

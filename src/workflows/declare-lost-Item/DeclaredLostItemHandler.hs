@@ -56,17 +56,17 @@ import Data.Aeson
 
 
 type LookupOneCategory = 
-    String -> ExceptT DeclareLostItemError IO Category
+    String -> ExceptT WorkflowError IO Category
 
 type LookupAttributes = 
-    [String] -> ExceptT DeclareLostItemError IO [AttributeRef]
+    [String] -> ExceptT WorkflowError IO [AttributeRef]
 
 type WriteEvent = 
     Connection -> DeclareLostItemEvent -> IO ()
 
 
 type LoadAdministrativeAreaMap =
-    String -> ExceptT DeclareLostItemError IO AdministrativeMap
+    String -> ExceptT WorkflowError IO AdministrativeMap
 
 type NextId = IO UnvalidatedLostItemId
 
@@ -118,14 +118,14 @@ checkAttributeInfoValid refferedAttributes uattr ulositem =
         case foundAttribute of
             [attributeRef] -> 
                 do  lostItemCatId <- crtCatgrId $ uliCategoryId ulositem
-                    let maybeCatType = lookup lostItemCatId  (relatedCategoriesRef attributeRef)
+                    let maybeCatType = lookup lostItemCatId  (relatedCategoriesRefs attributeRef)
                     case maybeCatType of
                         Just _ -> 
                             do  code <- crtAttrCd $ uattrCode uattr
                                 name <- crtAttrNm $ uattrName uattr
                                 desc <- crtShrtDescpt $ uattrDescription uattr
                                 valu <- crtOptAttrVal $ uattrValue uattr
-                                unit <- crtOptAttrUn $ uattrUnit uattr
+                                unit <- crtOptAttrUnt $ uattrUnit uattr
                                 return  
                                     ValidatedAttribute {
                                             vattrCode = code
@@ -228,7 +228,7 @@ declareLostItemHandler ::
     -> WriteEvent
     -> NextId
     -> DeclareLostItemCmd 
-    -> ExceptT DeclareLostItemError IO [DeclareLostItemEvent]
+    -> ExceptT WorkflowError IO [DeclareLostItemEvent]
     
 declareLostItemHandler 
     loadAdministrativeAreaMap
@@ -296,7 +296,7 @@ declareLostItemHandler
 
         ---------------------------------------- Side effects handling start ----------------------------------------
 
-        -- publish / persit event(s) into the event store and other inteested third parties 
+        -- publish / persit event(s) into the event store and other interested third parties 
         case events of  
             Right allEvents -> 
                 do
@@ -313,11 +313,11 @@ declareLostItemHandler
 
 
 
---- partially applied function for the api laye - hinding depencies 
+--- partially applied function for the API (Upper) layer - hinding depencies 
 ---
 ---
 
-publicDeclareLostItemHandler :: DeclareLostItemCmd -> ExceptT DeclareLostItemError IO [DeclareLostItemEvent]
+publicDeclareLostItemHandler :: DeclareLostItemCmd -> ExceptT WorkflowError IO [DeclareLostItemEvent]
 publicDeclareLostItemHandler = 
     declareLostItemHandler 
         loadAdministrativeAreaMap

@@ -452,7 +452,7 @@ toAttributeValue str =
 
 toAttributeUnit :: String -> Either ValidationError (Maybe AttributeUnit)
 toAttributeUnit str = 
-  mapLeft ValidationError $ crtOptAttrUn str
+  mapLeft ValidationError $ crtOptAttrUnt str
 
 toLostItemLocation ::  
   CheckAdministrativeAreaInfoValid 
@@ -638,7 +638,7 @@ declareLostItem ::
   -> UnvalidatedLostItem
   -> UTCTime
   -> UnvalidatedLostItemId
-  -> Either DeclareLostItemError [DeclareLostItemEvent]
+  -> Either WorkflowError [DeclareLostItemEvent]
 
 declareLostItem 
   checkAdministrativeAreaInfoValid  -- Dependency

@@ -9,12 +9,13 @@ module CommonSimpleTypes (
     , EmailAddress, PostalAddress, Telephone
     , FirstName, Middle, LastName
     , Question, Answer, ErrorMessage, Reason, CityOrVillage (..) -- , Urban, Country
+    , ValidationError (..), DbError (..), RemoteServiceError (..), ServiceInfo (..), WorkflowError (..)
     , crtFndItmId, crtLstItmId
     , crtMtchdItmId, crtClmdItmId
     , crtUsrId, crtTntId, crtCatgrId
     , crtShrtDescpt, crtLgDescpt
     , crtTntNm, crtItmNm, crtCity, crtVillage, crtNghbrhd, crtAddress
-    , crtAttrCd, crtAttrNm, crtOptAttrUn, crtOptAttrVal
+    , crtAttrCd, crtAttrNm, crtOptAttrUnt, crtOptAttrVal, crtAttrUnt, crtAttrVal
     , crtEmailAddress, crtPstAddress, crtTel, crtOptTel, crtOptNghbrhd
     , crtFstNm, crtMdleNm, crtLstNm
     , crtQuest, crtAns, crtDtTmSpan , crtOptPstAddrss
@@ -24,7 +25,7 @@ module CommonSimpleTypes (
     , uwrpUsrId, uwrpTntId, uwrpCatgrId
     , uwrpShrtDescpt, uwrpLgDescpt
     , uwrpTntNm, uwrpItmNm, uwrpCity, uwrpVillage, uwrpNghbrhd, uwrpAddress
-    , uwrpAttrCd, uwrpAttrNm, uwrpAttrVal, uwrpAttrUn
+    , uwrpAttrCd, uwrpAttrNm, uwrpOptAttrVal, uwrpOptAttrUnt, uwrpAttrVal, uwrpAttrUnt
     , uwrpEmailAddress, uwrpPostalAddress, uwrpTel
     , uwrpFstNm, uwrpMdleNm, uwrpLstNm
     , uwrpQuest, uwrpAns,  uwrpOptPstAddress
@@ -132,10 +133,44 @@ newtype Question =
     Question String deriving (Eq, Ord, Show)
 newtype Answer = 
     Answer String deriving (Eq, Ord, Show)
+
+
+
+-- =============================================================================
+-- Common shared error types
+-- =============================================================================
+
+
+
 type ErrorMessage 
     = String
 
+-- All the things that can go wrong 
+newtype ValidationError = 
+    ValidationError String deriving (Eq, Ord, Show)
 
+-- Database related errors
+newtype DbError = 
+    DbError String deriving (Eq, Ord, Show)
+
+-- External systems errors
+data ServiceInfo = ServiceInfo {
+        serviceName :: String
+    ,   endpoint :: String
+    } deriving (Eq, Ord, Show)
+
+data RemoteServiceError = RemoteServiceError {
+        service :: ServiceInfo
+    ,   execption :: String -- SomeException
+    ,   errorCode :: Int
+    } deriving (Eq, Ord, Show)
+
+-- shared workflow error
+data WorkflowError =
+      Validation ValidationError 
+    | Remote RemoteServiceError
+    | Db DbError 
+    deriving (Eq, Ord, Show)
 
 
 
@@ -391,17 +426,34 @@ crtOptAttrVal :: String -> Either ErrorMessage (Maybe AttributeValue)
 crtOptAttrVal = 
     crtStringOpt "Attribute Value: " AttributeValue 50
 
-uwrpAttrVal :: Maybe AttributeValue -> String
-uwrpAttrVal (Just (AttributeValue str)) = str
-uwrpAttrVal Nothing = ""
+uwrpOptAttrVal :: Maybe AttributeValue -> String
+uwrpOptAttrVal (Just (AttributeValue str)) = str
+uwrpOptAttrVal Nothing = ""
 
-crtOptAttrUn :: String -> Either ErrorMessage (Maybe AttributeUnit)
-crtOptAttrUn = 
+
+crtAttrVal :: String -> Either ErrorMessage AttributeValue
+crtAttrVal = 
+    crtString "Attribute Value: " AttributeValue 50
+
+
+uwrpAttrVal :: AttributeValue -> String
+uwrpAttrVal (AttributeValue str) = str
+
+
+crtOptAttrUnt :: String -> Either ErrorMessage (Maybe AttributeUnit)
+crtOptAttrUnt = 
     crtStringOpt "Attribute Unit: " AttributeUnit 50
 
-uwrpAttrUn :: Maybe AttributeUnit -> String
-uwrpAttrUn (Just (AttributeUnit str)) = str
-uwrpAttrUn Nothing = ""
+uwrpOptAttrUnt :: Maybe AttributeUnit -> String
+uwrpOptAttrUnt (Just (AttributeUnit str)) = str
+uwrpOptAttrUnt Nothing = ""
+
+crtAttrUnt :: String -> Either ErrorMessage AttributeUnit
+crtAttrUnt = 
+    crtString "Attribute Unit: " AttributeUnit 50
+
+uwrpAttrUnt :: AttributeUnit -> String
+uwrpAttrUnt (AttributeUnit str) = str
 
 crtEmailAddress :: String -> Either ErrorMessage EmailAddress
 crtEmailAddress = 

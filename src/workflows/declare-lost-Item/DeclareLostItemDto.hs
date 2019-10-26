@@ -8,6 +8,7 @@ module DeclareLostItemDto where
 
 import Data.Aeson
 import CommonSimpleTypes
+import CommonDtos
 import qualified CommonCompoundTypes as Cct
 import DeclaredLostItemPublicTypes
 
@@ -28,7 +29,7 @@ import GHC.Generics
 -- This file contains the the logic for working with data transfer objects (DTOs)
 --
 -- Each type of DTO is defined using primitive, serializable types and there are 
--- toUnvlidated, toDomain and fromDomain functions defined for each of them.
+-- toUnvlidated, toDomain and fromDclLstItmEvtDomain functions defined for each of them.
 --
 -- ==========================================================================================
 
@@ -188,7 +189,7 @@ toAttribute dto =
         name <- crtAttrNm $ attrName dto
         desc <- crtShrtDescpt $ attrDescription dto
         val <- crtOptAttrVal $ attrValue dto
-        unit <- crtOptAttrUn $ attrUnit dto
+        unit <- crtOptAttrUnt $ attrUnit dto
 
         return  Cct.Attribute {
                   Cct.attrCode = code
@@ -209,8 +210,8 @@ fromAttribute  =
         <$> uwrpAttrCd . Cct.attrCode 
         <*> uwrpAttrNm . Cct.attrName 
         <*> uwrpShrtDescpt . Cct.attrDescription 
-        <*> uwrpAttrVal . Cct.attrValue 
-        <*> uwrpAttrUn . Cct.attrUnit 
+        <*> uwrpOptAttrVal . Cct.attrValue 
+        <*> uwrpOptAttrUnt . Cct.attrUnit 
 
 
 
@@ -265,8 +266,7 @@ data ContactInformationDto = ContactInformationDto {
     } deriving (Generic, Show)
 
 
-instance ToJSON ContactInformationDto where
-    toEncoding = genericToEncoding defaultOptions
+instance ToJSON ContactInformationDto 
 
 instance FromJSON ContactInformationDto
 
@@ -389,8 +389,7 @@ data FullNameDto = FullNameDto {
     , last      :: String
     } deriving (Generic, Show)
 
-instance ToJSON FullNameDto where
-    toEncoding = genericToEncoding defaultOptions
+instance ToJSON FullNameDto 
 
 instance FromJSON FullNameDto
 
@@ -440,15 +439,13 @@ data DeclareLostItemForm = DeclareLostItemForm {
     ,   owner :: PersonDto   
     } deriving (Generic, Show)
 
-instance ToJSON DeclareLostItemForm where
-    toEncoding = genericToEncoding defaultOptions
+instance ToJSON DeclareLostItemForm 
 
 instance FromJSON DeclareLostItemForm
 
 -- Helper functions for converting from / to domain as well as to other states
 
 
----- TODO:  Why is the applicative form broken here?????
 toUnvalidatedLostItem :: DeclareLostItemForm -> UnvalidatedLostItem
 toUnvalidatedLostItem = 
     UnvalidatedLostItem
@@ -460,9 +457,14 @@ toUnvalidatedLostItem =
         <*> fmap toUnvalidatedAttribute . attributes 
         <*> toUnvalidatedPerson . owner
 
-----------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------
 -- DTO for LostItemDeclared  and SearchableItemDeclared Events
 -- ----------------------------------------------------------------------------
+
+
+
 data LostItemDeclaredDto = LostItemDeclaredDto {
         itemId :: String
     ,   itemName :: String
@@ -476,8 +478,7 @@ data LostItemDeclaredDto = LostItemDeclaredDto {
     } deriving (Generic, Show)
 
 
-instance ToJSON LostItemDeclaredDto where
-    toEncoding = genericToEncoding defaultOptions
+instance ToJSON LostItemDeclaredDto
 
 instance FromJSON LostItemDeclaredDto
 
@@ -512,8 +513,7 @@ data DeclarationAcknowledgmentSentDto =
     } deriving (Generic, Show)
 
 
-instance ToJSON DeclarationAcknowledgmentSentDto where
-    toEncoding = genericToEncoding defaultOptions
+instance ToJSON DeclarationAcknowledgmentSentDto
 
 instance FromJSON DeclarationAcknowledgmentSentDto
 
@@ -537,41 +537,6 @@ fromDeclarationAcknowledgmentSent  =
 -- ----------------------------------------------------------------------------
 
 
-
-data DeclareLostItemErrorDto = DeclareLostItemErrorDto {
-        code :: String
-    ,   message :: String
-    } deriving (Generic, Show)
-
-instance ToJSON DeclareLostItemErrorDto where
-    toEncoding = genericToEncoding defaultOptions
-
-instance FromJSON DeclareLostItemErrorDto
-
--- Helper functions for converting from / to domain as well as to other states
-
-fromDeclareLostItemError :: DeclareLostItemError -> DeclareLostItemErrorDto
-fromDeclareLostItemError domainError = 
-    case domainError of
-        Validation (ValidationError errorMessage) ->
-            DeclareLostItemErrorDto {
-                code = "ValidationError"
-            ,   message = errorMessage
-            }
-        Remote remoteServiceError ->
-            let serv = service remoteServiceError 
-                httpCd = errorCode remoteServiceError
-                errorMessage = execption remoteServiceError
-            in DeclareLostItemErrorDto {
-                code = show httpCd
-            ,   message = serviceName serv  
-            }
-        Db (DbError errorMessage) ->
-            DeclareLostItemErrorDto {
-                    code = "DbError"
-                ,   message = errorMessage
-                } 
-
 --- 
 
 data DeclareLostItemEventDto = 
@@ -587,14 +552,14 @@ instance ToJSONKey DeclareLostItemEventResponse
 
 ---
 
-data Resp = 
-        Success [DeclareLostItemEventResponse] | Error DeclareLostItemErrorDto deriving (Generic, Show)
+data RespDclLstItemWorkflow = 
+        Success [DeclareLostItemEventResponse] | Error WorkflowErrorDto deriving (Generic, Show)
 
-instance ToJSON Resp
+instance ToJSON RespDclLstItemWorkflow
 
 
-fromDomain :: DeclareLostItemEvent -> DeclareLostItemEventResponse
-fromDomain evt = 
+fromDclLstItmEvtDomain :: DeclareLostItemEvent -> DeclareLostItemEventResponse
+fromDclLstItmEvtDomain evt = 
     case evt of
         LostItemDeclared lid ->
             let key = "declaredLostItem"
@@ -643,13 +608,3 @@ fromDomain evt =
 -- =============================================================================
     
 
-{--
-
-data DeclareLostItemEvent =
-      LostItemDeclared LostItemDeclared
-    | SearchableItemDeclared LostItemDeclared 
-    | AcknowledgmentSent DeclarationAcknowledgmentSent
-    deriving (Eq, Ord, Show)
-
-
---}

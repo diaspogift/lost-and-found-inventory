@@ -3,7 +3,7 @@ module InventorySystemCommands where
 import CommonSimpleTypes
 import CommonCompoundTypes
 import DeclaredLostItemPublicTypes
-import DeclareLostItemImplementation
+import CreateAttributePublicTypes
 
 import Data.Time
 import Prelude hiding (last)
@@ -35,6 +35,7 @@ type DeclareLostItemCmd = InventoryCommand UnvalidatedLostItem
 type DeclareFoundItemCmd = InventoryCommand UnvalidatedLostItem
 type ClaimFoundItemCmd = InventoryCommand UnvalidatedLostItem
 type MatchFoundItemCmd = InventoryCommand UnvalidatedLostItem
+type CreateAttributeRefCmd = InventoryCommand UnvalidatedAttributeRef
 
 
 
@@ -43,13 +44,19 @@ data LostAndFoundInventoryCmd =
     | Declare DeclareFoundItemCmd
     | Claim ClaimFoundItemCmd
     | Match MatchFoundItemCmd 
+    | CreateAttribute CreateAttributeRefCmd
     deriving (Eq, Ord, Show)
 
-data Event = 
-   LostItem DeclareLostItemEvent
+data InventoryEvent = 
+     DclreLostItemEvt [DeclareLostItemEvent]
+   | CrteAttribueEvt [CreateAttributeEvent]
 
 
+data InventoryError = 
+   DclreLostItemErr WorkflowError
+ | CrteAttribueErr WorkflowError 
 
+   
 
 
 

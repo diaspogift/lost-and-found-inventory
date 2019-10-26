@@ -16,16 +16,27 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
                      , src/sharedtypes
-                     , src/workflows/declare-lost-item
                      , src/cmdshandler
+                     , src/workflows/declare-lost-item
+                     , src/workflows/create-attribute
+
   exposed-modules:     CommonSimpleTypes
                      , CommonCompoundTypes
+
                      , DeclaredLostItemPublicTypes
                      , DeclareLostItemImplementation
                      , DeclareLostItemDto
                      , DeclaredLostItemHandler
+
+                     , CreateAttributePublicTypes
+                     , CreateAttributeImplementation
+                     , CreateAtributeDto
+                     , CreateAttributeHandler
+
+
                      , InventorySystemCommands
                      , InventorySystemCommandsHandler
+
                      , EventStorePlayGround
                      , InventoryAPI
 

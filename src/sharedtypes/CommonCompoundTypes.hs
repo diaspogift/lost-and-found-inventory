@@ -1173,9 +1173,9 @@ data AttributeRef = AttributeRef {
       attrCodeRef             :: AttributeCode
     , attrNameRef             :: AttributeName
     , attrDescriptionRef      :: ShortDescription
-    , attrValueRef           :: Maybe [AttributeValue]
-    , attrUnitRef             :: Maybe [AttributeUnit]
-    , relatedCategoriesRef    :: [(CategoryId, CategoryType)]
+    , attrValueRefs            :: [AttributeValue]
+    , attrUnitRefs             :: [AttributeUnit]
+    , relatedCategoriesRefs    :: [(CategoryId, CategoryType)]
     } deriving (Eq, Ord, Show)
 
 -- ===============================================
@@ -1744,10 +1744,10 @@ colorAttributeRef =
     do  code <- crtAttrCd "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
         name <- crtAttrNm "Color"
         desc <- crtShrtDescpt "Describe the item/person color"
-        value0 <- crtOptAttrVal "Red"
-        value1 <- crtOptAttrVal "Green"
-        value2 <- crtOptAttrVal "Yello"
-        value3 <- crtOptAttrVal "White"
+        value0 <- crtAttrVal "Red"
+        value1 <- crtAttrVal "Green"
+        value2 <- crtAttrVal "Yello"
+        value3 <- crtAttrVal "White"
         refCatId1 <- crtCatgrId hCatId
         refCatId2 <- crtCatgrId eCatId
         refCatId3 <- crtCatgrId pCatId
@@ -1757,16 +1757,16 @@ colorAttributeRef =
                     attrCodeRef = code
                 ,   attrNameRef = name           
                 ,   attrDescriptionRef = desc
-                ,   attrValueRef = sequence [value0, value1, value2, value3]
-                ,   attrUnitRef = Nothing
-                ,   relatedCategoriesRef = [(refCatId1, Humans), (refCatId2, Electronics), (refCatId3, PersonalItems)]
+                ,   attrValueRefs = [value0, value1, value2, value3]
+                ,   attrUnitRefs = []
+                ,   relatedCategoriesRefs = [(refCatId1, Humans), (refCatId2, Electronics), (refCatId3, PersonalItems)]
                 }
 
 weightAttributeRef = 
     do  code <- crtAttrCd "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW"
         name <- crtAttrNm "Weight"
         desc <- crtShrtDescpt "Describe the item/person weight"
-        unit <- crtOptAttrUn "Kg"
+        unit <- crtAttrUnt "Kg"
         refCatId1 <- crtCatgrId hCatId
         refCatId3 <- crtCatgrId pCatId
 
@@ -1775,9 +1775,9 @@ weightAttributeRef =
                     attrCodeRef = code
                 ,   attrNameRef = name           
                 ,   attrDescriptionRef = desc
-                ,   attrValueRef = Nothing
-                ,   attrUnitRef = sequence [unit]
-                ,   relatedCategoriesRef = [(refCatId1, Humans), (refCatId3, PersonalItems)]
+                ,   attrValueRefs = []
+                ,   attrUnitRefs = [unit]
+                ,   relatedCategoriesRefs = [(refCatId1, Humans), (refCatId3, PersonalItems)]
                 }
 
 attributes = rights [colorAttributeRef, weightAttributeRef]

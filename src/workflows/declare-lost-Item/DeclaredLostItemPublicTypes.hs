@@ -114,37 +114,18 @@ data DeclareLostItemEvent =
 -- --------------------------------------------------------------------------
 
 
--- All the things that can go wrong in this workflow
-newtype ValidationError = 
-    ValidationError String deriving (Eq, Ord, Show)
-
-
-newtype DbError = 
-    DbError String deriving (Eq, Ord, Show)
-
-
-data ServiceInfo = ServiceInfo {
-        serviceName :: String
-    ,   endpoint :: String
-    } deriving (Eq, Ord, Show)
-
-data RemoteServiceError = RemoteServiceError {
-        service :: ServiceInfo
-    ,   execption :: String -- SomeException
-    ,   errorCode :: Int
-    } deriving (Eq, Ord, Show)
-
-data DeclareLostItemError =
+{--
+data WorkflowError
       Validation ValidationError 
     | Remote RemoteServiceError
     | Db DbError 
     deriving (Eq, Ord, Show)
-
+--}
 
 -- --------------------------------------------------------------------------
 -- the workflow itself
 -- --------------------------------------------------------------------------
 
 type DeclareLostItem = 
-    UnvalidatedLostItem -> Either DeclareLostItemError [DeclareLostItemEvent]
+    UnvalidatedLostItem -> Either WorkflowError [DeclareLostItemEvent]
 

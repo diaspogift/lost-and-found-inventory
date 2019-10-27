@@ -3,12 +3,20 @@ module Main where
 
 import CommonSimpleTypes
 import CommonCompoundTypes
+
 import DeclaredLostItemPublicTypes
 import DeclareLostItemImplementation
 import DeclaredLostItemHandler
+
+import CreateRootCategoryPublicTypes
+import CreateRootCategoryImplementation
+import CreateRootCategoryHandler
+
 import InventorySystemCommands
 import InventorySystemCommandsHandler
 import InventoryAPI
+
+import Control.Monad.Except
 
 
 main :: IO ()
@@ -104,6 +112,17 @@ declareLostItemCmd :: LostAndFoundInventoryCmd
 declareLostItemCmd = Register (Command unvalidateLostItem "11:01pm" "felicien@gmail.com")
 
 
+uRootCat = UnvalidatedRootCategory {
+    ucatCd = "HUMAN-BEINGS"
+  , udescpt = "This category is the parent category for all sub cats related to lost human beings"
+  , uEnblmnt = "disabled"
+  , usubCatgrs = ["KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"]  
+}
 
 
 
+createCategoryCmd :: LostAndFoundInventoryCmd
+createCategoryCmd = CreateRootCategory (Command uRootCat "11:01pm" "felicien@gmail.com")
+
+
+res = runExceptT $ handle createCategoryCmd

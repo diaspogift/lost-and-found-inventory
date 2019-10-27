@@ -28,6 +28,9 @@ import  DeclaredLostItemPublicTypes
 import CreateAttributeDto
 import CreateAttributePublicTypes
 
+import CreateRootCategoryDto
+import CreateRootCategoryPublicTypes
+
 import Control.Monad.Except
 import Data.ByteString.Lazy.Char8
 
@@ -71,12 +74,15 @@ type API =
     :<|> "attributes"
             :> ReqBody '[JSON] CreateAttributeRefForm
             :> Post '[JSON] RestCallResponse
-
+    :<|> "root-categories"
+            :> ReqBody '[JSON] CreateRootCategoryForm
+            :> Post '[JSON] RestCallResponse
 
 
 data RestCallResponse =  
       DclLstItemResp RespDclLstItemWorkflow 
     | CrtAttrRefResp RespCrtAttrRefWorkflow
+    | CrtRooCatgrResp RespCrtRootCatWorkflow
     deriving (Generic, Show)
 
 
@@ -109,6 +115,7 @@ routes =
     return welcomeMesg
     :<|> handlerDeclareLostItem
     :<|> handlerCreateAttributeRef
+    :<|> handleCreateRootCategory
 
 
 
@@ -175,6 +182,40 @@ handlerCreateAttributeRef attributeRefForm =
             Right (CrteAttribueEvt events) -> 
                 return $ CrtAttrRefResp $ fmap fromCrtAttrEvtDomain events 
             Left (CrteAttribueErr error) -> 
+                let errorMsg = fromWorkflowError error
+                    cd = code errorMsg
+                    msg = message errorMsg
+                    body = cd ++ ": " ++ msg
+                in
+                    case error of
+                        Validation (ValidationError err) ->
+                            throwError $ toServantError 400 cd msg
+                        Db (DbError err) ->
+                            throwError $ toServantError 404 cd msg
+                        Remote err ->
+                            throwError $ toServantError 400 cd msg
+
+
+
+handleCreateRootCategory :: 
+    CreateRootCategoryForm -> Handler RestCallResponse
+handleCreateRootCategory rootCategoryForm = 
+    do
+        -- setting up the create attribute command
+
+        let unvalidatedRootCategory = toUnvalidatedRootCategory rootCategoryForm
+            createRootCategoryCmd = CreateRootCategory (Command unvalidatedRootCategory "2019 10 10 12:34:56" "111111111111111111111111111111111111")
+
+        -- calling the command handler and lifting the result into the Handler Transformer 
+
+        res <- liftIO . runExceptT . handle $ createRootCategoryCmd
+
+        -- Handling the response
+
+        case res of 
+            Right (CrteRootCatgrEvt events) -> 
+                return $ CrtRooCatgrResp $ fmap fromCrtRootCatgrEvtDomain events 
+            Left (CrteRootCatgrErr error) -> 
                 let errorMsg = fromWorkflowError error
                     cd = code errorMsg
                     msg = message errorMsg

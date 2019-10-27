@@ -3,7 +3,7 @@ module CommonSimpleTypes (
     , MatchedItemId, ClaimedItemId
     , UserId, TenantId
     , RegionName, DivisionName, SubDivisionName
-    , CategoryId, CategoryCode, ParentCategoryId, ShortDescription, LongDescription
+    , CategoryId, CategoryCode, ParentCategoryId, SubCategoryId, ShortDescription, LongDescription
     , TenantName, ItemName, City, Village, Neighborhood, Address
     , AttributeCode, AttributeName, AttributeValue, AttributeUnit
     , EmailAddress, PostalAddress, Telephone
@@ -79,6 +79,8 @@ newtype TenantId =
 newtype CategoryId = 
     CategoryId String deriving (Eq, Ord, Show)
 type ParentCategoryId = 
+    CategoryId
+type SubCategoryId = 
     CategoryId
 newtype TenantName = 
     TenantName String deriving (Eq, Ord, Show)

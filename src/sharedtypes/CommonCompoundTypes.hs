@@ -40,6 +40,7 @@ data Category = Category {
     ,   subCategories       :: Set CategoryId
     } deriving (Eq, Ord, Show)
 
+
 data ParentInfo = ParentInfo {
         parentId :: ParentCategoryId 
     ,   parentCode :: CategoryCode
@@ -48,14 +49,24 @@ data ParentInfo = ParentInfo {
 
 data RootStatus =
       Root
-    | Sub ParentInfo
+    | Sub (Maybe ParentInfo)
     deriving (Eq, Ord, Show)
+
+
+-- helper functions
+
+fromRootStatus :: RootStatus -> String
+fromRootStatus = show 
+
 
 data EnablementStatus =
       Enabled
     | Disabled Reason
     deriving (Eq, Ord, Show)
 
+
+fromEnblmntStatus :: EnablementStatus -> String
+fromEnblmntStatus = show 
 
 
 -- ===============================================
@@ -1626,7 +1637,6 @@ wouriDivision = DivisionItem Wouri wouriSubDivisions
 
 
 
-
 -- =============================================================================
 -- Application Sample Data
 -- =============================================================================
@@ -1638,13 +1648,14 @@ wouriDivision = DivisionItem Wouri wouriSubDivisions
 -- Categories sample data
 --
 
-categories = rights [humansCategory, documentsCategory, personalItemsCategory, electronicsCategory]
+categories = rights [kidsSubHumanCategory, humansCategory, documentsCategory, personalItemsCategory, electronicsCategory]
 allCategories = 
     fmap toTuple categories
         where toTuple cat = (uwrpCatgrId $ categoryId cat, cat) 
 
 
 hCatId = "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
+kCatId = "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"
 dCatId = "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
 pCatId = "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP"
 eCatId = "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"
@@ -1659,6 +1670,27 @@ humansCategory =
                 categoryId = catid
             ,   categoryCode = catCode
             ,   rootStatus = Root
+            ,   enablementStatus = Enabled
+            ,   categoryDesc = catdesc
+            ,   subCategories = fromList []  
+            }
+
+kidsSubHumanCategory = 
+    do  catid <- crtCatgrId kCatId
+        catdesc <- crtLgDescpt "Kids Category: It captures anything related to lost kids"
+        catCode <- crtCatgrCd "HUMAN-BEING_KIDS"
+        prntId <- crtCatgrId hCatId
+        prntCode <- crtCatgrCd "HUMAN-GEING"
+        
+        let parentInfo = ParentInfo {
+            parentId = prntId 
+        ,   parentCode = prntCode
+    }
+        return $
+            Category {
+                categoryId = catid
+            ,   categoryCode = catCode
+            ,   rootStatus = Sub Nothing 
             ,   enablementStatus = Enabled
             ,   categoryDesc = catdesc
             ,   subCategories = fromList []  

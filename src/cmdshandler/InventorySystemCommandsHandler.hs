@@ -11,6 +11,10 @@ import CreateAttributePublicTypes
 import CreateAttributeImplementation
 import CreateAttributeHandler
 
+import CreateRootCategoryPublicTypes
+import CreateRootCategoryImplementation
+import CreateRootCategoryHandler
+
 import InventorySystemCommands
 
 import Data.Time
@@ -57,7 +61,8 @@ handle cmd =
             return undefined
         CreateAttribute createAttributeRefCmd -> 
             ExceptT $ liftIO $ mapBothCreateAttributeErrorAndEvent $ runExceptT $ publicCreateAttributeRefHandler createAttributeRefCmd
-        
+        CreateRootCategory createRootCategoryCmd -> 
+            ExceptT $ liftIO $ mapBothCreateRootCategoryErrorAndEvent $ runExceptT $ publicCreateRootCategoryHandler createRootCategoryCmd        
 
 
 
@@ -74,6 +79,13 @@ mapBothCreateAttributeErrorAndEvent createAttrHandler =
         case ucreateAttrHandler of
             Right evts -> return $ Right $ CrteAttribueEvt evts 
             Left errMsg -> return $ Left $ CrteAttribueErr errMsg
+
+mapBothCreateRootCategoryErrorAndEvent :: IO (Either WorkflowError [CreateRootCategoryEvent]) -> IO (Either InventoryError InventoryEvent)
+mapBothCreateRootCategoryErrorAndEvent createCatgrHandler = 
+    do  ucreateCatgrHandler <- createCatgrHandler
+        case ucreateCatgrHandler of
+            Right evts -> return $ Right $ CrteRootCatgrEvt evts 
+            Left errMsg -> return $ Left $ CrteRootCatgrErr errMsg
 
 
 

@@ -202,7 +202,7 @@ type AcknowledgemenDeclaredLostItem =
 -- Validation step
 -- ----------------------------------------------------------------------------
 
-
+--- TODO: Check ref category not disable in validation
 
 validateUnvalidatedLostItem :: ValidateUnvalidatedLostItem
 validateUnvalidatedLostItem 
@@ -216,15 +216,16 @@ validateUnvalidatedLostItem
   -- Check out record wild card extention
   -- Use hlint
     ValidatedLostItem
-      <$> toLostItemId unvalidatedAssignUuid
-      <*> (toLostItemName . uliName) unvalidatedLostItem
-      <*> (toCategoryId . uliCategoryId) unvalidatedLostItem
-      <*> (toLostItemDescription . uliDescription) unvalidatedLostItem
-      <*> (fmap fromList . traverse (toLostItemLocation checkAdministrativeAreaInfoValid) . ulocations) unvalidatedLostItem
-      <*> pure decalrationTime
-      <*> (toDateTimeSpan . uliDateAndTimeSpan) unvalidatedLostItem
-      <*> (fmap fromList . traverse (toValidatedAttribute checkAttributeInfoValid unvalidatedLostItem) . uliattributes) unvalidatedLostItem
-      <*> (toOwner checkContactInfoValid . uowner) unvalidatedLostItem
+      <$> id <*> name <*> catId <*> descpt <*> locts <*> regTime <*> dteTimeSpan <*> attrs <*> owner
+    where id = toLostItemId unvalidatedAssignUuid
+          name = (toLostItemName . uliName) unvalidatedLostItem
+          catId = (toCategoryId . uliCategoryId) unvalidatedLostItem
+          descpt = (toLostItemDescription . uliDescription) unvalidatedLostItem
+          locts = (fmap fromList . traverse (toLostItemLocation checkAdministrativeAreaInfoValid) . ulocations) unvalidatedLostItem
+          regTime = pure decalrationTime
+          dteTimeSpan = (toDateTimeSpan . uliDateAndTimeSpan) unvalidatedLostItem
+          attrs = (fmap fromList . traverse (toValidatedAttribute checkAttributeInfoValid unvalidatedLostItem) . uliattributes) unvalidatedLostItem
+          owner = (toOwner checkContactInfoValid . uowner) unvalidatedLostItem
 
 
 --- Helper functions for valodateUnvalidatedLostItem

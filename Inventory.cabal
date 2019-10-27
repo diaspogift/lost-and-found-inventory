@@ -19,6 +19,8 @@ library
                      , src/cmdshandler
                      , src/workflows/declare-lost-item
                      , src/workflows/create-attribute
+                     , src/workflows/create-category/root
+                     , src/workflows/create-category/sub
 
   exposed-modules:     CommonSimpleTypes
                      , CommonCompoundTypes
@@ -32,6 +34,12 @@ library
                      , CreateAttributeImplementation
                      , CreateAtributeDto
                      , CreateAttributeHandler
+
+
+                     , CreateRootCategoryPublicTypes
+                     , CreateRootCategoryImplementation
+                     , CreateRootCategoryDto
+                     , CreateRootCategoryHandler
 
 
                      , InventorySystemCommands

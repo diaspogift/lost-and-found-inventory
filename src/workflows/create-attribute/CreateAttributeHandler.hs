@@ -80,7 +80,7 @@ lookupOneCategoryBase categories categoryId =
         --print maybeCategory
         case maybeCategory of
             Just category -> liftEither $ Right category
-            Nothing -> liftEither $ mapLeft Db $ Left $ DbError "category not found nn"
+            Nothing -> liftEither $ mapLeft Db $ Left $ DbError "category not found"
 
 
 lookupOneCategory :: LookupOneCategory 

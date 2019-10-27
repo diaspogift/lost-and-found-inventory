@@ -228,7 +228,7 @@ createRootCatgory ::
 createRootCatgory  
   checkRefSubCatgrValid         -- Dependency       
   unvalidatedCategory           -- Input
-  unValidatedCatgrId =         -- Input
+  unValidatedCatgrId =          -- Input
     do  
         -- Validation step
         validatedCatgr 

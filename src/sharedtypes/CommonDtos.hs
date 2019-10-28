@@ -69,6 +69,11 @@ fromWorkflowError domainError =
                 code = "ValidationError"
             ,   message = errorMessage
             }
+        Domain (DomainError errorMessage) ->
+            WorkflowErrorDto {
+                code = "ValidationError"
+            ,   message = errorMessage
+            }
         Remote remoteServiceError ->
             let serv = service remoteServiceError 
                 httpCd = errorCode remoteServiceError

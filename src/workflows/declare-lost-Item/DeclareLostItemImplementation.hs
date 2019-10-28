@@ -110,15 +110,15 @@ data ValidatedContactInformation = ValidatedContactInformation {
 
 
 data ValidatedLostItem = ValidatedLostItem {
-      vlostItemId               :: LostItemId
-  ,   vlostItemName             :: ItemName
-  ,   vlostItemCategoryId       :: CategoryId
-  ,   vlostItemDesc             :: LongDescription
-  ,   vlostItemLocation         :: Set ValidatedLocation
-  ,   vlostItemRegistrationTime :: UTCTime
-  ,   vlostItemDateAndTimeSpan  :: DateTimeSpan
-  ,   vlostItemAttributes       :: Set ValidatedAttribute
-  ,   vlostItemOwner            :: ValidatedPerson
+      vlstItmId               :: LostItemId
+  ,   vlstItmNm             :: ItemName
+  ,   vlstItmCatgrId       :: CategoryId
+  ,   vlstItmDescpt             :: LongDescription
+  ,   vlstItmLocts         :: Set ValidatedLocation
+  ,   vlstItmRegTime :: UTCTime
+  ,   vlstItmDteTimeSpan  :: DateTimeSpan
+  ,   vlstItmAttrbts       :: Set ValidatedAttribute
+  ,   vlstItmOwner            :: ValidatedPerson
   }
 
 type ValidateUnvalidatedLostItem =
@@ -489,21 +489,60 @@ toLostItemLocation checkAdministrativeAreaInfoValid u =
 
 
 
-creatteLostItem :: ValidatedLostItem -> DeclaredLostItem
-creatteLostItem  =
+creatteLostItemOld :: ValidatedLostItem -> DeclaredLostItem
+creatteLostItemOld  =
 
     DeclaredLostItem 
-                    <$> vlostItemId 
-                    <*> vlostItemName 
-                    <*> vlostItemCategoryId 
-                    <*> vlostItemDesc 
-                    <*> fromList . fmap toLocation . toList . vlostItemLocation 
-                    <*> vlostItemDateAndTimeSpan 
-                    <*> vlostItemRegistrationTime 
-                    <*> fromList . fmap toAttribute . toList . vlostItemAttributes 
-                    <*> toPerson . vlostItemOwner 
+        <$> vlstItmId 
+        <*> vlstItmNm 
+        <*> vlstItmCatgrId 
+        <*> vlstItmDescpt 
+        <*> fromList . fmap toLocation . toList . vlstItmLocts 
+        <*> vlstItmDteTimeSpan 
+        <*> vlstItmRegTime 
+        <*> fromList . fmap toAttribute . toList . vlstItmAttrbts 
+        <*> toPerson . vlstItmOwner 
 
 
+
+creatteLostItem :: ValidatedLostItem -> Category-> Either DomainError DeclaredLostItem
+creatteLostItem vli refCatgr =
+    -- verify referenced category is enabled
+    case enablementStatus refCatgr of
+        Disabled reason ->
+             Left . DomainError 
+                $ "the referenced category is daisabled for the following reason: " 
+                <> reason
+    
+        Enabled ->
+            return  DeclaredLostItem {
+                            lostItemId = id            
+                        ,   lostItemName = name           
+                        ,   lostItemCategoryId = catgrId      
+                        ,   lostItemDesc = descpt         
+                        ,   lostItemLocation = locts      
+                        ,   lostItemDateAndTimeSpan = dtimeSpan 
+                        ,   lostItemRegistrationTime  = regTime
+                        ,   lostItemAttributes = attrs    
+                        ,   lostItemOwner = owner         
+                    }
+            
+            where id = vlstItmId vli
+                  name = vlstItmNm vli
+                  catgrId = vlstItmCatgrId vli
+                  descpt = vlstItmDescpt vli
+                  locts = (fromList . fmap toLocation . toList . vlstItmLocts) vli
+                  dtimeSpan = vlstItmDteTimeSpan vli
+                  regTime = vlstItmRegTime vli
+                  attrs = (fromList . fmap toAttribute . toList . vlstItmAttrbts) vli
+                  owner = (toPerson . vlstItmOwner) vli
+
+
+          
+          
+
+
+          
 
 
 --- Helper functions
@@ -637,6 +676,7 @@ declareLostItem ::
   -> CheckContactInfoValid
   -> CreateDeclarationAcknowledgment
   -> SendAcknowledgment
+  -> Category
   -> UnvalidatedLostItem
   -> UTCTime
   -> UnvalidatedLostItemId
@@ -647,7 +687,8 @@ declareLostItem
   checkAttributeInfoValid           -- Dependency
   checkContactInfoValid             -- Dependency
   crtDeclarationAcknowledgment   -- Dependency
-  sendAcknowledgment                -- Dependency
+  sendAcknowledgment  
+  referencedCategory              -- Dependency
   unvalidatedLostItem               -- Input
   lostItemCreationTime              -- Input
   unValidatedlostItemUuid =         -- Input
@@ -666,9 +707,11 @@ declareLostItem
 
           -- Creation step
           crtdLostItem 
-              <- return 
-                  $ creatteLostItem 
+              <- mapLeft 
+                  Domain $ 
+                    creatteLostItem 
                         validatedLostItem
+                        referencedCategory
 
           -- Aknowledgment step
           maybeAcknowledgment 

@@ -256,10 +256,10 @@ declareLostItemHandler
                             $ uliattributes unvalidatedLostItem
 
         -- get creation time
-        declarationTime <- liftIO $ getCurrentTime
+        declarationTime <- liftIO getCurrentTime
 
         -- get randon uuid 
-        lostItemUuid <- liftIO $ nextId
+        lostItemUuid <- liftIO nextId
 
         -- Arranging final dependencies
         let checkAdministrativeArea = 
@@ -283,6 +283,7 @@ declareLostItemHandler
                     checkContactInfoValid               -- Dependency
                     crtDeclarationAcknowledgment     -- Dependency
                     sendAcknowledgment                  -- Dependency
+                    refCategory
                     unvalidatedLostItem                 -- Input
                     declarationTime                     -- Input
                     lostItemUuid                        -- Input

@@ -6,7 +6,7 @@ import CommonCompoundTypes
 -- ==========================================================================
 -- This file contains the definitions of PUBLIC types 
 -- (exposed at the boundary of the bounded context)
--- related to the CreateCategory workflow 
+-- related to the CreateRootCategory workflow 
 -- ==========================================================================
 
 -- --------------------------------------------------------------------------
@@ -39,11 +39,20 @@ data AddedSubCategory = AddedSubCategory {
     ,   sub     :: SubCategoryId
     } deriving (Eq, Ord, Show)
 
+
+
+
+
 -- Create Category state (Category type in Common Shared Compound Types)
+-- 
+-- data Category = Category {...}
+--
+--
 
 
 
--- The possible events resulting from the Create Category workflow
+
+-- The possible events resulting from the CreateRootCategory workflow
 
 data CreateRootCategoryEvent =
         RootCategoryCreated  RootCategoryCreated 
@@ -53,18 +62,12 @@ data CreateRootCategoryEvent =
 
 
 -- --------------------------------------------------------------------------
--- error outputs 
+-- error outputs (Refer to the domain erros defined in The common shared types)
 -- --------------------------------------------------------------------------
 
 
 
-{--
-data WorkflowError
-      Validation ValidationError 
-    | Remote RemoteServiceError
-    | DataBase DataBaseError 
-    deriving (Eq, Ord, Show)
---}
+
 
 
 

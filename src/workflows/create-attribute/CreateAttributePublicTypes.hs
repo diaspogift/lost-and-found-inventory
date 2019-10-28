@@ -6,7 +6,7 @@ import CommonCompoundTypes
 -- ==========================================================================
 -- This file contains the definitions of PUBLIC types 
 -- (exposed at the boundary of the bounded context)
--- related to the CreateAttribute workflow 
+-- related to the CreateAttributeRef workflow 
 -- ==========================================================================
 
 -- --------------------------------------------------------------------------
@@ -34,10 +34,14 @@ data UnvalidatedAttributeRef = UnvalidatedAttributeRef {
 
 type AttributeRefCreated = AttributeRef
 
+
+
 -- Create Attribute Reference state (Data AttributeRef defined in shared Coumpound Types)          
 -- 
 -- data AttributeRef = AttributeRed {...}
 --
+
+
 
 -- The possible events resulting from the Create Attribute Reference workflow
 

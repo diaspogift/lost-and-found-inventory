@@ -32,14 +32,13 @@ import GHC.Generics
 -- ==========================================================================================
 -- This file contains the the logic for working with data transfer objects (DTOs)
 --
--- Each type of DTO is defined using primitive, serializable types and there are 
--- toUnvlidated, toDomain and fromDclLstItmEvtDomain functions defined for each of them.
+-- Each type of DTO is defined using primitive, serializable types
 --
 -- ==========================================================================================
 
 
 -- ==========================================================================================
--- DTOs for DeclareLostItem workflow
+-- DTOs for Create Root Category workflow
 -- ==========================================================================================
 
 
@@ -62,8 +61,9 @@ instance ToJSON CreateRootCategoryForm
 
 instance FromJSON CreateRootCategoryForm
 
--- Helper functions for converting from / to domain as well as to other states
 
+
+-- Helper functions for converting from / to domain as well as to other states
 
 toUnvalidatedRootCategory :: CreateRootCategoryForm -> UnvalidatedRootCategory
 toUnvalidatedRootCategory  CreateRootCategoryForm{..}= 
@@ -163,6 +163,8 @@ instance ToJSONKey CreateRootAttributeEventResponse
 
 type RespCrtRootCatWorkflow = [CreateRootAttributeEventResponse] 
 
+
+-- Helper function
 
 fromCrtRootCatgrEvtDomain :: CreateRootCategoryEvent -> CreateRootAttributeEventResponse
 fromCrtRootCatgrEvtDomain evt = 

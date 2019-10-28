@@ -19,7 +19,7 @@ import Data.UUID hiding (null) -- Internal
 
 
 -- ==========================================================================================
--- This file contains the initial implementation for the createAttrinute workflow
+-- This file contains the initial implementation for the createAttrinuteRef workflow
 --
 --
 -- There are two parts:
@@ -53,7 +53,7 @@ import Data.UUID hiding (null) -- Internal
 type RefCategoryValidationError = String
 
 
---- Validated Attribute
+--- Validated AttributeRef
 
 data ValidatedAttributeRef = ValidatedAttributeRef {
       vattrCodeRef              :: AttributeCode

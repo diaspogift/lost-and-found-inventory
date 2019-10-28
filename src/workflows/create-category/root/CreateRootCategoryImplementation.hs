@@ -19,7 +19,7 @@ import Data.UUID hiding (null) -- Internal
 
 
 -- ==========================================================================================
--- This file contains the initial implementation for the createCategory workflow
+-- This file contains the initial implementation for the createRootCategory workflow
 --
 --
 -- There are two parts:
@@ -48,7 +48,11 @@ import Data.UUID hiding (null) -- Internal
 ---
 
 
---- Referenced subcategories data validation
+--- Referenced subcategories data validation (a referenced sub category must be both not Root and not Disabled)
+--- 
+---
+---
+
 
 type RefSubCategoryValidationError = String
 
@@ -59,7 +63,7 @@ type CheckRefSubCatgrValid =
 
 --- Validated Category
 
-data ValidatedCategory = ValidatedCategory {
+data ValidatedRootCategory = ValidatedRootCategory {
         vcategoryId          :: CategoryId
     ,   vcategoryCode        :: CategoryCode
     ,   vrootStatus          :: RootStatus
@@ -74,7 +78,7 @@ type ValidateUnvalidatedRootCategory =
   CheckRefSubCatgrValid
   -> UnvalidatedRootCategory 
   -> UnvalidatedRootCategoryId 
-  -> Either ValidationError ValidatedCategory
+  -> Either ValidationError ValidatedRootCategory
 
 
 
@@ -86,7 +90,7 @@ type ValidateUnvalidatedRootCategory =
 
 
 type CreateRootCategory =
-  ValidatedCategory -> Category
+  ValidatedRootCategory -> Category
 
 
 
@@ -116,7 +120,7 @@ type CreateEvents =
 
 validateUnvalidatedCategory :: ValidateUnvalidatedRootCategory
 validateUnvalidatedCategory checkRefSubCatgrValid uCatgr uCatgrId = 
-    ValidatedCategory <$> id <*> code <*> rootStatus <*> enblmntStatus <*> descpt <*> subCatgrs
+    ValidatedRootCategory <$> id <*> code <*> rootStatus <*> enblmntStatus <*> descpt <*> subCatgrs
       where 
         id = toCatId uCatgrId
         code = (toCatCd . ucatCd) uCatgr
@@ -127,8 +131,7 @@ validateUnvalidatedCategory checkRefSubCatgrValid uCatgr uCatgrId =
         
       
 
----             Helper functions for validateUnvalidatedCategory start          ---
-
+--- Helper functions for validateUnvalidatedCategory start
 toCatId :: String -> Either ValidationError CategoryId
 toCatId = mapLeft ValidationError . crtCatgrId
          
@@ -149,7 +152,6 @@ toValidatedSubCatgrs ::
 toValidatedSubCatgrs checkRefSubCatgrValid  =  
     fmap fromList . mapLeft ValidationError . traverse checkRefSubCatgrValid 
 
----             Helper functions for validateUnvalidatedCategory end           ---
 
 
 
@@ -163,7 +165,7 @@ toValidatedSubCatgrs checkRefSubCatgrValid  =
 
 
 
-createRootCategory :: ValidatedCategory -> Category
+createRootCategory :: ValidatedRootCategory -> Category
 createRootCategory  =
   Category 
     <$> vcategoryId
@@ -173,6 +175,7 @@ createRootCategory  =
     <*> vcategoryDesc
     <*> vsubCategories
 
+    
   
 -- ----------------------------------------------------------------------------
 -- Create Events step

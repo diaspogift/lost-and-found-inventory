@@ -25,10 +25,14 @@ import Data.UUID
 -- ==========================================================================================
 
 
+
+
 -- =============================================================================
--- Commands
+-- All possible Commands for the System
 -- =============================================================================
     
+
+
 
 data InventoryCommand d = Command d String String deriving (Eq, Ord, Show)
 
@@ -49,10 +53,30 @@ data LostAndFoundInventoryCmd =
     | CreateRootCategory CreateRootCategoryCmd
     deriving (Eq, Ord, Show)
 
+
+
+    
+
+-- =============================================================================
+-- All possibled published Events from workflows
+-- =============================================================================
+    
+
+
+
 data InventoryEvent = 
       DclreLostItemEvt [DeclareLostItemEvent]
     | CrteAttribueEvt [CreateAttributeEvent]
     | CrteRootCatgrEvt [CreateRootCategoryEvent]
+
+
+
+
+-- =============================================================================
+-- All possible Errors from workflows
+-- =============================================================================
+    
+
 
 
 data InventoryError = 

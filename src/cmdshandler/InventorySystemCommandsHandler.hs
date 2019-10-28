@@ -46,24 +46,53 @@ import Control.Monad.Except
 -- =============================================================================
 
 
-handle :: 
-    LostAndFoundInventoryCmd 
-    -> ExceptT InventoryError IO InventoryEvent 
-handle cmd = 
-    case cmd of
-        Register declareLostItemCmd ->
-            ExceptT $ liftIO $ mapBothDeclareLostItemErrorAndEvent $ runExceptT $ publicDeclareLostItemHandler declareLostItemCmd
-        Declare declareFoundItemCmd ->
-            return undefined
-        Claim claimFoundItemCmd ->
-            return undefined
-        Match catchFoundItemCmd ->
-            return undefined
-        CreateAttribute createAttributeRefCmd -> 
-            ExceptT $ liftIO $ mapBothCreateAttributeErrorAndEvent $ runExceptT $ publicCreateAttributeRefHandler createAttributeRefCmd
-        CreateRootCategory createRootCategoryCmd -> 
-            ExceptT $ liftIO $ mapBothCreateRootCategoryErrorAndEvent $ runExceptT $ publicCreateRootCategoryHandler createRootCategoryCmd        
+handle :: LostAndFoundInventoryCmd -> ExceptT InventoryError IO InventoryEvent 
+handle command = 
 
+    case command of
+
+        Register declareLostItemCmd ->
+            ExceptT . liftIO 
+                    . mapBothDeclareLostItemErrorAndEvent 
+                    . runExceptT 
+                    . publicDeclareLostItemHandler 
+                    $ declareLostItemCmd
+
+
+        CreateAttribute createAttributeRefCmd -> 
+            ExceptT . liftIO 
+                    . mapBothCreateAttributeErrorAndEvent 
+                    . runExceptT 
+                    . publicCreateAttributeRefHandler 
+                    $ createAttributeRefCmd
+
+
+        CreateRootCategory createRootCategoryCmd -> 
+            ExceptT . liftIO 
+                    . mapBothCreateRootCategoryErrorAndEvent 
+                    . runExceptT 
+                    . publicCreateRootCategoryHandler 
+                    $ createRootCategoryCmd    
+        
+        
+        Declare declareFoundItemCmd ->
+            ExceptT undefined
+
+
+        Claim claimFoundItemCmd ->
+            ExceptT undefined
+
+
+        Match catchFoundItemCmd ->
+            ExceptT undefined    
+
+
+
+
+
+--- Helper "mapping" functions
+---
+---
 
 
 mapBothDeclareLostItemErrorAndEvent :: IO (Either WorkflowError [DeclareLostItemEvent]) -> IO (Either InventoryError InventoryEvent)

@@ -197,7 +197,8 @@ createEvents  cat =
 ---
 
 createCategoryCreatedEvt :: Category -> RootCategoryCreated
-createCategoryCreatedEvt createdCategory = createdCategory
+createCategoryCreatedEvt createdCategory = 
+    createdCategory { subCategories = fromList []}
 
 createSubCategoryAddedEvt :: Category -> [AddedSubCategory]
 createSubCategoryAddedEvt Category { categoryId = id, subCategories = subCatgrs} =

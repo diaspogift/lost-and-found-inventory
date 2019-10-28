@@ -163,7 +163,7 @@ lookupOneCategoryBase categories categoryId =
         --print maybeCategory
         case maybeCategory of
             Just category -> liftEither $ Right category
-            Nothing -> liftEither $ mapLeft Db $ Left $ DbError "category not found"
+            Nothing -> liftEither $ mapLeft DataBase $ Left $ DataBaseError "category not found"
 
 
 lookupOneCategory :: LookupOneCategory 
@@ -178,7 +178,7 @@ lookupAttributesBase attributeRefs attrCodes =
         --print maybeAttributeRefs
         case maybeAttributeRefs of
             Just attributes -> liftEither $ Right attributes
-            Nothing -> liftEither $ mapLeft Db $ Left $ DbError "attribute not found"
+            Nothing -> liftEither $ mapLeft DataBase $ Left $ DataBaseError "attribute not found"
 
 
 recursiveLookup :: [String] -> [(String, AttributeRef)] -> [Maybe AttributeRef]

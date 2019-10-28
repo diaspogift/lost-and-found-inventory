@@ -9,7 +9,7 @@ module CommonSimpleTypes (
     , EmailAddress, PostalAddress, Telephone
     , FirstName, Middle, LastName
     , Question, Answer, ErrorMessage, Reason, CityOrVillage (..) -- , Urban, Country
-    , ValidationError (..), DbError (..), RemoteServiceError (..), ServiceInfo (..), WorkflowError (..)
+    , ValidationError (..), DomainError(..), DataBaseError (..), RemoteServiceError (..), ServiceInfo (..), WorkflowError (..)
     , crtFndItmId, crtLstItmId
     , crtMtchdItmId, crtClmdItmId
     , crtUsrId, crtTntId, crtCatgrId, crtCatgrCd
@@ -151,9 +151,13 @@ type ErrorMessage
 newtype ValidationError = 
     ValidationError String deriving (Eq, Ord, Show)
 
+-- Real business logic related errors
+newtype DomainError = 
+    DomainError String deriving (Eq, Ord, Show)
+
 -- Database related errors
-newtype DbError = 
-    DbError String deriving (Eq, Ord, Show)
+newtype DataBaseError = 
+    DataBaseError String deriving (Eq, Ord, Show)
 
 -- External systems errors
 data ServiceInfo = ServiceInfo {
@@ -171,7 +175,8 @@ data RemoteServiceError = RemoteServiceError {
 data WorkflowError =
       Validation ValidationError 
     | Remote RemoteServiceError
-    | Db DbError 
+    | Domain DomainError
+    | DataBase DataBaseError 
     deriving (Eq, Ord, Show)
 
 

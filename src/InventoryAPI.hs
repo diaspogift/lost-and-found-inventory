@@ -154,7 +154,7 @@ handlerDeclareLostItem declareLostItemForm =
                     case error of
                         Validation (ValidationError err) ->
                             throwError $ toServantError 400 cd msg
-                        Db (DbError err) ->
+                        DataBase (DataBaseError err) ->
                             throwError $ toServantError 404 cd msg
                         Remote err ->
                             throwError $ toServantError 404 cd msg
@@ -190,7 +190,7 @@ handlerCreateAttributeRef attributeRefForm =
                     case error of
                         Validation (ValidationError err) ->
                             throwError $ toServantError 400 cd msg
-                        Db (DbError err) ->
+                        DataBase (DataBaseError err) ->
                             throwError $ toServantError 404 cd msg
                         Remote err ->
                             throwError $ toServantError 400 cd msg
@@ -224,7 +224,7 @@ handleCreateRootCategory rootCategoryForm =
                     case error of
                         Validation (ValidationError err) ->
                             throwError $ toServantError 400 cd msg
-                        Db (DbError err) ->
+                        DataBase (DataBaseError err) ->
                             throwError $ toServantError 404 cd msg
                         Remote err ->
                             throwError $ toServantError 400 cd msg

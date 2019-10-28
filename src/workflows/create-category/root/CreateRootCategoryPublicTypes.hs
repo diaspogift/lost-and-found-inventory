@@ -62,7 +62,7 @@ data CreateRootCategoryEvent =
 data WorkflowError
       Validation ValidationError 
     | Remote RemoteServiceError
-    | Db DbError 
+    | DataBase DataBaseError 
     deriving (Eq, Ord, Show)
 --}
 

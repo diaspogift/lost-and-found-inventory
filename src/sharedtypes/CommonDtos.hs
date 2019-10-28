@@ -77,9 +77,9 @@ fromWorkflowError domainError =
                 code = show httpCd
             ,   message = serviceName serv  
             }
-        Db (DbError errorMessage) ->
+        DataBase (DataBaseError errorMessage) ->
             WorkflowErrorDto {
-                    code = "DbError"
+                    code = "DataBaseError"
                 ,   message = errorMessage
                 } 
 

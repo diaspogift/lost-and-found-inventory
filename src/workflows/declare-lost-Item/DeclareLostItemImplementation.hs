@@ -489,18 +489,19 @@ toLostItemLocation checkAdministrativeAreaInfoValid u =
 
 
 
-crtLostItem :: ValidatedLostItem -> DeclaredLostItem
-crtLostItem  =
-  DeclaredLostItem 
-    <$> vlostItemId
-    <*> vlostItemName
-    <*> vlostItemCategoryId
-    <*> vlostItemDesc
-    <*> fromList . fmap toLocation . toList . vlostItemLocation
-    <*> vlostItemDateAndTimeSpan
-    <*> vlostItemRegistrationTime
-    <*> fromList . fmap toAttribute . toList . vlostItemAttributes
-    <*> toPerson . vlostItemOwner
+creatteLostItem :: ValidatedLostItem -> DeclaredLostItem
+creatteLostItem  =
+
+    DeclaredLostItem 
+                    <$> vlostItemId 
+                    <*> vlostItemName 
+                    <*> vlostItemCategoryId 
+                    <*> vlostItemDesc 
+                    <*> fromList . fmap toLocation . toList . vlostItemLocation 
+                    <*> vlostItemDateAndTimeSpan 
+                    <*> vlostItemRegistrationTime 
+                    <*> fromList . fmap toAttribute . toList . vlostItemAttributes 
+                    <*> toPerson . vlostItemOwner 
 
 
 
@@ -594,8 +595,8 @@ acknowledgemenDeclaredLostItem
 
 
 
-crtEvents :: DeclaredLostItem -> Maybe DeclarationAcknowledgmentSent -> [DeclareLostItemEvent]
-crtEvents declaredLosItem optionDeclarationAcknowledgmentSent =
+createEvents :: DeclaredLostItem -> Maybe DeclarationAcknowledgmentSent -> [DeclareLostItemEvent]
+createEvents declaredLosItem optionDeclarationAcknowledgmentSent =
   let acknoledgmentEvents = 
         maybeToList $ fmap AcknowledgmentSent optionDeclarationAcknowledgmentSent
       lostDeclrationCreatedEvents = 
@@ -666,7 +667,8 @@ declareLostItem
           -- Creation step
           crtdLostItem 
               <- return 
-                  $ crtLostItem validatedLostItem
+                  $ creatteLostItem 
+                        validatedLostItem
 
           -- Aknowledgment step
           maybeAcknowledgment 
@@ -678,7 +680,7 @@ declareLostItem
 
           -- Events creation step
           return 
-            $ crtEvents 
+            $ createEvents 
                 crtdLostItem
                 maybeAcknowledgment   
 

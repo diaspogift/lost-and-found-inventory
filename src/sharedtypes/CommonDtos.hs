@@ -28,22 +28,23 @@ import GHC.Generics
 
 
 -- ==========================================================================================
--- This file contains the the logic for working with data transfer objects (DTOs)
+-- This file contains the the logic for working with common data transfer objects (DTOs)
 --
--- Each type of DTO is defined using primitive, serializable types and there are 
--- toUnvlidated, toDomain and fromDclLstItmEvtDomain functions defined for each of them.
+-- 
 --
 -- ==========================================================================================
 
 
+
+
 -- ==========================================================================================
--- DTOs for DeclareLostItem workflow
+-- DTOs for common workflow types
 -- ==========================================================================================
 
 
 
 -- ----------------------------------------------------------------------------
--- DTO for CreateAttributeRefForm
+-- DTO for worflow errors
 -- ----------------------------------------------------------------------------
 
 
@@ -57,6 +58,7 @@ data WorkflowErrorDto = WorkflowErrorDto {
 instance ToJSON WorkflowErrorDto 
 
 instance FromJSON WorkflowErrorDto
+
 
 
 -- Helper functions for converting from / to domain as well as to other states

@@ -2,7 +2,6 @@ module CommonSimpleTypes (
       LostItemId, FoundItemId, DateTimeSpan
     , MatchedItemId, ClaimedItemId
     , UserId, TenantId
-    , RegionName, DivisionName, SubDivisionName
     , CategoryId, CategoryCode, ParentCategoryId, SubCategoryId, ShortDescription, LongDescription
     , TenantName, ItemName, City, Village, Neighborhood, Address
     , AttributeCode, AttributeName, AttributeValue, AttributeUnit
@@ -54,46 +53,66 @@ import Data.Maybe
 
 
 
+
+-- =============================================================================
+-- Common shared domain types
+-- =============================================================================
+
+
+
+
 type Reason = String
+
 type Country = String
-type RegionName =  String
-    --RegionName String deriving (Eq, Ord, Show)
-type DivisionName = String
-    --DivisionName String deriving (Eq, Ord, Show)
-type SubDivisionName = String
-    --SubDivisionName String deriving (Eq, Ord, Show)
+
 newtype DateTimeSpan = 
     DateTimeSpan (DateTime, DateTime) deriving (Eq, Ord, Show)
+
 newtype LostItemId = 
     LostItemId String deriving (Eq, Ord, Show)
+
 newtype FoundItemId = 
     FoundItemId String deriving (Eq, Ord, Show)
+
 newtype MatchedItemId = 
     MatchedItemId String deriving (Eq, Ord, Show)
+
 newtype ClaimedItemId = 
     ClaimedItemId String deriving (Eq, Ord, Show)
+
 newtype UserId = 
     UserId String deriving (Eq, Ord, Show)
+
 newtype TenantId = 
     TenantId String deriving (Eq, Ord, Show)
+
 newtype CategoryId = 
     CategoryId String deriving (Eq, Ord, Show)
+
 type ParentCategoryId = 
     CategoryId
+
 type SubCategoryId = 
     CategoryId
+
 newtype TenantName = 
     TenantName String deriving (Eq, Ord, Show)
+
 newtype ItemName = 
     ItemName String deriving (Eq, Ord, Show)
+
 newtype CategoryCode =
     CategoryCode String deriving (Eq, Ord, Show)
+
 newtype CategoryName =
     CategoryName String deriving (Eq, Ord, Show)
+
 newtype CategoryDescription =
     CategoryDescription String deriving (Eq, Ord, Show)
+
 newtype City = 
     City String deriving (Eq, Ord, Show)
+
 newtype Village = 
     Village String deriving (Eq, Ord, Show)
 
@@ -102,45 +121,63 @@ data CityOrVillage =
     | Country Village
     deriving (Eq, Ord, Show)
 
-
 newtype Neighborhood = 
     Neighborhood String deriving (Eq, Ord, Show)
+
 newtype Address = 
      Address String deriving (Eq, Ord, Show)
+
 newtype ShortDescription = 
     ShortDescription String deriving (Eq, Ord, Show)
+
 newtype LongDescription = 
     LongDescription String deriving (Eq, Ord, Show)
+
 newtype FirstName = 
     FirstName String deriving (Eq, Ord, Show)
+
 newtype Middle = 
     Middle String deriving (Eq, Ord, Show)
+
 newtype LastName = 
     LastName String deriving (Eq, Ord, Show)
+
 newtype EmailAddress = 
     EmailAddress String deriving (Eq, Ord, Show)
+
 newtype PostalAddress = 
     PostalAddress String deriving (Eq, Ord, Show)
+
 newtype Telephone = 
     Telephone String deriving (Eq, Ord, Show)
+
 newtype AttributeCode = 
     AttributeCode String deriving (Eq, Ord, Show)
+
 newtype AttributeName = 
     AttributeName String deriving (Eq, Ord, Show)
+
 newtype AttributeValue = 
     AttributeValue String deriving (Eq, Ord, Show)
+
 newtype AttributeUnit = 
     AttributeUnit String deriving (Eq, Ord, Show)
+
 newtype Question = 
     Question String deriving (Eq, Ord, Show)
+
 newtype Answer = 
     Answer String deriving (Eq, Ord, Show)
+
+
 
 
 
 -- =============================================================================
 -- Common shared error types
 -- =============================================================================
+
+
 
 
 
@@ -183,8 +220,7 @@ data WorkflowError =
 
 
 -- ===================================================================================
--- Reusable constructors and getters for constrained types
--- Reusable uwrppers to primitives types such as String, Int ..etc
+-- helper functions for constructing constrained types
 -- ===================================================================================
 
 
@@ -305,12 +341,27 @@ crtEmail fieldName  ctor  str
                 Left errorMsg -> Left errorMsg
 
 
+
+
+
+
+
+-- =============================================================================
+-- Common shared domain types constructors
+-- =============================================================================
+
+
+
+
+
+
 crtLstItmId :: String -> Either ErrorMessage LostItemId
 crtLstItmId = 
     crtBoundedString "Lost Item Identifier: " LostItemId 36 36 
 
 uwrpLstItmId :: LostItemId -> String
 uwrpLstItmId (LostItemId str) = str
+
 
 crtFndItmId :: String -> Either ErrorMessage FoundItemId
 crtFndItmId = 
@@ -319,12 +370,14 @@ crtFndItmId =
 uwrpFndItmId :: FoundItemId -> String
 uwrpFndItmId (FoundItemId str) = str
 
+
 crtMtchdItmId :: String -> Either ErrorMessage MatchedItemId
 crtMtchdItmId = 
     crtBoundedString "Matched Item Identifier: " MatchedItemId 36 36
 
 uwrpMtchdItmId :: MatchedItemId -> String
 uwrpMtchdItmId (MatchedItemId str) = str
+
 
 crtClmdItmId :: String -> Either ErrorMessage ClaimedItemId
 crtClmdItmId = 
@@ -333,12 +386,14 @@ crtClmdItmId =
 uwrpClmdItmId :: ClaimedItemId -> String
 uwrpClmdItmId (ClaimedItemId str) = str
 
+
 crtUsrId :: String -> Either ErrorMessage UserId
 crtUsrId = 
     crtBoundedString "User Identifier: " UserId 36 36
 
 uwrpUsrId :: UserId -> String
 uwrpUsrId (UserId str) = str
+
 
 crtTntId :: String -> Either ErrorMessage TenantId
 crtTntId = 
@@ -355,12 +410,14 @@ crtCatgrId =
 uwrpCatgrId :: CategoryId -> String
 uwrpCatgrId (CategoryId str) = str
 
+
 crtCatgrCd :: String -> Either ErrorMessage CategoryCode
 crtCatgrCd = 
     crtBoundedString "Category Code: " CategoryCode 10 20
 
 uwpCatgrCd :: CategoryCode -> String
 uwpCatgrCd (CategoryCode str) = str
+
 
 crtShrtDescpt :: String -> Either ErrorMessage ShortDescription
 crtShrtDescpt = 
@@ -369,12 +426,14 @@ crtShrtDescpt =
 uwrpShrtDescpt:: ShortDescription -> String
 uwrpShrtDescpt (ShortDescription str) = str
 
+
 crtLgDescpt :: String -> Either ErrorMessage LongDescription
 crtLgDescpt = 
     crtString "Long Description: " LongDescription 5000
 
 uwrpLgDescpt:: LongDescription -> String
 uwrpLgDescpt (LongDescription str) = str
+
     
 crtTntNm :: String -> Either ErrorMessage TenantName
 crtTntNm = 
@@ -383,12 +442,14 @@ crtTntNm =
 uwrpTntNm :: TenantName -> String
 uwrpTntNm (TenantName str) = str
 
+
 crtItmNm :: String -> Either ErrorMessage ItemName
 crtItmNm = 
     crtString "Item Name: " ItemName 500
 
 uwrpItmNm :: ItemName -> String
 uwrpItmNm (ItemName str) = str
+
 
 crtCity :: String -> Either ErrorMessage City
 crtCity = 
@@ -397,6 +458,7 @@ crtCity =
 uwrpCity:: City -> String
 uwrpCity (City str) = str
 
+
 crtVillage :: String -> Either ErrorMessage Village
 crtVillage = 
     crtString "Village: " Village 100
@@ -404,16 +466,20 @@ crtVillage =
 uwrpVillage :: Village -> String
 uwrpVillage (Village str) = str
 
+
 crtNghbrhd :: String -> Either ErrorMessage (Maybe Neighborhood)
 crtNghbrhd = 
     crtStringOpt "Neighborhood: " Neighborhood 500
+
+uwrpNghbrhd :: Neighborhood -> String
+uwrpNghbrhd (Neighborhood str) = str
+
 
 crtOptNghbrhd :: String -> Either ErrorMessage (Maybe Neighborhood)
 crtOptNghbrhd = 
     crtStringOpt "Neighborhood: " Neighborhood 500
 
-uwrpNghbrhd :: Neighborhood -> String
-uwrpNghbrhd (Neighborhood str) = str
+
 
 crtAddress :: String -> Either ErrorMessage Address
 crtAddress = 
@@ -422,6 +488,7 @@ crtAddress =
 uwrpAddress :: Address -> String
 uwrpAddress (Address str) = str
 
+
 crtAttrCd :: String -> Either ErrorMessage AttributeCode
 crtAttrCd = 
     crtString "Attribute Code: " AttributeCode 50
@@ -429,12 +496,14 @@ crtAttrCd =
 uwrpAttrCd :: AttributeCode -> String
 uwrpAttrCd (AttributeCode str) = str
 
+
 crtAttrNm :: String -> Either ErrorMessage AttributeName
 crtAttrNm = 
     crtString "Attribute Name: " AttributeName 50
 
 uwrpAttrNm :: AttributeName -> String
 uwrpAttrNm (AttributeName str) = str
+
 
 crtOptAttrVal :: String -> Either ErrorMessage (Maybe AttributeValue)
 crtOptAttrVal = 
@@ -449,7 +518,6 @@ crtAttrVal :: String -> Either ErrorMessage AttributeValue
 crtAttrVal = 
     crtString "Attribute Value: " AttributeValue 50
 
-
 uwrpAttrVal :: AttributeValue -> String
 uwrpAttrVal (AttributeValue str) = str
 
@@ -462,6 +530,7 @@ uwrpOptAttrUnt :: Maybe AttributeUnit -> String
 uwrpOptAttrUnt (Just (AttributeUnit str)) = str
 uwrpOptAttrUnt Nothing = ""
 
+
 crtAttrUnt :: String -> Either ErrorMessage AttributeUnit
 crtAttrUnt = 
     crtString "Attribute Unit: " AttributeUnit 50
@@ -469,12 +538,14 @@ crtAttrUnt =
 uwrpAttrUnt :: AttributeUnit -> String
 uwrpAttrUnt (AttributeUnit str) = str
 
+
 crtEmailAddress :: String -> Either ErrorMessage EmailAddress
 crtEmailAddress = 
     crtEmail "Email Address : " EmailAddress
 
 uwrpEmailAddress :: EmailAddress -> String
 uwrpEmailAddress (EmailAddress str) = str
+
 
 crtPstAddress :: String -> Either ErrorMessage PostalAddress
 crtPstAddress = 
@@ -492,17 +563,19 @@ uwrpOptPstAddress :: Maybe PostalAddress -> String
 uwrpOptPstAddress (Just (PostalAddress str)) = str
 uwrpOptPstAddress Nothing = ""
 
+
 crtTel :: String -> Either ErrorMessage Telephone
 crtTel = 
     crtString "Telephone: " Telephone 50  
+
+uwrpTel :: Telephone -> String
+uwrpTel (Telephone str) = str
+
   
 crtOptTel :: String -> Either ErrorMessage (Maybe Telephone)
 crtOptTel = 
     crtStringOpt "Telephone: " Telephone 50 
 
-
-uwrpTel :: Telephone -> String
-uwrpTel (Telephone str) = str
     
 crtFstNm :: String -> Either ErrorMessage FirstName
 crtFstNm = 
@@ -510,6 +583,7 @@ crtFstNm =
 
 uwrpFstNm:: FirstName -> String
 uwrpFstNm (FirstName str) = str
+
 
 crtMdleNm :: String -> Either ErrorMessage (Maybe Middle)
 crtMdleNm = 
@@ -519,12 +593,14 @@ uwrpMdleNm :: Maybe Middle -> String
 uwrpMdleNm (Just (Middle str)) = str
 uwrpMdleNm Nothing = ""
 
+
 crtLstNm :: String -> Either ErrorMessage LastName
 crtLstNm = 
     crtString "Last Name : " LastName 100
 
 uwrpLstNm :: LastName -> String
 uwrpLstNm (LastName str) = str
+
 
 crtQuest :: String -> Either ErrorMessage Question
 crtQuest = 
@@ -533,6 +609,7 @@ crtQuest =
 uwrpQuest :: Question -> String
 uwrpQuest (Question str) = str
 
+
 crtAns :: String -> Either ErrorMessage Answer
 crtAns = 
     crtString "Answer : " Answer 1000
@@ -540,18 +617,19 @@ crtAns =
 uwrpAns :: Answer -> String
 uwrpAns (Answer str) = str
 
+
 --- TODO: MIGHT STILL NEED SOME IMPROVEMENTS
 
 crtDtTmSpan :: String -> String -> String -> Either ErrorMessage DateTimeSpan
 crtDtTmSpan strdtStart strdtEnd separator =
     let                 
-        maybeDtstart = fmap (readMaybe :: String-> Maybe Int) $ splitOn separator strdtStart  
-        maybeDtend = fmap (readMaybe :: String-> Maybe Int) $ splitOn separator strdtEnd  
+        maybeDtstart = (readMaybe :: String-> Maybe Int) <$> splitOn separator strdtStart  
+        maybeDtend = (readMaybe :: String-> Maybe Int) <$> splitOn separator strdtEnd  
         dtstart = catMaybes maybeDtstart
         dtend = catMaybes maybeDtend
         
     
-    in  if ((length dtstart == 6) && (length dtend == 6))
+    in  if (length dtstart == 6) && (length dtend == 6)
         then 
             let  
                 dsy = dtstart!!0
@@ -570,7 +648,7 @@ crtDtTmSpan strdtStart strdtEnd separator =
 
                 
                 
-            in  if (checkDateAttrRanges (dsy, dsmo, dsd, dsh, dsmi, dss) && checkDateAttrRanges (dey, demo, ded, deh, demi, des)) 
+            in  if checkDateAttrRanges (dsy, dsmo, dsd, dsh, dsmi, dss) && checkDateAttrRanges (dey, demo, ded, deh, demi, des)
                 then    
                         let d1 = DateTime dsy dsmo dsd dsh dsmi dss
                             d2 = DateTime dey demo ded deh demi des

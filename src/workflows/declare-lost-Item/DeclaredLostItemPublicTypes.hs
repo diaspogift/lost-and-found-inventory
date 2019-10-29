@@ -76,14 +76,17 @@ data UnvalidatedLostItem = UnvalidatedLostItem {
 -- --------------------------------------------------------------------------
 
 
--- Event will be crtd if the Acknowledgment was successfully posted
+-- Event will be created if the Acknowledgment was successfully posted
 data DeclarationAcknowledgmentSent = DeclarationAcknowledgmentSent {
         declaredLostItemId :: LostItemId
     ,   ownerContactInfo :: ContactInformation 
     } deriving (Eq, Ord, Show)
 
--- Event to send to search context
+
+-- Events to send to search context / persit to the event store
 type LostItemDeclared = DeclaredLostItem
+type LocationAdded = Location
+type AttributeAdded = Attribute
 
 
 -- Declare / Register Lost Item state            
@@ -92,7 +95,7 @@ data DeclaredLostItem = DeclaredLostItem {
     ,   lostItemName                :: ItemName
     ,   lostItemCategoryId          :: CategoryId
     ,   lostItemDesc                :: LongDescription
-    ,   lostItemLocation            :: Set Location
+    ,   lostItemLocations            :: Set Location
     ,   lostItemDateAndTimeSpan     :: DateTimeSpan
     ,   lostItemRegistrationTime    :: UTCTime
     ,   lostItemAttributes          :: Set Attribute
@@ -103,6 +106,8 @@ data DeclaredLostItem = DeclaredLostItem {
 -- The possible events resulting from the Declare/Register Lost Item workflow
 data DeclareLostItemEvent =
       LostItemDeclared LostItemDeclared
+    | LocationsAdded [Location]
+    | AttributesAdded [Attribute]
     | SearchableItemDeclared LostItemDeclared 
     | AcknowledgmentSent DeclarationAcknowledgmentSent
     deriving (Eq, Ord, Show)

@@ -202,7 +202,7 @@ createRootCategoryHandler
         -- call workflow
         let events =
                 createRootCatgory 
-                    checkRefSubCatgrValid
+                    refSubCatgrs
                     unvalidatedRootCategory             -- Input
                     unvalidatedCategoryId                       -- Input
               

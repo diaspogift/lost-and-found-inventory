@@ -53,7 +53,7 @@ import Data.Aeson
 -- =============================================================================
 
 
-
+type LocalStreamId = String
 
 type LookupOneCategory = 
     String -> ExceptT WorkflowError IO Category
@@ -61,8 +61,8 @@ type LookupOneCategory =
 type LookupAttributes = 
     [String] -> ExceptT WorkflowError IO [AttributeRef]
 
-type WriteEvent = 
-    Connection -> DeclareLostItemEvent -> IO ()
+type WriteEvents = 
+    Connection -> LocalStreamId -> [DeclareLostItemEvent] -> IO ()
 
 
 type LoadAdministrativeAreaMap =
@@ -201,15 +201,32 @@ nextId =
 
 
 
-writeEventToStore :: WriteEvent
-writeEventToStore conn (LostItemDeclared lostItemDeclared) = 
-    do  let lostItemDeclaredDto = fromLostItemDeclared lostItemDeclared
-            lostItemDeclaredEvent = createEvent "LostItemDeclared" Nothing $ withJson lostItemDeclaredDto
-            id = itemId lostItemDeclaredDto
-        as <- sendEvent conn (StreamName $ pack ( "lost-item-id-: " <> id)) anyVersion lostItemDeclaredEvent Nothing
+
+writeEventsToStore :: WriteEvents
+writeEventsToStore conn streamId evts = 
+    do  let persistableEvts = fmap toEvent evts
+        as <- sendEvents conn (StreamName $ pack ( "lost-item-stream-id-: " <> streamId)) anyVersion persistableEvts Nothing
         _  <- wait as
         shutdown conn
         waitTillClosed conn
+        where toEvent (LostItemDeclared lid) =
+                let lidDto = fromLostItemDeclared lid
+
+                    --- TODO this needs some serious clean up
+                    --- TODO this needs some serious clean up
+                    --- TODO this needs some serious clean up
+                    lidDtoN = lidDto {itemAttributes = [], itemLocations = []}
+                    --- TODO this needs some serious clean up
+                    --- TODO this needs some serious clean up
+                    --- TODO this needs some serious clean up
+                in createEvent "LostItemDeclared" Nothing $ withJson lidDtoN
+              toEvent (LocationsAdded lcsa) =
+                let lcsaDto = fromLocationsAdded lcsa
+                in createEvent "LocationsAdded" Nothing $ withJson lcsaDto
+              toEvent (AttributesAdded attrsa) =
+                let attrsaDto = fromAttributesAdded attrsa
+                in createEvent "AttributesAdded" Nothing $ withJson attrsaDto
+
 
 
             
@@ -221,11 +238,13 @@ writeEventToStore conn (LostItemDeclared lostItemDeclared) =
 
 
 
+
+
 declareLostItemHandler :: 
     LoadAdministrativeAreaMap
     -> LookupOneCategory 
     -> LookupAttributes
-    -> WriteEvent
+    -> WriteEvents
     -> NextId
     -> DeclareLostItemCmd 
     -> ExceptT WorkflowError IO [DeclareLostItemEvent]
@@ -234,7 +253,7 @@ declareLostItemHandler
     loadAdministrativeAreaMap
     lookupOneCategory
     lookupAttributes
-    writeEventToStore
+    writeEventsToStore
     nextId
     (Command unvalidatedLostItem curTime userId) = 
 
@@ -301,14 +320,15 @@ declareLostItemHandler
         case events of  
             Right allEvents -> 
                 do
-                    let declLostItemEvt = filter isDeclLostItemEvent allEvents
-                        evt = declLostItemEvt!!0
-                    res <- liftIO $ writeEventToStore conn evt
+                    let declLostItemEvts = filter persistableEvts allEvents
+                    res <- liftIO $ writeEventsToStore  conn lostItemUuid declLostItemEvts
                     liftEither events
             Left errorMsg -> liftEither $ Left errorMsg
 
-            where isDeclLostItemEvent (LostItemDeclared lostItemDeclared) = True
-                  isDeclLostItemEvent _ = False
+            where persistableEvts (LostItemDeclared _) = True
+                  persistableEvts (LocationsAdded _) = True
+                  persistableEvts (AttributesAdded _) = True
+                  persistableEvts _ = False
 
         ---------------------------------------- Side effects handling end ----------------------------------------
 
@@ -324,7 +344,7 @@ publicDeclareLostItemHandler =
         loadAdministrativeAreaMap
         lookupOneCategory
         lookupAttributes
-        writeEventToStore
+        writeEventsToStore
         nextId
 
         

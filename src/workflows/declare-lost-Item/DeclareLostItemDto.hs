@@ -57,8 +57,7 @@ data LocationDto = LocationDto {
     ,   locationAddress :: [String]
     } deriving (Generic, Show)
 
-instance ToJSON LocationDto where
-    toEncoding = genericToEncoding defaultOptions
+instance ToJSON LocationDto 
 
 instance FromJSON LocationDto
 
@@ -491,7 +490,7 @@ fromLostItemDeclared =
         <*> uwrpItmNm . lostItemName 
         <*> uwrpCatgrId . lostItemCategoryId 
         <*> uwrpLgDescpt . lostItemDesc 
-        <*> fmap fromLocation . toList . lostItemLocation 
+        <*> fmap fromLocation . toList . lostItemLocations 
         <*> lostItemRegistrationTime 
         <*> uwrpDtTmSpan . lostItemDateAndTimeSpan 
         <*> fmap fromAttribute . toList . lostItemAttributes 
@@ -533,16 +532,36 @@ fromDeclarationAcknowledgmentSent  =
 
 
 -- ----------------------------------------------------------------------------
--- DTO for DeclareLostItemError 
+-- DTO for DeclareLostItemEvent 
 -- ----------------------------------------------------------------------------
 
 
 --- 
 
+
+type LocationDtos = [LocationDto]
+type AttributeDtos = [AttributeDto]
+
 data DeclareLostItemEventDto = 
-    LI LostItemDeclaredDto | DA DeclarationAcknowledgmentSentDto deriving (Generic, Show)
+      LI LostItemDeclaredDto 
+    | LOCTS LocationDtos
+    | ATTRS AttributeDtos
+    | DA DeclarationAcknowledgmentSentDto 
+    deriving (Generic, Show)
 
 instance ToJSON DeclareLostItemEventDto
+
+
+
+
+-- helper functions 
+
+fromLocationsAdded :: [Cct.Location] -> [LocationDto]
+fromLocationsAdded = fmap fromLocation 
+
+fromAttributesAdded :: [Cct.Attribute] -> [AttributeDto]
+fromAttributesAdded = fmap fromAttribute
+
 
 ---
 
@@ -563,6 +582,17 @@ fromDclLstItmEvtDomain evt =
             let key = "declaredLostItem"
                 val = fromLostItemDeclared lid
             in  singleton key (LI val)
+
+        LocationsAdded locs ->
+            let key = "locationsadded"
+                val = fromLocationsAdded locs
+            in  singleton key (LOCTS val)
+
+        AttributesAdded attrs ->
+            let key = "attributesadded"
+                val = fromAttributesAdded attrs
+            in  singleton key (ATTRS val)
+
         SearchableItemDeclared sid ->
             let key = "searchableLostItem"
                 val = fromLostItemDeclared sid

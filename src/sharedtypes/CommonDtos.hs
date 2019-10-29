@@ -73,7 +73,7 @@ fromWorkflowError domainError =
             }
         Domain (DomainError errorMessage) ->
             WorkflowErrorDto {
-                code = "ValidationError"
+                code = "DomainError"
             ,   message = errorMessage
             }
         Remote remoteServiceError ->

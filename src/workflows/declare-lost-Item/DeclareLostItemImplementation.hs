@@ -140,6 +140,10 @@ type ValidateUnvalidatedLostItem =
 
 
 
+-- ----------------------------------------------------------------------------
+-- Check refered Category enablement status is enabled
+-- ----------------------------------------------------------------------------
+
 
 
 -- ----------------------------------------------------------------------------
@@ -489,8 +493,8 @@ toLostItemLocation checkAdministrativeAreaInfoValid u =
 
 
 
-creatteLostItemOld :: ValidatedLostItem -> DeclaredLostItem
-creatteLostItemOld  =
+creatteLostItem :: ValidatedLostItem -> DeclaredLostItem
+creatteLostItem  =
 
     DeclaredLostItem 
         <$> vlstItmId 
@@ -503,46 +507,7 @@ creatteLostItemOld  =
         <*> fromList . fmap toAttribute . toList . vlstItmAttrbts 
         <*> toPerson . vlstItmOwner 
 
-
-
-creatteLostItem :: ValidatedLostItem -> Category-> Either DomainError DeclaredLostItem
-creatteLostItem vli refCatgr =
-    -- verify referenced category is enabled
-    case enablementStatus refCatgr of
-        Disabled reason ->
-             Left . DomainError 
-                $ "the referenced category is daisabled for the following reason: " 
-                <> reason
     
-        Enabled ->
-            return  DeclaredLostItem {
-                            lostItemId = id            
-                        ,   lostItemName = name           
-                        ,   lostItemCategoryId = catgrId      
-                        ,   lostItemDesc = descpt         
-                        ,   lostItemLocation = locts      
-                        ,   lostItemDateAndTimeSpan = dtimeSpan 
-                        ,   lostItemRegistrationTime  = regTime
-                        ,   lostItemAttributes = attrs    
-                        ,   lostItemOwner = owner         
-                    }
-            
-            where id = vlstItmId vli
-                  name = vlstItmNm vli
-                  catgrId = vlstItmCatgrId vli
-                  descpt = vlstItmDescpt vli
-                  locts = (fromList . fmap toLocation . toList . vlstItmLocts) vli
-                  dtimeSpan = vlstItmDteTimeSpan vli
-                  regTime = vlstItmRegTime vli
-                  attrs = (fromList . fmap toAttribute . toList . vlstItmAttrbts) vli
-                  owner = (toPerson . vlstItmOwner) vli
-
-
-          
-          
-
-
-          
 
 
 --- Helper functions
@@ -585,6 +550,30 @@ toLocation vLoc =
     ,   locationAddresses = vlocationAddresses vLoc
     }
     
+
+
+
+
+
+
+-- ----------------------------------------------------------------------------
+-- Check refered category enabled step
+-- ----------------------------------------------------------------------------
+
+
+
+
+checkRefCatgrEnabled :: ValidatedLostItem -> Category-> Either DomainError ValidatedLostItem
+checkRefCatgrEnabled vli refCatgr 
+    | vlstItmCatgrId vli == categoryId refCatgr = 
+        case enablementStatus refCatgr of
+            Disabled reason ->
+                Left . DomainError 
+                    $ "the referenced category is daisabled for the following reason: " 
+                    <> reason
+            Enabled -> return vli
+
+    | otherwise =  Left . DomainError $ "category ids don't match"
 
 
 
@@ -638,11 +627,27 @@ createEvents :: DeclaredLostItem -> Maybe DeclarationAcknowledgmentSent -> [Decl
 createEvents declaredLosItem optionDeclarationAcknowledgmentSent =
   let acknoledgmentEvents = 
         maybeToList $ fmap AcknowledgmentSent optionDeclarationAcknowledgmentSent
+
       lostDeclrationCreatedEvents = 
         singleton $ LostItemDeclared $ crtLostItemDeclaredEvent declaredLosItem
+
+      loctsAddedEvents = singleton . LocationsAdded . crtLoctsAddedEvent $ declaredLosItem
+
+      attrbtsAddedEvents = singleton . AttributesAdded . crtAttrbtesAddedEvent $ declaredLosItem
+
       searchableItemDeclaredEvents = 
         singleton $ SearchableItemDeclared $ crtSearchableLostItemDeclaredEvent declaredLosItem
-  in  concat [acknoledgmentEvents, lostDeclrationCreatedEvents, searchableItemDeclaredEvents]
+
+  in case  (head loctsAddedEvents, head attrbtsAddedEvents) of
+        (LocationsAdded [], AttributesAdded []) ->
+            concat [lostDeclrationCreatedEvents, searchableItemDeclaredEvents, acknoledgmentEvents]
+        (LocationsAdded (x:xs), AttributesAdded []) ->
+            concat [lostDeclrationCreatedEvents, loctsAddedEvents, searchableItemDeclaredEvents, acknoledgmentEvents]
+        (LocationsAdded [] , AttributesAdded (x:xs)) ->
+            concat [lostDeclrationCreatedEvents, attrbtsAddedEvents, searchableItemDeclaredEvents, acknoledgmentEvents]
+        (LocationsAdded (x:xs), AttributesAdded (y:ys)) ->
+            concat [lostDeclrationCreatedEvents, loctsAddedEvents, attrbtsAddedEvents, searchableItemDeclaredEvents, acknoledgmentEvents]
+
 
 
 
@@ -656,7 +661,11 @@ crtLostItemDeclaredEvent declaredLostItem = declaredLostItem
 crtSearchableLostItemDeclaredEvent :: DeclaredLostItem -> DeclaredLostItem
 crtSearchableLostItemDeclaredEvent declaredLostItem = declaredLostItem
 
+crtLoctsAddedEvent :: DeclaredLostItem -> [Location]
+crtLoctsAddedEvent = toList . lostItemLocations 
 
+crtAttrbtesAddedEvent :: DeclaredLostItem -> [Attribute]
+crtAttrbtesAddedEvent = toList . lostItemAttributes 
 
 
 
@@ -693,10 +702,9 @@ declareLostItem
   lostItemCreationTime              -- Input
   unValidatedlostItemUuid =         -- Input
       do  
-          -- Validation step
+          -- Validation step - making sure all field constraints are met
           validatedLostItem 
-              <- mapLeft 
-                  Validation $
+              <- mapLeft Validation $
                     validateUnvalidatedLostItem
                       checkAdministrativeAreaInfoValid
                       checkContactInfoValid
@@ -705,13 +713,18 @@ declareLostItem
                       lostItemCreationTime
                       unValidatedlostItemUuid
 
+          -- Verified referenced category enablement status is enabled step
+          valiatedCheckedLostItem 
+              <- mapLeft Domain $
+                    checkRefCatgrEnabled
+                    validatedLostItem
+                    referencedCategory
+
           -- Creation step
           crtdLostItem 
-              <- mapLeft 
-                  Domain $ 
+              <- return $
                     creatteLostItem 
-                        validatedLostItem
-                        referencedCategory
+                        valiatedCheckedLostItem
 
           -- Aknowledgment step
           maybeAcknowledgment 

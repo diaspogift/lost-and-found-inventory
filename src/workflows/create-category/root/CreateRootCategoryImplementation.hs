@@ -8,7 +8,7 @@ import CreateRootCategoryPublicTypes
 import Data.Time
 import Prelude hiding (last)
 import Data.Maybe
-import Data.Set hiding (singleton, null)
+import Data.Set hiding (singleton, null, filter)
 import Util
 import Data.Either.Combinators
 
@@ -75,10 +75,25 @@ data ValidatedRootCategory = ValidatedRootCategory {
 
 
 type ValidateUnvalidatedRootCategory =
-  CheckRefSubCatgrValid
-  -> UnvalidatedRootCategory 
+  UnvalidatedRootCategory 
   -> UnvalidatedRootCategoryId 
   -> Either ValidationError ValidatedRootCategory
+
+
+
+
+
+-- ----------------------------------------------------------------------------
+-- Verify reffered sub categories are not either Root or already have a parent step
+-- ----------------------------------------------------------------------------
+
+
+
+type CheckRefSubCatgrsValid = 
+  [Category]
+  -> ValidatedRootCategory
+  -> Either DomainError [CategoryId]
+
 
 
 
@@ -103,6 +118,10 @@ type CreateEvents =
   Category -> [CreateRootCategoryEvent]
 
 
+
+
+
+
 -- ==========================================================================================
 -- Section 2 : Implementation
 -- ==========================================================================================
@@ -119,7 +138,7 @@ type CreateEvents =
 
 
 validateUnvalidatedCategory :: ValidateUnvalidatedRootCategory
-validateUnvalidatedCategory checkRefSubCatgrValid uCatgr uCatgrId = 
+validateUnvalidatedCategory uCatgr uCatgrId = 
     ValidatedRootCategory <$> id <*> code <*> rootStatus <*> enblmntStatus <*> descpt <*> subCatgrs
       where 
         id = toCatId uCatgrId
@@ -127,7 +146,7 @@ validateUnvalidatedCategory checkRefSubCatgrValid uCatgr uCatgrId =
         rootStatus = pure Root
         enblmntStatus = (toEnblmntStatus . uEnblmnt) uCatgr
         descpt = (toDescpt . udescpt) uCatgr
-        subCatgrs = (toValidatedSubCatgrs checkRefSubCatgrValid . usubCatgrs) uCatgr
+        subCatgrs = (toValidatedSubCatgrs . usubCatgrs) uCatgr
         
       
 
@@ -148,13 +167,58 @@ toDescpt :: String -> Either ValidationError LongDescription
 toDescpt = mapLeft ValidationError . crtLgDescpt  
   
 toValidatedSubCatgrs :: 
-    CheckRefSubCatgrValid -> [String] -> Either ValidationError (Set CategoryId)
-toValidatedSubCatgrs checkRefSubCatgrValid  =  
-    fmap fromList . mapLeft ValidationError . traverse checkRefSubCatgrValid 
+    [String] -> Either ValidationError (Set CategoryId)
+toValidatedSubCatgrs  = 
+    fmap fromList . traverse (mapLeft ValidationError . crtCatgrId) 
+    
 
 
 
 
+
+-- ----------------------------------------------------------------------------
+-- Verify reffered sub categories are not either Root or already have a parent step
+-- ----------------------------------------------------------------------------
+
+
+--- TODO: I should probably use a fold here 
+--- TODO: I should probably use a fold here 
+--- TODO: I should probably use a fold here 
+
+checkRefSubCatgrsValid :: CheckRefSubCatgrsValid 
+checkRefSubCatgrsValid catgrs = 
+    traverse (checkRefSubCatgrValid catgrs) . toList . vsubCategories
+    where checkRefSubCatgrValid :: [Category] -> CategoryId -> Either DomainError CategoryId
+          checkRefSubCatgrValid cats catId =
+            let ucatId = uwrpCatgrId catId
+                singletonCat = filter (\cat ->  categoryId cat == catId) cats
+            in case singletonCat of
+                [cat] ->
+                    verifyNotRootAndNotSub cat
+                _ -> 
+                    Left . DomainError $ 
+                        "referenced sub category with id : " 
+                        ++ ucatId  ++ " not found"
+                    
+                where verifyNotRootAndNotSub Category { enablementStatus = es, rootStatus = rs, categoryId = cid } =
+                        case es of 
+                            Disabled reason ->
+                                Left . DomainError $ 
+                                    "referenced sub category with id : " 
+                                    ++ uwrpCatgrId cid  ++ " is disabled for reason: " ++ reason 
+                            Enabled ->
+                                case rs of
+                                    Root ->
+                                        Left . DomainError $
+                                            "referenced sub category with id : " 
+                                            ++ uwrpCatgrId cid ++ " is a root category"
+                                    Sub maybeParentInfo -> 
+                                        case maybeParentInfo of 
+                                            Just parentInfo -> 
+                                                Left . DomainError $
+                                                    "referenced sub category with id : " 
+                                                    ++ uwrpCatgrId cid ++ " is already a sub for: " ++ "<<<<<<<<<< TODO >>>>>>>>>>>>"
+                                            Nothing -> Right cid
 
 
 
@@ -224,13 +288,13 @@ createSubCategoryAddedEvt Category { categoryId = id, subCategories = subCatgrs}
 
 
 createRootCatgory ::
-  CheckRefSubCatgrValid
+  [Category] 
   -> UnvalidatedRootCategory 
   -> UnvalidatedRootCategoryId 
   -> Either WorkflowError [CreateRootCategoryEvent]
 
 createRootCatgory  
-  checkRefSubCatgrValid         -- Dependency       
+  referredSubCatgrs         -- Dependency       
   unvalidatedCategory           -- Input
   unValidatedCatgrId =          -- Input
     do  
@@ -239,9 +303,15 @@ createRootCatgory
             <- mapLeft 
                 Validation $
                     validateUnvalidatedCategory
-                        checkRefSubCatgrValid
                         unvalidatedCategory
                         unValidatedCatgrId
+
+        -- Verify that referred sub categories have their RootStatus set to Sub and Enablement Status set to enabled
+        _ <- mapLeft 
+                Domain $ 
+                    checkRefSubCatgrsValid
+                        referredSubCatgrs
+                        validatedCatgr     
 
         -- Creation step
         createdCatgr 

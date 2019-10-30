@@ -571,7 +571,7 @@ checkRefCatgrEnabled vli refCatgr
                 Left . DomainError 
                     $ "the referenced category is daisabled for the following reason: " 
                     <> reason
-            Enabled -> return vli
+            Enabled _ -> return vli
 
     | otherwise =  Left . DomainError $ "category ids don't match"
 

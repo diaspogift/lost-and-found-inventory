@@ -82,12 +82,18 @@ toUnvalidatedRootCategory  CreateRootCategoryForm{..}=
 
 
 data RootCategoryCreatedDto = RootCategoryCreatedDto {
-        catId :: String
-    ,   catCode :: String
-    ,   rtStatus :: String
-    ,   enblmntStatus :: String
-    ,   catDesc :: String
-    ,   subCategrs :: [String]
+        catId           :: String
+    ,   catCode         :: String
+
+    ,   rtStatus        :: String
+    ,   prtCatgrId      :: String
+    ,   prtCatgrCode    :: String
+
+    ,   enblmntStatus   :: String
+    ,   enblmntReason   :: String
+
+    ,   catDesc         :: String
+    ,   subCategrs      :: [String]
     } deriving (Generic, Show)
 
 
@@ -97,15 +103,20 @@ instance FromJSON RootCategoryCreatedDto
 
 
 
-
-
 -- Helper functions for converting from / to domain as well as to other states
 toDomain :: RootCategoryCreatedDto -> Either ErrorMessage Category
 toDomain dto = do
     id <- crtCatgrId . catId $ dto
     code <- crtCatgrCd . catCode $ dto
-    let rtStts = toRootStatus . rtStatus $ dto 
-    let enblmntStts = toEnablementStatus . enblmntStatus $ (dto :: RootCategoryCreatedDto)
+
+    let rootStatusInfo = (rtStatus dto, prtCatgrId dto,  prtCatgrCode dto)
+
+    rtStts <- toRootStatus rootStatusInfo
+
+    let enblmntStatusInfo = (enblmntStatus dto, enblmntReason dto) 
+
+    enblmntStts <- toEnablementStatus enblmntStatusInfo
+
     descpt <- crtLgDescpt . catDesc $ dto
     subs <- traverse crtCatgrId . subCategrs $ dto
     return 
@@ -144,20 +155,31 @@ instance ToJSON AddedSubCategoryDto
 instance FromJSON AddedSubCategoryDto
 
 
-        
 
 -- Helper functions for converting from / to domain as well as to other states
 
 fromRootCategoryCreated :: RootCategoryCreated -> RootCategoryCreatedDto
-fromRootCategoryCreated = 
-    RootCategoryCreatedDto
-        <$> id <*> code <*> rtSttus <*> enblmntSttus  <*> descpt <*> subCatgrs
-    where id = uwrpCatgrId . categoryId
-          code = uwpCatgrCd . categoryCode
-          rtSttus = fromRootStatus . rootStatus
-          enblmntSttus = fromEnblmntStatus . enablementStatus
-          descpt = uwrpLgDescpt . categoryDesc
-          subCatgrs = fmap uwrpCatgrId . toList . subCategories
+fromRootCategoryCreated catgr = 
+    RootCategoryCreatedDto {
+            catId = id        
+        ,   catCode = code     
+        ,   rtStatus = rtSttusType     
+        ,   prtCatgrId = prtCatgrId   
+        ,   prtCatgrCode = prtCatgrCode
+        ,   enblmntStatus = enblmntSttus
+        ,   enblmntReason = enblmntReason  
+        ,   catDesc = descpt        
+        ,   subCategrs = subCatgrs     
+    }
+    where id = uwrpCatgrId . categoryId $ catgr
+          code = uwpCatgrCd . categoryCode $ catgr
+          (rtSttusType, prtCatgrId, prtCatgrCode) = fromRootStatus . rootStatus $ catgr
+          (enblmntSttus, enblmntReason) = fromEnblmntStatus . enablementStatus $ catgr
+          descpt = uwrpLgDescpt . categoryDesc $ catgr
+          subCatgrs = fmap uwrpCatgrId . toList . subCategories $ catgr
+
+
+
 
 fromSubCategoriesAdded :: SubCategoriesAdded -> SubCategoriesAddedDto
 fromSubCategoriesAdded = 

@@ -4,7 +4,7 @@ module CommonCompoundTypes where
 
 import CommonSimpleTypes
 
-import Data.Set
+import Data.Set hiding (null)
 import Data.Time
 import Data.Char
 import qualified Data.Map as M
@@ -53,40 +53,52 @@ data RootStatus =
     deriving (Eq, Ord, Show)
 
 
+
 -- helper functions
 
-fromRootStatus :: RootStatus -> String
-fromRootStatus = show 
+fromRootStatus :: RootStatus -> (String, String, String)
+fromRootStatus Root = ("Root", "", "")
+fromRootStatus (Sub Nothing) = ("Sub", "", "")
+fromRootStatus (Sub (Just (ParentInfo prtCatId prtCatCode))) = ("Sub", uwrpCatgrId prtCatId, uwpCatgrCd prtCatCode)
+
+notNull = not . null
+
+toRootStatus :: (String, String, String) -> Either ErrorMessage RootStatus
+toRootStatus (rtSttsType, subCatPrtId, subCatPrtCd)
+    | rtSttsType == "Root" && null subCatPrtId && null subCatPrtCd =
+        return Root
+    | rtSttsType == "Sub" && null subCatPrtId && null subCatPrtCd =
+        return . Sub $ Nothing
+    | rtSttsType == "Sub" && notNull subCatPrtId && notNull subCatPrtCd =
+        do pId <- crtCatgrId subCatPrtId
+           pCd <- crtCatgrCd subCatPrtCd
+           return . Sub . Just $ ParentInfo pId pCd
+    | otherwise = Left $ "inconsistent data format of " 
+                            <> "(" <> rtSttsType <> "," <> subCatPrtId <> "," <> subCatPrtCd <> ")"
 
 
 
---- TODO: Need a proper implementation
---- TODO: Need a proper implementation
---- TODO: Need a proper implementation
---- TODO: Need a proper implementation
-toRootStatus :: String -> RootStatus
-toRootStatus str
-    | str == "Root" = Root
-    | otherwise = Sub Nothing
+toEnablementStatus :: (String, String) -> Either ErrorMessage EnablementStatus
+toEnablementStatus (enblmntType, reason) 
+    | enblmntType == "Enabled" && notNull reason = 
+        return . Enabled $ reason
+    | enblmntType == "Disabled" && notNull reason = 
+        return . Disabled $ reason
+    | otherwise = Left $ "inconsistent data format of " 
+                    <> "(" <> enblmntType <> "," <> reason <> ")"
 
-
---- TODO: Need a proper implementation
---- TODO: Need a proper implementation
---- TODO: Need a proper implementation
---- TODO: Need a proper implementation
-toEnablementStatus :: String -> EnablementStatus
-toEnablementStatus str
-    | str == "enabled" = Enabled
-    | otherwise = Disabled "TODOOOOOOO"
 
 data EnablementStatus =
-      Enabled
+      Enabled Reason
     | Disabled Reason
     deriving (Eq, Ord, Show)
 
 
-fromEnblmntStatus :: EnablementStatus -> String
-fromEnblmntStatus = show 
+
+
+fromEnblmntStatus :: EnablementStatus -> (String, String)
+fromEnblmntStatus (Enabled reason) = ("Enabled", reason) 
+fromEnblmntStatus (Disabled reason) = ("Disabled", reason) 
 
 
 
@@ -1725,7 +1737,7 @@ humansCategory =
                 categoryId = catid
             ,   categoryCode = catCode
             ,   rootStatus = Root
-            ,   enablementStatus = Enabled
+            ,   enablementStatus = Enabled "at creation"
             ,   categoryDesc = catdesc
             ,   subCategories = fromList []  
             }
@@ -1746,7 +1758,7 @@ kidsSubHumanCategory =
                 categoryId = catid
             ,   categoryCode = catCode
             ,   rootStatus = Sub Nothing 
-            ,   enablementStatus = Enabled
+            ,   enablementStatus = Enabled "at creation"
             ,   categoryDesc = catdesc
             ,   subCategories = fromList []  
             }
@@ -1761,7 +1773,7 @@ documentsCategory =
                     categoryId = catid
                 ,   categoryCode = catCode
                 ,   rootStatus = Root
-                ,   enablementStatus = Enabled
+                ,   enablementStatus = Enabled "at creation"
                 ,   categoryDesc = catdesc
                 ,   subCategories = fromList []  
                 }
@@ -1776,7 +1788,7 @@ personalItemsCategory =
                     categoryId = catid
                 ,   categoryCode = catCode
                 ,   rootStatus = Root
-                ,   enablementStatus = Enabled
+                ,   enablementStatus = Enabled "at creation"
                 ,   categoryDesc = catdesc
                 ,   subCategories = fromList []  
                 }
@@ -1792,7 +1804,7 @@ electronicsCategory =
                     categoryId = catid
                 ,   categoryCode = catCode
                 ,   rootStatus = Root
-                ,   enablementStatus = Enabled
+                ,   enablementStatus = Enabled "at creation"
                 ,   categoryDesc = catdesc
                 ,   subCategories = fromList []  
                 }

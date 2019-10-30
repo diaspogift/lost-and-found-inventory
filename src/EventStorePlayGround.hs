@@ -25,15 +25,17 @@ eventStore = do
 
     conn <- connect defaultSettings (Static "localhost" 1113)
 
-    let jss = [ object [ "baz" .= True]
-              , object [ "foo" .= False]
-              , object [ "bar" .= True]
-              ]
-        evts = fmap (createEvent "foo" Nothing . withJson) jss
-    -- _  <- sendEvents conn (StreamName "language") anyVersion evts Nothing >>= wait
-    rs <- readEventsForward conn (StreamName "root-category- :f5e7087f-c054-48ca-a733-a494f2a8a4f9") streamStart 10 NoResolveLink Nothing >>= wait
+    rs <- readEventsForward conn (StreamName "root-category- :fd14dd03-983a-4596-95a8-ff27b04b0523") streamStart 10 NoResolveLink Nothing >>= wait
     case rs of
         ReadSuccess sl@(Slice resolvedEvents mm) -> do
+
+
+
+            
+            putStrLn "----------------------sl--------------------------"
+            print sl
+            putStrLn "----------------------sl--------------------------"
+
 
             let recordedEvts = mapMaybe resolvedEventRecord resolvedEvents
             let pairs = fmap eventDataPair recordedEvts
@@ -42,56 +44,27 @@ eventStore = do
             let domain = toCategoryDomain reducedEvent
 
 
-            
 
-            print "----------------------pairs--------------------------"
-            print "------------------------------------------------"
-            print "------------------------------------------------"
-            putStrLn ""
+            putStrLn "----------------------pairs--------------------------"
             print pairs
-            putStrLn ""
-            print "------------------------------------------------"
-            print "------------------------------------------------"
-            print "----------------------pairs--------------------------"
+            putStrLn "----------------------pairs--------------------------"
 
 
-            print "-----------------------events-------------------------"
-            print "------------------------------------------------"
-            print "------------------------------------------------"
-            putStrLn ""
+            putStrLn "----------------------events--------------------------"
             print events
             putStrLn ""
-            print "------------------------------------------------"
-            print "------------------------------------------------"
-            print "-----------------------events-------------------------"
+            putStrLn "----------------------events--------------------------"
 
-            print "-----------------------reducedEvent-------------------------"
-            print "------------------------------------------------"
-            print "------------------------------------------------"
+
+            putStrLn "-----------------------reducedEvent-------------------------"
             putStrLn ""
             print reducedEvent
-            putStrLn ""
-            print "------------------------------------------------"
-            print "------------------------------------------------"
-            print "-----------------------reducedEvent-------------------------"
+            putStrLn "-----------------------reducedEvent-------------------------"
 
-            print "-----------------------domain-------------------------"
-            print "------------------------------------------------"
-            print "------------------------------------------------"
-            putStrLn ""
+
+            putStrLn "-----------------------domain-------------------------"
             print domain
-            putStrLn ""
-            print "------------------------------------------------"
-            print "------------------------------------------------"
-            print "-----------------------domain-------------------------"
-
-  
-            let jss_evts = mapMaybe resolvedEventDataAsJson
-                                     $ sliceEvents sl
-
-                                     
- 
-            assertEqual "Events should be equal" jss jss_evts
+            putStrLn "-----------------------domain-------------------------"
 
 
         e -> fail $ "Read failure: " <> show e

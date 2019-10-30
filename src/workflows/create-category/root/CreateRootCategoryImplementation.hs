@@ -159,7 +159,7 @@ toCatCd = mapLeft ValidationError . crtCatgrCd
   
 toEnblmntStatus :: String -> Either ValidationError EnablementStatus
 toEnblmntStatus str 
-    | str == "enabled" = Right Enabled
+    | str == "enabled" = Right . Enabled $ "Enabled at creation time"
     | str == "disabled" = Right . Disabled $ "Disabled at creation time"
     | otherwise = mapLeft ValidationError . Left $ "enablement status is either enabled or disabled"
 
@@ -206,7 +206,7 @@ checkRefSubCatgrsValid catgrs =
                                 Left . DomainError $ 
                                     "referenced sub category with id : " 
                                     ++ uwrpCatgrId cid  ++ " is disabled for reason: " ++ reason 
-                            Enabled ->
+                            Enabled _ ->
                                 case rs of
                                     Root ->
                                         Left . DomainError $

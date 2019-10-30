@@ -136,7 +136,7 @@ checkRefSubCatgrValidBase cats ucatId =
                         Left $ 
                             "referenced sub category with id : " 
                             ++ uwrpCatgrId cid  ++ " is disabled for reason: " ++ reason 
-                    Enabled ->
+                    Enabled _ ->
                         case rs of
                             Root ->
                                 Left $

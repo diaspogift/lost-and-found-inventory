@@ -53,7 +53,7 @@ import GHC.Generics
 data CreateRootCategoryForm = CreateRootCategoryForm {
         ccode :: String
     ,   description :: String
-    ,   enblmntStatus :: String
+    ,   enblmntStatuss :: String
     ,   subCategries ::   [String]
     } deriving (Generic, Show)
 
@@ -70,7 +70,7 @@ toUnvalidatedRootCategory  CreateRootCategoryForm{..}=
     UnvalidatedRootCategory {
             ucatCd = ccode
         ,   udescpt = description
-        ,   uEnblmnt = enblmntStatus
+        ,   uEnblmnt = enblmntStatuss
         ,   usubCatgrs = subCategries
         }
 
@@ -94,6 +94,36 @@ data RootCategoryCreatedDto = RootCategoryCreatedDto {
 instance ToJSON RootCategoryCreatedDto
 
 instance FromJSON RootCategoryCreatedDto
+
+
+
+
+
+-- Helper functions for converting from / to domain as well as to other states
+toDomain :: RootCategoryCreatedDto -> Either ErrorMessage Category
+toDomain dto = do
+    id <- crtCatgrId . catId $ dto
+    code <- crtCatgrCd . catCode $ dto
+    let rtStts = toRootStatus . rtStatus $ dto 
+    let enblmntStts = toEnablementStatus . enblmntStatus $ (dto :: RootCategoryCreatedDto)
+    descpt <- crtLgDescpt . catDesc $ dto
+    subs <- traverse crtCatgrId . subCategrs $ dto
+    return 
+        Category {
+            categoryId = id
+        ,   categoryCode = code
+        ,   rootStatus = rtStts
+        ,   enablementStatus = enblmntStts
+        ,   categoryDesc = descpt
+        ,   subCategories = Data.Set.fromList subs
+        }
+
+
+
+
+
+
+
 
 
 

@@ -59,6 +59,26 @@ fromRootStatus :: RootStatus -> String
 fromRootStatus = show 
 
 
+
+--- TODO: Need a proper implementation
+--- TODO: Need a proper implementation
+--- TODO: Need a proper implementation
+--- TODO: Need a proper implementation
+toRootStatus :: String -> RootStatus
+toRootStatus str
+    | str == "Root" = Root
+    | otherwise = Sub Nothing
+
+
+--- TODO: Need a proper implementation
+--- TODO: Need a proper implementation
+--- TODO: Need a proper implementation
+--- TODO: Need a proper implementation
+toEnablementStatus :: String -> EnablementStatus
+toEnablementStatus str
+    | str == "enabled" = Enabled
+    | otherwise = Disabled "TODOOOOOOO"
+
 data EnablementStatus =
       Enabled
     | Disabled Reason

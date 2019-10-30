@@ -4,33 +4,129 @@ module EventStorePlayGround where
 
 import Control.Concurrent.Async (wait)
 import Data.Aeson
--- It requires to have `aeson` package installed. Note that EventStore doesn't constraint you to JSON
--- format but putting common use aside, by doing so you'll be able to use some interesting EventStore
--- features like its Complex Event Processing (CEP) capabality.
+import Data.Maybe
+
+import Test.Tasty.HUnit
+import Test.Tasty.Hspec
 
 import Database.EventStore
--- Note that imports 'NonEmpty' data constructor and 'nonEmpty' function from
--- 'Data.List.NonEmpty'.
+
+import Data.ByteString.Lazy.Char8 (fromStrict)
+import Data.Text.Internal (Text)
+import Data.ByteString.Internal (ByteString)
+
+import CreateRootCategoryDto
+import CommonSimpleTypes
+import CommonCompoundTypes
+
 
 eventStore :: IO ()
 eventStore = do
-   
+
     conn <- connect defaultSettings (Static "localhost" 1113)
-    let js  = object ["isHaskellTheBest" .= True] -- (.=) comes from Data.Aeson module.
-        evt = createEvent "programming" Nothing (withJson js)
 
-    -- Appends an event to a stream named `languages`.
-    as <- sendEvent conn (StreamName "languagesnew") anyVersion evt Nothing
+    let jss = [ object [ "baz" .= True]
+              , object [ "foo" .= False]
+              , object [ "bar" .= True]
+              ]
+        evts = fmap (createEvent "foo" Nothing . withJson) jss
+    -- _  <- sendEvents conn (StreamName "language") anyVersion evts Nothing >>= wait
+    rs <- readEventsForward conn (StreamName "root-category- :f5e7087f-c054-48ca-a733-a494f2a8a4f9") streamStart 10 NoResolveLink Nothing >>= wait
+    case rs of
+        ReadSuccess sl@(Slice resolvedEvents mm) -> do
 
-    -- EventStore interactions are fundamentally asynchronous. Nothing requires you to wait
-    -- for the completion of an operation, but it's good to know if something went wrong.
-    _ <- wait as
+            let recordedEvts = mapMaybe resolvedEventRecord resolvedEvents
+            let pairs = fmap eventDataPair recordedEvts
+            let events = fmap eventDataPairTypes pairs
+            let reducedEvent = rebuildRootCategoryDto events
+            let domain = toCategoryDomain reducedEvent
 
-    -- Again, if you decide to `shutdown` an EventStore connection, it means your application is
-    -- about to terminate.
-    shutdown conn
 
-    -- Make sure the EventStore connection completes every ongoing operation. For instance, if
-    -- at the moment we call `shutdown` and some operations (or subscriptions) were still pending,
-    -- the connection aborted all of them.
-    waitTillClosed conn
+            
+
+            print "----------------------pairs--------------------------"
+            print "------------------------------------------------"
+            print "------------------------------------------------"
+            putStrLn ""
+            print pairs
+            putStrLn ""
+            print "------------------------------------------------"
+            print "------------------------------------------------"
+            print "----------------------pairs--------------------------"
+
+
+            print "-----------------------events-------------------------"
+            print "------------------------------------------------"
+            print "------------------------------------------------"
+            putStrLn ""
+            print events
+            putStrLn ""
+            print "------------------------------------------------"
+            print "------------------------------------------------"
+            print "-----------------------events-------------------------"
+
+            print "-----------------------reducedEvent-------------------------"
+            print "------------------------------------------------"
+            print "------------------------------------------------"
+            putStrLn ""
+            print reducedEvent
+            putStrLn ""
+            print "------------------------------------------------"
+            print "------------------------------------------------"
+            print "-----------------------reducedEvent-------------------------"
+
+            print "-----------------------domain-------------------------"
+            print "------------------------------------------------"
+            print "------------------------------------------------"
+            putStrLn ""
+            print domain
+            putStrLn ""
+            print "------------------------------------------------"
+            print "------------------------------------------------"
+            print "-----------------------domain-------------------------"
+
+  
+            let jss_evts = mapMaybe resolvedEventDataAsJson
+                                     $ sliceEvents sl
+
+                                     
+ 
+            assertEqual "Events should be equal" jss jss_evts
+
+
+        e -> fail $ "Read failure: " <> show e
+
+
+eventDataPair recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
+
+eventDataPairTypes :: 
+    (Data.Text.Internal.Text, Data.ByteString.Internal.ByteString)
+     -> CreateRootCategoryEventDto
+eventDataPairTypes (evtName, strEventData) 
+    | evtName == "CreatedRootCategory" = 
+        let rs = fromMaybe  (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe RootCategoryCreatedDto)
+        in RootCatCR rs
+
+    | evtName == "SubCategoriesAdded" = 
+        let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe SubCategoriesAddedDto)
+        in SubCatsADD rs
+ 
+
+applyDtoEvent :: CreateRootCategoryEventDto -> CreateRootCategoryEventDto -> CreateRootCategoryEventDto
+applyDtoEvent (RootCatCR acc) (RootCatCR elm) = RootCatCR acc
+applyDtoEvent (RootCatCR acc) (SubCatsADD subs) = 
+    let crtSubs = subCategrs acc
+        addedSubs = fmap sub subs
+    in RootCatCR $ acc { subCategrs = crtSubs ++ addedSubs }
+
+rebuildRootCategoryDto :: [CreateRootCategoryEventDto] -> CreateRootCategoryEventDto
+rebuildRootCategoryDto =  foldr1 applyDtoEvent
+
+toCategoryDomain :: CreateRootCategoryEventDto -> Either ErrorMessage Category
+toCategoryDomain (RootCatCR rtCatgrDto) = toDomain rtCatgrDto
+   
+
+
+
+   
+

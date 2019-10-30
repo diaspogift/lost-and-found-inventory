@@ -74,6 +74,11 @@ library
                      , eventstore
                      , async
 
+
+
+                     , tasty-hunit
+                     , tasty-hspec
+
   default-language:    Haskell2010
 
 executable Inventory-exe

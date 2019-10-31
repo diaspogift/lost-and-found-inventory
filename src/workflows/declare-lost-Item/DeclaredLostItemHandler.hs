@@ -46,6 +46,11 @@ import Database.EventStore
 import Data.Aeson
 
 
+--- TODO: refactoring into a shared module ???????????
+import CreateAttributeDto
+--- ?????????
+
+
 
 
 -- ==========================================================================
@@ -75,6 +80,10 @@ type WriteEvents =
 
 type ReadOneCategory  = 
     Connection -> LocalStreamId -> Int32 -> ExceptT WorkflowError IO Category
+
+
+type ReadOneAttributeRef  = 
+    Connection -> Int32 -> LocalStreamId -> ExceptT WorkflowError IO AttributeRef
 
 
 type LoadAdministrativeAreaMap =
@@ -256,7 +265,7 @@ declareLostItemHandler ::
     LoadAdministrativeAreaMap
     -> LookupOneCategory 
     -> ReadOneCategory
-    -> LookupAttributes
+    -> ReadOneAttributeRef
     -> WriteEvents
     -> NextId
     -> DeclareLostItemCmd 
@@ -266,7 +275,7 @@ declareLostItemHandler
     loadAdministrativeAreaMap
     lookupOneCategory
     readOneCategory
-    lookupAttributes
+    readOneAttributeRef
     writeEventsToStore
     nextId
     (Command unvalidatedLostItem curTime userId) = 
@@ -283,17 +292,16 @@ declareLostItemHandler
         adminAreaMap <-  loadAdministrativeAreaMap "Cameroun"
 
         -- retrieve referenced category dummy impl
-        -- refCategory <- lookupOneCategory strCatgryId
-                            
+        -- refCategory <- lookupOneCategory strCatgryId                    
 
         -- retrieve referenced category from event store
         referencedCatgr <- readOneCategory conn strCatgryId 10
 
-        -- retrieve referenced attributes
-        refAttributes <- lookupAttributes 
-                            $ fmap uattrCode 
-                            $ uliattributes unvalidatedLostItem
+        let refAttrs = uattrCode <$> uliattributes unvalidatedLostItem
 
+        -- retrieve referenced attributes
+        refAttributes <- traverse (readOneAttributeRef conn 10) refAttrs
+        
         -- get creation time
         declarationTime <- liftIO getCurrentTime
 
@@ -364,7 +372,7 @@ publicDeclareLostItemHandler =
         loadAdministrativeAreaMap
         lookupOneCategory
         readOneCategory
-        lookupAttributes
+        readOneAttributeRef
         writeEventsToStore
         nextId
 
@@ -405,6 +413,7 @@ eventDataPairTypes (evtName, strEventData)
     | evtName == "SubCategoriesAdded" = 
         let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe SubCategoriesAddedDto)
         in SubCatsADD rs
+    | otherwise = error "invalid event"
 
 applyDtoEvent :: CreateRootCategoryEventDto -> CreateRootCategoryEventDto -> CreateRootCategoryEventDto
 applyDtoEvent (RootCatCR acc) (RootCatCR elm) = RootCatCR acc
@@ -419,6 +428,66 @@ rebuildRootCategoryDto =  foldr1 applyDtoEvent
 toCategoryDomain :: CreateRootCategoryEventDto -> Either DataBaseError Category
 toCategoryDomain (RootCatCR rtCatgrDto) = 
     let res = toDomain rtCatgrDto
+    in case res of
+        Left erroMsg -> Left . DataBaseError $ erroMsg
+        Right result -> return result
+    
+
+
+
+
+-----------------
+
+
+
+
+
+
+   
+----------------
+
+readOneAttributeRef :: ReadOneAttributeRef
+readOneAttributeRef conn evtNum streamId =
+    do
+        rs <- liftIO $ readEventsForward conn (StreamName $ pack $ "attr-ref-code-: " <> streamId ) streamStart evtNum NoResolveLink Nothing >>= wait
+        case rs of
+            ReadSuccess sl@(Slice resolvedEvents mm) -> do
+                
+                
+
+                let recordedEvts = mapMaybe resolvedEventRecord resolvedEvents
+                let pairs = fmap eventDataPair1 recordedEvts
+                let events = fmap eventDataPairTypes1 pairs
+                let reducedEvent = rebuildAttributeRefDtoDto1 events
+                
+                liftEither . mapLeft DataBase $ toAttributeRefDomain1 reducedEvent
+
+            e -> liftEither . mapLeft DataBase . Left . DataBaseError $ "Read failure: " <> show e
+
+
+
+eventDataPair1 recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
+
+eventDataPairTypes1 :: 
+    (Data.Text.Internal.Text, Data.ByteString.Internal.ByteString)
+     -> CreateAttributeRefEventDto
+eventDataPairTypes1 (evtName, strEventData) 
+    | evtName == "CreatedAttribute" = 
+        let rs = fromMaybe  (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe AttributeRefCreatedDto)
+        in CR rs
+    | otherwise = error "invalid event"
+
+
+applyDtoEvent1 :: CreateAttributeRefEventDto -> CreateAttributeRefEventDto -> CreateAttributeRefEventDto
+applyDtoEvent1 (CR acc) (CR elm) = CR acc
+
+
+rebuildAttributeRefDtoDto1 :: [CreateAttributeRefEventDto] -> CreateAttributeRefEventDto
+rebuildAttributeRefDtoDto1 =  foldr1 applyDtoEvent1
+
+toAttributeRefDomain1 :: CreateAttributeRefEventDto -> Either DataBaseError AttributeRef
+toAttributeRefDomain1 (CR catt) = 
+    let res = toDomain1 catt
     in case res of
         Left erroMsg -> Left . DataBaseError $ erroMsg
         Right result -> return result

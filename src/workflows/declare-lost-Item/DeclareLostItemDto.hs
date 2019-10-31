@@ -431,7 +431,7 @@ fromFullName =
 data DeclareLostItemForm = DeclareLostItemForm {
         name :: String
     ,   categoryId :: String
-    ,   description :: String
+    ,   descrpt :: String
     ,   locations :: [LocationDto]
     ,   dateAndTimeSpan :: (String, String)
     ,   attributes :: [AttributeDto]
@@ -450,7 +450,7 @@ toUnvalidatedLostItem =
     UnvalidatedLostItem
         <$> name
         <*> categoryId
-        <*> description
+        <*> descrpt
         <*> dateAndTimeSpan 
         <*> fmap toUnvalidatedLocation . locations 
         <*> fmap toUnvalidatedAttribute . attributes 

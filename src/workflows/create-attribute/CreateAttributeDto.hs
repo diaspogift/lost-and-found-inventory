@@ -53,10 +53,10 @@ import GHC.Generics
 
 data CreateAttributeRefForm = CreateAttributeRefForm {
         name :: String
-    ,   description :: String
-    ,   values :: [String]
-    ,   units :: [String]
-    ,   relatedCats :: [(String, String)]
+    ,   attrDescpt :: String
+    ,   attrValues :: [String]
+    ,   attrUnits :: [String]
+    ,   attrRelatedCats :: [(String, String)]
     } deriving (Generic, Show)
 
 instance ToJSON CreateAttributeRefForm 
@@ -70,10 +70,10 @@ toUnvalidatedAttributeRef :: CreateAttributeRefForm -> UnvalidatedAttributeRef
 toUnvalidatedAttributeRef  CreateAttributeRefForm{..}= 
     UnvalidatedAttributeRef {
             uattrNm = name
-        ,   uattrDescpt = description
-        ,   uattrVals = values
-        ,   uattrUnts = units
-        ,   urelatedCatgrs = relatedCats
+        ,   uattrDescpt = attrDescpt
+        ,   uattrVals = attrValues
+        ,   uattrUnts = attrUnits
+        ,   urelatedCatgrs = attrRelatedCats
         }
         
 
@@ -85,8 +85,8 @@ toUnvalidatedAttributeRef  CreateAttributeRefForm{..}=
 
 
 data AttributeRefCreatedDto = AttributeRefCreatedDto {
-        attrCode :: String
-    ,   name :: String
+        _attrCode :: String
+    ,   _name :: String
     ,   description :: String
     ,   values :: [String]
     ,   units :: [String]
@@ -112,10 +112,35 @@ fromAttributeRefCreated =
     where code = uwrpAttrCd . attrCodeRef
           name = uwrpAttrNm . attrNameRef
           descpt = uwrpShrtDescpt . attrDescriptionRef
-          values = (fmap uwrpAttrVal ) . attrValueRefs
-          units = (fmap uwrpAttrUnt) . attrUnitRefs
+          values = fmap uwrpAttrVal . attrValueRefs
+          units = fmap uwrpAttrUnt . attrUnitRefs
           relatedCatgrs = fmap ( \(catId, catType )-> (uwrpCatgrId catId, uwpCatgrCd catType)) . relatedCategoriesRefs
 
+
+----
+
+
+toDomain1 :: AttributeRefCreatedDto -> Either ErrorMessage AttributeRef
+toDomain1 dto = do
+    cd <- crtAttrCd . _attrCode $ dto
+    nm <- crtAttrNm . _name $ dto
+    descpt <- crtShrtDescpt . description $ dto
+    vals <-  traverse crtAttrVal . values $ dto
+    units <- traverse crtAttrUnt . units $ dto
+    refCatgrs <- traverse toPairCatIdandCatCd . relatedCats $ dto
+    return 
+        AttributeRef {
+            attrCodeRef = cd
+        ,   attrNameRef = nm
+        ,   attrDescriptionRef = descpt
+        ,   attrValueRefs = vals
+        ,   attrUnitRefs = units
+        ,   relatedCategoriesRefs = refCatgrs
+        }
+    where toPairCatIdandCatCd (strid, strType) = 
+            do id <- crtCatgrId strid
+               typ <- crtCatgrCd strType
+               return (id, typ)
 
 
 -- ----------------------------------------------------------------------------

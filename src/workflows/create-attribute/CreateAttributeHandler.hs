@@ -38,6 +38,18 @@ import Database.EventStore
 
 import Data.Aeson
 
+import Data.Int
+
+import Data.ByteString.Lazy.Char8 (fromStrict)
+import Data.Text.Internal (Text)
+import Data.ByteString.Internal (ByteString)
+
+import CreateRootCategoryDto
+
+import Data.Maybe
+
+
+
 
 
 
@@ -54,12 +66,19 @@ import Data.Aeson
 -- =============================================================================
 
 
+
+type LocalStreamId = String
+
+
 type LookupOneCategory = 
     String -> ExceptT WorkflowError IO Category
 
 
 type WriteEvent = 
     Connection -> CreateAttributeEvent -> IO ()
+
+type ReadOneCategory  = 
+    Connection -> Int32 -> LocalStreamId -> ExceptT WorkflowError IO Category
 
 
 type NextId = IO UnvalidatedAttributeCode
@@ -96,7 +115,7 @@ writeEventToStore :: WriteEvent
 writeEventToStore conn (AttributeRefCreated createdAttribute) = 
     do  let createdAttributeDto = Dto.fromAttributeRefCreated createdAttribute
             createdAttributeEvent = createEvent "CreatedAttribute" Nothing $ withJson createdAttributeDto
-            id = Dto.attrCode createdAttributeDto
+            id = Dto._attrCode createdAttributeDto
         as <- sendEvent conn (StreamName $ pack ( "attr-ref-code-: " <> id)) anyVersion createdAttributeEvent Nothing
         _  <- wait as
         shutdown conn
@@ -135,7 +154,7 @@ createAttributeRefHandler
         -- get all referenced category / verified they exist
         let refCatIds = fst <$> urelatedCatgrs unvalidatedAttributeRef
 
-        refCatgrs <- traverse lookupOneCategory refCatIds
+        refCatgrs <- traverse (readOneCategory conn 10) refCatIds
 
         -- get randon uuid for the attribute code 
         attributeCode <- liftIO nextId
@@ -190,3 +209,69 @@ publicCreateAttributeRefHandler =
 
         
    
+
+
+
+
+
+
+
+
+---
+
+
+readOneCategory :: ReadOneCategory
+readOneCategory conn evtNum streamId=
+    do
+        rs <- liftIO $ readEventsForward conn (StreamName $ pack $ "root-category- :" <> streamId ) streamStart evtNum NoResolveLink Nothing >>= wait
+        case rs of
+            ReadSuccess sl@(Slice resolvedEvents mm) -> do
+                
+                
+
+                let recordedEvts = mapMaybe resolvedEventRecord resolvedEvents
+                let pairs = fmap eventDataPair recordedEvts
+                let events = fmap eventDataPairTypes pairs
+                let reducedEvent = rebuildRootCategoryDto events
+                
+                liftEither . mapLeft DataBase $ toCategoryDomain reducedEvent
+
+            e -> liftEither . mapLeft DataBase . Left . DataBaseError $ "Read failure: " <> show e
+
+
+
+eventDataPair recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
+
+eventDataPairTypes :: 
+    (Data.Text.Internal.Text, Data.ByteString.Internal.ByteString)
+     -> CreateRootCategoryEventDto
+eventDataPairTypes (evtName, strEventData) 
+    | evtName == "CreatedRootCategory" = 
+        let rs = fromMaybe  (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe RootCategoryCreatedDto)
+        in RootCatCR rs
+
+    | evtName == "SubCategoriesAdded" = 
+        let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe SubCategoriesAddedDto)
+        in SubCatsADD rs
+    | otherwise = error "invalid event"
+
+applyDtoEvent :: CreateRootCategoryEventDto -> CreateRootCategoryEventDto -> CreateRootCategoryEventDto
+applyDtoEvent (RootCatCR acc) (RootCatCR elm) = RootCatCR acc
+applyDtoEvent (RootCatCR acc) (SubCatsADD subs) = 
+    let crtSubs = subCategrs acc
+        addedSubs = fmap sub subs
+    in RootCatCR $ acc { subCategrs = crtSubs ++ addedSubs }
+
+rebuildRootCategoryDto :: [CreateRootCategoryEventDto] -> CreateRootCategoryEventDto
+rebuildRootCategoryDto =  foldr1 applyDtoEvent
+
+toCategoryDomain :: CreateRootCategoryEventDto -> Either DataBaseError Category
+toCategoryDomain (RootCatCR rtCatgrDto) = 
+    let res = toDomain rtCatgrDto
+    in case res of
+        Left erroMsg -> Left . DataBaseError $ erroMsg
+        Right result -> return result
+    
+
+
+

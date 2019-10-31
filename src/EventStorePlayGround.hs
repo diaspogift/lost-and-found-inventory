@@ -83,7 +83,6 @@ eventDataPairTypes (evtName, strEventData)
     | evtName == "SubCategoriesAdded" = 
         let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe SubCategoriesAddedDto)
         in SubCatsADD rs
- 
 
 applyDtoEvent :: CreateRootCategoryEventDto -> CreateRootCategoryEventDto -> CreateRootCategoryEventDto
 applyDtoEvent (RootCatCR acc) (RootCatCR elm) = RootCatCR acc

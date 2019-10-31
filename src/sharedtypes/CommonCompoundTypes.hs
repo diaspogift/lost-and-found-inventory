@@ -1829,7 +1829,7 @@ colorAttributeRef =
         value1 <- crtAttrVal "Green"
         value2 <- crtAttrVal "Yello"
         value3 <- crtAttrVal "White"
-        refCatId1 <- crtCatgrId hCatId
+        refCatId1 <- crtCatgrId "18d4f626-a64d-4336-a260-6da2a9cbf875"
         refCatId2 <- crtCatgrId eCatId
         refCatId3 <- crtCatgrId pCatId
 
@@ -1852,7 +1852,7 @@ weightAttributeRef =
         patcode <- crtCatgrCd "PERSONAL-ITEMS"
 
         unit <- crtAttrUnt "Kg"
-        refCatId1 <- crtCatgrId hCatId
+        refCatId1 <- crtCatgrId "18d4f626-a64d-4336-a260-6da2a9cbf875"
         refCatId3 <- crtCatgrId pCatId
 
         return $

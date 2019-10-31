@@ -6,6 +6,7 @@ module DeclaredLostItemHandler where
 
 import CommonSimpleTypes
 import CommonCompoundTypes
+import CreateRootCategoryDto
 
 import InventorySystemCommands
 import DeclaredLostItemPublicTypes
@@ -14,6 +15,11 @@ import DeclareLostItemImplementation
 import DeclareLostItemDto
 
 import Data.Time
+import Data.Maybe
+
+import Data.ByteString.Lazy.Char8 (fromStrict)
+import Data.Text.Internal (Text)
+import Data.ByteString.Internal (ByteString)
 
 import Data.Text (pack)
 
@@ -23,6 +29,8 @@ import Data.UUID hiding (null) -- Internal
 import Data.Set hiding (filter, null)
 
 import Control.Monad.Except
+
+import Data.Int
 
 
 import Data.Either.Combinators
@@ -63,6 +71,10 @@ type LookupAttributes =
 
 type WriteEvents = 
     Connection -> LocalStreamId -> [DeclareLostItemEvent] -> IO ()
+
+
+type ReadOneCategory  = 
+    Connection -> LocalStreamId -> Int32 -> ExceptT WorkflowError IO Category
 
 
 type LoadAdministrativeAreaMap =
@@ -243,6 +255,7 @@ writeEventsToStore conn streamId evts =
 declareLostItemHandler :: 
     LoadAdministrativeAreaMap
     -> LookupOneCategory 
+    -> ReadOneCategory
     -> LookupAttributes
     -> WriteEvents
     -> NextId
@@ -252,6 +265,7 @@ declareLostItemHandler ::
 declareLostItemHandler 
     loadAdministrativeAreaMap
     lookupOneCategory
+    readOneCategory
     lookupAttributes
     writeEventsToStore
     nextId
@@ -262,12 +276,18 @@ declareLostItemHandler
     do  -- get event store connection // TODO: lookup env ... or Reader Monad ??????
         conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)
 
+        -- retrieve the referenced categoryId
+        let strCatgryId = uliCategoryId unvalidatedLostItem
+
         -- retrieve adminitrative area map 
         adminAreaMap <-  loadAdministrativeAreaMap "Cameroun"
 
-        -- retrieve referenced category
-        refCategory <- lookupOneCategory 
-                            $ uliCategoryId unvalidatedLostItem
+        -- retrieve referenced category dummy impl
+        -- refCategory <- lookupOneCategory strCatgryId
+                            
+
+        -- retrieve referenced category from event store
+        referencedCatgr <- readOneCategory conn strCatgryId 10
 
         -- retrieve referenced attributes
         refAttributes <- lookupAttributes 
@@ -300,9 +320,9 @@ declareLostItemHandler
                     checkAdministrativeArea             -- Dependency
                     checkAttributeInfo                  -- Dependency
                     checkContactInfoValid               -- Dependency
-                    crtDeclarationAcknowledgment     -- Dependency
+                    crtDeclarationAcknowledgment        -- Dependency
                     sendAcknowledgment                  -- Dependency
-                    refCategory
+                    referencedCatgr                     -- Input
                     unvalidatedLostItem                 -- Input
                     declarationTime                     -- Input
                     lostItemUuid                        -- Input
@@ -343,9 +363,63 @@ publicDeclareLostItemHandler =
     declareLostItemHandler 
         loadAdministrativeAreaMap
         lookupOneCategory
+        readOneCategory
         lookupAttributes
         writeEventsToStore
         nextId
 
         
    
+----------------
+
+readOneCategory :: ReadOneCategory
+readOneCategory conn streamId evtNum =
+    do
+        rs <- liftIO $ readEventsForward conn (StreamName $ pack $ "root-category- :" <> streamId ) streamStart evtNum NoResolveLink Nothing >>= wait
+        case rs of
+            ReadSuccess sl@(Slice resolvedEvents mm) -> do
+                
+                
+
+                let recordedEvts = mapMaybe resolvedEventRecord resolvedEvents
+                let pairs = fmap eventDataPair recordedEvts
+                let events = fmap eventDataPairTypes pairs
+                let reducedEvent = rebuildRootCategoryDto events
+                
+                liftEither . mapLeft DataBase $ toCategoryDomain reducedEvent
+
+            e -> liftEither . mapLeft DataBase . Left . DataBaseError $ "Read failure: " <> show e
+
+
+
+eventDataPair recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
+
+eventDataPairTypes :: 
+    (Data.Text.Internal.Text, Data.ByteString.Internal.ByteString)
+     -> CreateRootCategoryEventDto
+eventDataPairTypes (evtName, strEventData) 
+    | evtName == "CreatedRootCategory" = 
+        let rs = fromMaybe  (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe RootCategoryCreatedDto)
+        in RootCatCR rs
+
+    | evtName == "SubCategoriesAdded" = 
+        let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe SubCategoriesAddedDto)
+        in SubCatsADD rs
+
+applyDtoEvent :: CreateRootCategoryEventDto -> CreateRootCategoryEventDto -> CreateRootCategoryEventDto
+applyDtoEvent (RootCatCR acc) (RootCatCR elm) = RootCatCR acc
+applyDtoEvent (RootCatCR acc) (SubCatsADD subs) = 
+    let crtSubs = subCategrs acc
+        addedSubs = fmap sub subs
+    in RootCatCR $ acc { subCategrs = crtSubs ++ addedSubs }
+
+rebuildRootCategoryDto :: [CreateRootCategoryEventDto] -> CreateRootCategoryEventDto
+rebuildRootCategoryDto =  foldr1 applyDtoEvent
+
+toCategoryDomain :: CreateRootCategoryEventDto -> Either DataBaseError Category
+toCategoryDomain (RootCatCR rtCatgrDto) = 
+    let res = toDomain rtCatgrDto
+    in case res of
+        Left erroMsg -> Left . DataBaseError $ erroMsg
+        Right result -> return result
+    

@@ -200,7 +200,7 @@ checkRefSubCatgrsValid catgrs =
                         "referenced sub category with id : " 
                         ++ ucatId  ++ " not found"
                     
-                where verifyNotRootAndNotSub Category { enablementStatus = es, rootStatus = rs, categoryId = cid } =
+                where verifyNotRootAndNotSub Category { categoryEnablementStatus = es, categoryRootStatus = rs, categoryId = cid } =
                         case es of 
                             Disabled reason ->
                                 Left . DomainError $ 
@@ -265,10 +265,10 @@ createEvents  cat =
 
 createCategoryCreatedEvt :: Category -> RootCategoryCreated
 createCategoryCreatedEvt createdCategory = 
-    createdCategory { subCategories = fromList []}
+    createdCategory { categoryRelatedSubCategories = fromList []}
 
 createSubCategoryAddedEvt :: Category -> [AddedSubCategory]
-createSubCategoryAddedEvt Category { categoryId = id, subCategories = subCatgrs} =
+createSubCategoryAddedEvt Category { categoryId = id, categoryRelatedSubCategories = subCatgrs} =
     fmap (AddedSubCategory id) . toList $ subCatgrs
     
 

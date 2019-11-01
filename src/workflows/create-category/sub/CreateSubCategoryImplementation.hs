@@ -220,7 +220,7 @@ checkRefSubCatgrsValid catgrs =
                         "referenced sub category with id : " 
                         ++ ucatId  ++ " not found"
                     
-                where verifyNotRootAndNotSub Category { enablementStatus = es, rootStatus = rs, categoryId = cid } =
+                where verifyNotRootAndNotSub Category { categoryEnablementStatus = es, categoryRootStatus = rs, categoryId = cid } =
                         case es of 
                             Disabled reason ->
                                 Left . DomainError $ 
@@ -285,10 +285,10 @@ createSubCategory vSubCatgr =
         Category {
             categoryId = vcategoryId vSubCatgr
         ,   categoryCode = vcategoryCode vSubCatgr
-        ,   rootStatus  = Sub . Just $ ParentInfo prtCatId prtCatCode
-        ,   enablementStatus = venablementStatus vSubCatgr
-        ,   categoryDesc = vcategoryDesc vSubCatgr
-        ,   subCategories = vsubCategories vSubCatgr
+        ,   categoryRootStatus  = Sub . Just $ ParentInfo prtCatId prtCatCode
+        ,   categoryEnablementStatus = venablementStatus vSubCatgr
+        ,   categoryDescription = vcategoryDesc vSubCatgr
+        ,   categoryRelatedSubCategories = vsubCategories vSubCatgr
         }
 
       Nothing -> 
@@ -296,10 +296,10 @@ createSubCategory vSubCatgr =
         Category {
             categoryId = vcategoryId vSubCatgr
         ,   categoryCode = vcategoryCode vSubCatgr
-        ,   rootStatus  = Sub Nothing
-        ,   enablementStatus = venablementStatus vSubCatgr
-        ,   categoryDesc = vcategoryDesc vSubCatgr
-        ,   subCategories = vsubCategories vSubCatgr
+        ,   categoryRootStatus  = Sub Nothing
+        ,   categoryEnablementStatus = venablementStatus vSubCatgr
+        ,   categoryDescription = vcategoryDesc vSubCatgr
+        ,   categoryRelatedSubCategories = vsubCategories vSubCatgr
         }
 
 
@@ -331,10 +331,10 @@ createEvents  cat =
 
 createCategoryCreatedEvt :: Category -> SubCategoryCreated
 createCategoryCreatedEvt createdCategory = 
-    createdCategory { subCategories = fromList []}
+    createdCategory { categoryRelatedSubCategories = fromList []}
 
 createSubCategoryAddedEvt :: Category -> [AddedSubCategory]
-createSubCategoryAddedEvt Category { categoryId = id, subCategories = subCatgrs} =
+createSubCategoryAddedEvt Category { categoryId = id, categoryRelatedSubCategories = subCatgrs} =
     fmap (AddedSubCategory id) . toList $ subCatgrs
     
 

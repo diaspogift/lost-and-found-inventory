@@ -126,10 +126,10 @@ toDomain dto = do
         Category {
             categoryId = id
         ,   categoryCode = code
-        ,   rootStatus = rtStts
-        ,   enablementStatus = enblmntStts
-        ,   categoryDesc = descpt
-        ,   subCategories = Data.Set.fromList subs
+        ,   categoryRootStatus = rtStts
+        ,   categoryEnablementStatus = enblmntStts
+        ,   categoryDescription = descpt
+        ,   categoryRelatedSubCategories = Data.Set.fromList subs
         }
 
 
@@ -176,10 +176,10 @@ fromSubCategoryCreated catgr =
     }
     where id = uwrpCatgrId . categoryId $ catgr
           code = uwpCatgrCd . categoryCode $ catgr
-          (rtSttusType, prtCatgrId, prtCatgrCode) = fromRootStatus . rootStatus $ catgr
-          (enblmntSttus, enblmntReason) = fromEnblmntStatus . enablementStatus $ catgr
-          descpt = uwrpLgDescpt . categoryDesc $ catgr
-          subCatgrs = fmap uwrpCatgrId . toList . subCategories $ catgr
+          (rtSttusType, prtCatgrId, prtCatgrCode) = fromRootStatus . categoryRootStatus $ catgr
+          (enblmntSttus, enblmntReason) = fromEnblmntStatus . categoryEnablementStatus $ catgr
+          descpt = uwrpLgDescpt . categoryDescription $ catgr
+          subCatgrs = fmap uwrpCatgrId . toList . categoryRelatedSubCategories $ catgr
 
 
 

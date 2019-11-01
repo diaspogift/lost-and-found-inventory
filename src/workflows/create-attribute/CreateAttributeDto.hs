@@ -109,12 +109,15 @@ fromAttributeRefCreated =
         <*> values
         <*> units 
         <*> relatedCatgrs
-    where code = uwrpAttrCd . attrCodeRef
-          name = uwrpAttrNm . attrNameRef
-          descpt = uwrpShrtDescpt . attrDescriptionRef
-          values = fmap uwrpAttrVal . attrValueRefs
-          units = fmap uwrpAttrUnt . attrUnitRefs
-          relatedCatgrs = fmap ( \(catId, catType )-> (uwrpCatgrId catId, uwpCatgrCd catType)) . relatedCategoriesRefs
+    where code = uwrpAttrCd . attributeRefCode
+          name = uwrpAttrNm . attributeRefName
+          descpt = uwrpShrtDescpt . attributeRefDescription
+          values = fmap uwrpAttrVal . attributeRefValues
+          units = fmap uwrpAttrUnt . attributeRefUnits
+          relatedCatgrs = 
+            fmap ( \(catId, catType ) 
+                        -> (uwrpCatgrId catId, uwpCatgrCd catType)) 
+                    . attributeRefRelatedCategories
 
 
 ----
@@ -130,13 +133,13 @@ toDomain1 dto = do
     refCatgrs <- traverse toPairCatIdandCatCd . relatedCats $ dto
     return 
         AttributeRef {
-            attrCodeRef = cd
-        ,   attrNameRef = nm
-        ,   attrDescriptionRef = descpt
-        ,   attrValueRefs = vals
-        ,   attrUnitRefs = units
-        ,   relatedCategoriesRefs = refCatgrs
-        }
+                attributeRefCode              = cd
+            ,   attributeRefName              = nm
+            ,   attributeRefDescription       = descpt
+            ,   attributeRefValues            = vals
+            ,   attributeRefUnits             = units
+            ,   attributeRefRelatedCategories = refCatgrs
+            }
     where toPairCatIdandCatCd (strid, strType) = 
             do id <- crtCatgrId strid
                typ <- crtCatgrCd strType

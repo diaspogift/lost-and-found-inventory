@@ -132,7 +132,7 @@ checkRefSubCatgrValidBase cats ucatId =
                 "referenced sub category with id : " 
                 ++ ucatId  ++ " not found"
             
-        where verifyNotRootAndNotSub Category { enablementStatus = es, rootStatus = rs, categoryId = cid } =
+        where verifyNotRootAndNotSub Category { categoryEnablementStatus = es, categoryRootStatus = rs, categoryId = cid } =
                 case es of 
                     Disabled reason ->
                         Left $ 

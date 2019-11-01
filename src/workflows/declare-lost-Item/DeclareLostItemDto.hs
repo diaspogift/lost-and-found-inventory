@@ -83,9 +83,9 @@ toLocation dto =
         voisinage <- crtOptNghbrhd $ neighborhood dto
         addresses <- traverse toAddress $ locationAddress dto
         return Cct.Location  {
-                    Cct.adminArea = area
-                ,   Cct.cityOrVillage = lieu
-                ,   Cct.neighborhood = voisinage
+                    Cct.locationAdminArea = area
+                ,   Cct.locationCityOrVillage = lieu
+                ,   Cct.locationNeighborhood = voisinage
                 ,   Cct.locationAddresses = addresses
                 }
 
@@ -123,9 +123,9 @@ toAddress = crtAddress
 
 fromLocation :: Cct.Location -> LocationDto
 fromLocation loc = 
-    let (reg, div, sub) = fromMaybeAdminArea $ Cct.adminArea loc
-        (city, village) = fromMaybeCityOrVillage $ Cct.cityOrVillage loc
-        maybeNeighborhood = fromMaybeNeighborhood $ Cct.neighborhood loc
+    let (reg, div, sub) = fromMaybeAdminArea $ Cct.locationAdminArea loc
+        (city, village) = fromMaybeCityOrVillage $ Cct.locationCityOrVillage loc
+        maybeNeighborhood = fromMaybeNeighborhood $ Cct.locationNeighborhood loc
         addresses = fmap uwrpAddress $ Cct.locationAddresses loc
     in LocationDto {
             region = reg
@@ -191,11 +191,11 @@ toAttribute dto =
         unit <- crtOptAttrUnt $ attrUnit dto
 
         return  Cct.Attribute {
-                  Cct.attrCode = code
-                , Cct.attrName = name
-                , Cct.attrDescription = desc
-                , Cct.attrValue = val
-                , Cct.attrUnit = unit
+                  attributeCode = code
+                , attributeName = name
+                , attributeDescription = desc
+                , attributeValue = val
+                , attributeUnit = unit
                 }
         where 
             toCatIdCatTypePair (strCatId, strCatType) =
@@ -206,11 +206,11 @@ toAttribute dto =
 fromAttribute :: Cct.Attribute -> AttributeDto
 fromAttribute  = 
     AttributeDto 
-        <$> uwrpAttrCd . Cct.attrCode 
-        <*> uwrpAttrNm . Cct.attrName 
-        <*> uwrpShrtDescpt . Cct.attrDescription 
-        <*> uwrpOptAttrVal . Cct.attrValue 
-        <*> uwrpOptAttrUnt . Cct.attrUnit 
+        <$> uwrpAttrCd .     Cct.attributeCode 
+        <*> uwrpAttrNm .     Cct.attributeName 
+        <*> uwrpShrtDescpt . Cct.attributeDescription 
+        <*> uwrpOptAttrVal . Cct.attributeValue 
+        <*> uwrpOptAttrUnt . Cct.attributeUnit 
 
 
 
@@ -246,9 +246,9 @@ toUnvalidatedPerson =
 fromPerson :: Cct.Person -> PersonDto
 fromPerson = 
     PersonDto
-        <$> uwrpUsrId . Cct.userId 
-        <*> fromContactInformation . Cct.contact 
-        <*> fromFullName . Cct.name 
+        <$> uwrpUsrId . Cct.personId 
+        <*> fromContactInformation . Cct.personContact 
+        <*> fromFullName . Cct.personFullName 
     
 
 
@@ -288,8 +288,8 @@ toContactInformation dto =
     do add <- (crtOptPstAddrss . address) dto
        contact <- toContactMethod (email dto, primaryTel dto, secondaryTel dto)
        return Cct.ContactInformation {
-                    Cct.address = add
-                ,   Cct.contactMethod = contact
+                    Cct.conatInfoAddress = add
+                ,   Cct.contactInfoMethod = contact
                 }
         
 
@@ -327,9 +327,9 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
             email <- crtEmailAddress givenEmail
             return $ 
                 Cct.EmailAndPhone Cct.BothContactInfo {
-                        Cct.emailInfo = email
-                    ,   Cct.primTelephoneInfo = primTel
-                    ,   Cct.secTelephoneInfo = Nothing
+                        Cct.bothContactInfoEmail = email
+                    ,   Cct.bothContactInfoPrimTel = primTel
+                    ,   Cct.bothContactInfoSndTel = Nothing
                     }
             
     -- email, prim and sec phones given
@@ -341,9 +341,9 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
             secTel <- crtOptTel givenSecTel
             return $ 
                 Cct.EmailAndPhone Cct.BothContactInfo {
-                        Cct.emailInfo = email
-                    ,   Cct.primTelephoneInfo = primTel
-                    ,   Cct.secTelephoneInfo = secTel
+                        Cct.bothContactInfoEmail = email
+                    ,   Cct.bothContactInfoPrimTel = primTel
+                    ,   Cct.bothContactInfoSndTel = secTel
                     }
     | otherwise = error "Invalid contact information"
 
@@ -351,8 +351,8 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
 fromContactInformation :: 
     Cct.ContactInformation -> ContactInformationDto
 fromContactInformation ci = 
-    let add = uwrpOptPstAddress $ Cct.address ci
-        (email, primTel, secTel) = fromContactMethod $ Cct.contactMethod ci 
+    let add = uwrpOptPstAddress $ Cct.conatInfoAddress ci
+        (email, primTel, secTel) = fromContactMethod $ Cct.contactInfoMethod ci 
     in ContactInformationDto {
             email = email
         ,   address = add
@@ -367,9 +367,9 @@ fromContactMethod (Cct.PhoneOnly primTel maybeSecTel) =
         Nothing -> ("", uwrpTel primTel, "")
         Just wrappedSecTel -> ("", uwrpTel primTel, uwrpTel wrappedSecTel)
 fromContactMethod (Cct.EmailAndPhone  both) = 
-    let email = uwrpEmailAddress $ Cct.emailInfo both
-        primTel = uwrpTel $ Cct.primTelephoneInfo both
-        maybeSecTel = Cct.secTelephoneInfo both
+    let email = uwrpEmailAddress $ Cct.bothContactInfoEmail both
+        primTel = uwrpTel $ Cct.bothContactInfoPrimTel both
+        maybeSecTel = Cct.bothContactInfoSndTel both
     in case maybeSecTel of 
             Just wrappedSecTel -> (email, primTel, uwrpTel wrappedSecTel)
             Nothing -> (email, primTel, "")
@@ -413,9 +413,9 @@ toFullName dto =
 fromFullName :: Cct.FullName -> FullNameDto
 fromFullName = 
     FullNameDto
-        <$> uwrpFstNm . Cct.first 
-        <*> uwrpMdleNm . Cct.middle 
-        <*> uwrpLstNm . Cct.last 
+        <$> uwrpFstNm . Cct.firstName 
+        <*> uwrpMdleNm . Cct.middleName 
+        <*> uwrpLstNm . Cct.lastName
     
 
 

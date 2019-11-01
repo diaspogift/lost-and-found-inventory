@@ -141,7 +141,7 @@ checkAttributeInfoValid refferedAttributes uattr ulositem =
         case foundAttribute of
             [attributeRef] -> 
                 do  lostItemCatId <- crtCatgrId $ uliCategoryId ulositem
-                    let maybeCatType = lookup lostItemCatId  (relatedCategoriesRefs attributeRef)
+                    let maybeCatType = lookup lostItemCatId  (attributeRefRelatedCategories attributeRef)
                     case maybeCatType of
                         Just _ -> 
                             do  code <- crtAttrCd $ uattrCode uattr
@@ -162,7 +162,7 @@ checkAttributeInfoValid refferedAttributes uattr ulositem =
 
 
         where isAttributesEqualTo unalidatedAttr attribute =
-                    (uattrCode unalidatedAttr) == (uwrpAttrCd $ attrCodeRef attribute)
+                    (uattrCode unalidatedAttr) == (uwrpAttrCd $ attributeRefCode attribute)
 
 
 checkContactInfoValid :: CheckContactInfoValid 

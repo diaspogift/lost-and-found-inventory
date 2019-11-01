@@ -298,9 +298,9 @@ toContactInfo checkContactInfoValid uc
             primTel <- mapLeft ValidationError $ crtTel givenPrimTel
             email <- mapLeft ValidationError $ crtEmailAddress givenEmail
             let contactMethod = EmailAndPhone BothContactInfo {
-                    emailInfo = email
-                ,   primTelephoneInfo = primTel
-                ,   secTelephoneInfo = Nothing
+                    bothContactInfoEmail    = email
+                ,   bothContactInfoPrimTel  = primTel
+                ,   bothContactInfoSndTel   = Nothing
                 }
             return  ValidatedContactInformation {
                         vaddress = adress
@@ -317,9 +317,9 @@ toContactInfo checkContactInfoValid uc
             secTel <- mapLeft ValidationError $ crtOptTel givenSecTel
 
             let contactMethod = EmailAndPhone BothContactInfo {
-                    emailInfo = email
-                ,   primTelephoneInfo = primTel
-                ,   secTelephoneInfo = secTel
+                    bothContactInfoEmail    = email
+                ,   bothContactInfoPrimTel  = primTel
+                ,   bothContactInfoSndTel   = secTel
                 }
 
             return  ValidatedContactInformation {
@@ -533,20 +533,20 @@ toContactInformation =
 toAttribute :: ValidatedAttribute -> Attribute
 toAttribute valAttr = 
   Attribute {
-      attrCode = vattrCode valAttr     
-    , attrName = vattrName valAttr     
-    , attrDescription = vattrDescription valAttr
-    , attrValue = vattrValue valAttr  
-    , attrUnit = vattrUnit valAttr    
+      attributeCode = vattrCode valAttr     
+    , attributeName = vattrName valAttr     
+    , attributeDescription = vattrDescription valAttr
+    , attributeValue = vattrValue valAttr  
+    , attributeUnit = vattrUnit valAttr    
     }
 
 
 toLocation :: ValidatedLocation -> Location
 toLocation vLoc =
     Location {
-        adminArea = vadminArea vLoc
-    ,   cityOrVillage = vcityOrVillage vLoc
-    ,   neighborhood = vneighborhood vLoc
+        locationAdminArea = vadminArea vLoc
+    ,   locationCityOrVillage = vcityOrVillage vLoc
+    ,   locationNeighborhood = vneighborhood vLoc
     ,   locationAddresses = vlocationAddresses vLoc
     }
     
@@ -566,7 +566,7 @@ toLocation vLoc =
 checkRefCatgrEnabled :: ValidatedLostItem -> Category-> Either DomainError ValidatedLostItem
 checkRefCatgrEnabled vli refCatgr 
     | vlstItmCatgrId vli == categoryId refCatgr = 
-        case enablementStatus refCatgr of
+        case categoryEnablementStatus refCatgr of
             Disabled reason ->
                 Left . DomainError 
                     $ "the referenced category is daisabled for the following reason: " 
@@ -596,7 +596,7 @@ acknowledgemenDeclaredLostItem
 
   let letter = crtDeclarationAcknowledgment declaredLostItem
       acknoledgment = DeclarationAcknowledgment {
-           ownerEmail =  contact $ lostItemOwner declaredLostItem
+           ownerEmail =  personContact $ lostItemOwner declaredLostItem
          , letter = letter
          }
       resultSent = sendAcknowledgment acknoledgment
@@ -604,7 +604,7 @@ acknowledgemenDeclaredLostItem
       Sent -> 
         let event = DeclarationAcknowledgmentSent {
               declaredLostItemId = lostItemId declaredLostItem
-            , ownerContactInfo = contact $ lostItemOwner declaredLostItem
+            , ownerContactInfo = personContact $ lostItemOwner declaredLostItem
             }
         in Just event
       NotSent ->

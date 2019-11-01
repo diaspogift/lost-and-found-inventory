@@ -32,18 +32,18 @@ import Data.Either
 
 
 data Category = Category {
-        categoryId          :: CategoryId
-    ,   categoryCode        :: CategoryCode
-    ,   rootStatus          :: RootStatus
-    ,   enablementStatus    :: EnablementStatus
-    ,   categoryDesc        :: LongDescription
-    ,   subCategories       :: Set CategoryId
+        categoryId                  :: CategoryId
+    ,   categoryCode                :: CategoryCode
+    ,   categoryRootStatus          :: RootStatus
+    ,   categoryEnablementStatus    :: EnablementStatus
+    ,   categoryDescription         :: LongDescription
+    ,   categoryRelatedSubCategories:: Set CategoryId
     } deriving (Eq, Ord, Show)
 
 
 data ParentInfo = ParentInfo {
-        parentId :: ParentCategoryId 
-    ,   parentCode :: CategoryCode
+        parentInfoId :: ParentCategoryId 
+    ,   parentInfoCode :: CategoryCode
 } deriving (Eq, Ord, Show) 
 
 
@@ -112,9 +112,9 @@ fromEnblmntStatus (Disabled reason) = ("Disabled", reason)
 
 
 data Location = Location {
-        adminArea :: Maybe AdministrativeAreaInfo
-    ,   cityOrVillage :: Maybe CityOrVillage
-    ,   neighborhood :: Maybe Neighborhood
+        locationAdminArea :: Maybe AdministrativeAreaInfo
+    ,   locationCityOrVillage :: Maybe CityOrVillage
+    ,   locationNeighborhood :: Maybe Neighborhood
     ,   locationAddresses :: [Address]
     } deriving (Eq, Ord, Show)
 
@@ -1208,21 +1208,21 @@ instance Show SubDivision where
 
 
 data Attribute = Attribute {
-      attrCode             :: AttributeCode
-    , attrName             :: AttributeName
-    , attrDescription      :: ShortDescription
-    , attrValue            :: Maybe AttributeValue
-    , attrUnit             :: Maybe AttributeUnit
+      attributeCode             :: AttributeCode
+    , attributeName             :: AttributeName
+    , attributeDescription      :: ShortDescription
+    , attributeValue            :: Maybe AttributeValue
+    , attributeUnit             :: Maybe AttributeUnit
     } deriving (Eq, Ord, Show)
 
 
 data AttributeRef = AttributeRef {
-      attrCodeRef             :: AttributeCode
-    , attrNameRef             :: AttributeName
-    , attrDescriptionRef      :: ShortDescription
-    , attrValueRefs            :: [AttributeValue]
-    , attrUnitRefs             :: [AttributeUnit]
-    , relatedCategoriesRefs    :: [(CategoryId, CategoryCode)]
+      attributeRefCode              :: AttributeCode
+    , attributeRefName              :: AttributeName
+    , attributeRefDescription       :: ShortDescription
+    , attributeRefValues            :: [AttributeValue]
+    , attributeRefUnits             :: [AttributeUnit]
+    , attributeRefRelatedCategories :: [(CategoryId, CategoryCode)]
     } deriving (Eq, Ord, Show)
 
 
@@ -1240,22 +1240,22 @@ data AttributeRef = AttributeRef {
 
 
 data Person = Person {
-      userId   :: UserId
-    , contact  :: ContactInformation
-    , name     :: FullName
+      personId   :: UserId
+    , personContact  :: ContactInformation
+    , personFullName     :: FullName
     } deriving (Eq, Ord, Show)
 
 
 data ContactInformation = ContactInformation {
-      address       :: Maybe PostalAddress
-    , contactMethod :: ContactMethod
+      conatInfoAddress       :: Maybe PostalAddress
+    , contactInfoMethod :: ContactMethod
     } deriving (Eq, Ord, Show)
 
 
 data BothContactInfo = BothContactInfo {
-        emailInfo :: EmailAddress
-    ,   primTelephoneInfo :: Telephone
-    ,   secTelephoneInfo :: Maybe Telephone
+        bothContactInfoEmail :: EmailAddress
+    ,   bothContactInfoPrimTel :: Telephone
+    ,   bothContactInfoSndTel :: Maybe Telephone
     } deriving (Eq, Ord, Show)
 
 
@@ -1267,9 +1267,9 @@ data ContactMethod =
 
 
 data FullName = FullName {
-      first     :: FirstName
-    , middle    :: Maybe Middle
-    , last      :: LastName
+      firstName     :: FirstName
+    , middleName    :: Maybe Middle
+    , lastName      :: LastName
     } deriving (Eq, Ord, Show)
 
 
@@ -1736,10 +1736,10 @@ humansCategory =
             Category {
                 categoryId = catid
             ,   categoryCode = catCode
-            ,   rootStatus = Root
-            ,   enablementStatus = Enabled "at creation"
-            ,   categoryDesc = catdesc
-            ,   subCategories = fromList []  
+            ,   categoryRootStatus = Root
+            ,   categoryEnablementStatus = Enabled "at creation"
+            ,   categoryDescription = catdesc
+            ,   categoryRelatedSubCategories = fromList []  
             }
 
 kidsSubHumanCategory = 
@@ -1750,17 +1750,17 @@ kidsSubHumanCategory =
         prntCode <- crtCatgrCd "HUMAN-GEING"
         
         let parentInfo = ParentInfo {
-            parentId = prntId 
-        ,   parentCode = prntCode
+            parentInfoId = prntId 
+        ,   parentInfoCode = prntCode
     }
         return $
             Category {
                 categoryId = catid
             ,   categoryCode = catCode
-            ,   rootStatus = Sub Nothing 
-            ,   enablementStatus = Enabled "at creation"
-            ,   categoryDesc = catdesc
-            ,   subCategories = fromList []  
+            ,   categoryRootStatus = Sub Nothing 
+            ,   categoryEnablementStatus = Enabled "at creation"
+            ,   categoryDescription = catdesc
+            ,   categoryRelatedSubCategories = fromList []  
             }
                 
 documentsCategory = 
@@ -1772,10 +1772,10 @@ documentsCategory =
             Category {
                     categoryId = catid
                 ,   categoryCode = catCode
-                ,   rootStatus = Root
-                ,   enablementStatus = Enabled "at creation"
-                ,   categoryDesc = catdesc
-                ,   subCategories = fromList []  
+                ,   categoryRootStatus = Root
+                ,   categoryEnablementStatus = Enabled "at creation"
+                ,   categoryDescription = catdesc
+                ,   categoryRelatedSubCategories = fromList []  
                 }
 
 personalItemsCategory = 
@@ -1787,10 +1787,10 @@ personalItemsCategory =
             Category {
                     categoryId = catid
                 ,   categoryCode = catCode
-                ,   rootStatus = Root
-                ,   enablementStatus = Enabled "at creation"
-                ,   categoryDesc = catdesc
-                ,   subCategories = fromList []  
+                ,   categoryRootStatus = Root
+                ,   categoryEnablementStatus = Enabled "at creation"
+                ,   categoryDescription = catdesc
+                ,   categoryRelatedSubCategories = fromList []  
                 }
 
 electronicsCategory = 
@@ -1803,10 +1803,10 @@ electronicsCategory =
             Category {
                     categoryId = catid
                 ,   categoryCode = catCode
-                ,   rootStatus = Root
-                ,   enablementStatus = Enabled "at creation"
-                ,   categoryDesc = catdesc
-                ,   subCategories = fromList []  
+                ,   categoryRootStatus = Root
+                ,   categoryEnablementStatus = Enabled "at creation"
+                ,   categoryDescription = catdesc
+                ,   categoryRelatedSubCategories = fromList []  
                 }
 
 
@@ -1835,12 +1835,12 @@ colorAttributeRef =
 
         return $
             AttributeRef {
-                    attrCodeRef = code
-                ,   attrNameRef = name           
-                ,   attrDescriptionRef = desc
-                ,   attrValueRefs = [value0, value1, value2, value3]
-                ,   attrUnitRefs = []
-                ,   relatedCategoriesRefs = [(refCatId1, hcatcode), (refCatId2, ecatcode), (refCatId3, patcode)]
+                  attributeRefCode              = code
+                , attributeRefName              = name           
+                , attributeRefDescription       = desc
+                , attributeRefValues            = [value0, value1, value2, value3]
+                , attributeRefUnits             = []
+                , attributeRefRelatedCategories = [(refCatId1, hcatcode), (refCatId2, ecatcode), (refCatId3, patcode)]
                 }
 
 weightAttributeRef = 
@@ -1857,15 +1857,15 @@ weightAttributeRef =
 
         return $
             AttributeRef {
-                    attrCodeRef = code
-                ,   attrNameRef = name           
-                ,   attrDescriptionRef = desc
-                ,   attrValueRefs = []
-                ,   attrUnitRefs = [unit]
-                ,   relatedCategoriesRefs = [(refCatId1, hcatcode), (refCatId3, patcode)]
+                   attributeRefCode              = code
+                ,  attributeRefName           = name           
+                ,  attributeRefDescription    = desc
+                ,  attributeRefValues            = []
+                ,  attributeRefUnits             = [unit]
+                ,  attributeRefRelatedCategories = [(refCatId1, hcatcode), (refCatId3, patcode)]
                 }
 
 attributes = rights [colorAttributeRef, weightAttributeRef]
 allAttributes = 
     fmap catToTuple attributes
-        where catToTuple attr = (uwrpAttrCd $ attrCodeRef attr, attr) 
+        where catToTuple attr = (uwrpAttrCd $ attributeRefCode attr, attr) 

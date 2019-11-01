@@ -52,7 +52,7 @@ import GHC.Generics
 
 
 data CreateAttributeRefForm = CreateAttributeRefForm {
-        name :: String
+        attrName :: String
     ,   attrDescpt :: String
     ,   attrValues :: [String]
     ,   attrUnits :: [String]
@@ -69,11 +69,11 @@ instance FromJSON CreateAttributeRefForm
 toUnvalidatedAttributeRef :: CreateAttributeRefForm -> UnvalidatedAttributeRef
 toUnvalidatedAttributeRef  CreateAttributeRefForm{..}= 
     UnvalidatedAttributeRef {
-            uattrNm = name
-        ,   uattrDescpt = attrDescpt
-        ,   uattrVals = attrValues
-        ,   uattrUnts = attrUnits
-        ,   urelatedCatgrs = attrRelatedCats
+            uattributeName        = attrName
+        ,   uattributeDescription = attrDescpt
+        ,   uattributesValues     = attrValues
+        ,   uattributeUnits       = attrUnits
+        ,   urelatedCategories    = attrRelatedCats
         }
         
 
@@ -85,8 +85,8 @@ toUnvalidatedAttributeRef  CreateAttributeRefForm{..}=
 
 
 data AttributeRefCreatedDto = AttributeRefCreatedDto {
-        _attrCode :: String
-    ,   _name :: String
+        code :: String
+    ,   name :: String
     ,   description :: String
     ,   values :: [String]
     ,   units :: [String]
@@ -125,8 +125,8 @@ fromAttributeRefCreated =
 
 toDomain1 :: AttributeRefCreatedDto -> Either ErrorMessage AttributeRef
 toDomain1 dto = do
-    cd <- crtAttrCd . _attrCode $ dto
-    nm <- crtAttrNm . _name $ dto
+    cd <- crtAttrCd . code $ dto
+    nm <- crtAttrNm . name $ dto
     descpt <- crtShrtDescpt . description $ dto
     vals <-  traverse crtAttrVal . values $ dto
     units <- traverse crtAttrUnt . units $ dto

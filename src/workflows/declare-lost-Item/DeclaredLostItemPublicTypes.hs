@@ -94,8 +94,8 @@ data DeclaredLostItem = DeclaredLostItem {
         lostItemId                  :: LostItemId
     ,   lostItemName                :: ItemName
     ,   lostItemCategoryId          :: CategoryId
-    ,   lostItemDesc                :: LongDescription
-    ,   lostItemLocations            :: Set Location
+    ,   lostItemDescription         :: LongDescription
+    ,   lostItemLocations           :: Set Location
     ,   lostItemDateAndTimeSpan     :: DateTimeSpan
     ,   lostItemRegistrationTime    :: UTCTime
     ,   lostItemAttributes          :: Set Attribute
@@ -115,17 +115,11 @@ data DeclareLostItemEvent =
 
 
 -- --------------------------------------------------------------------------
--- error outputs 
+-- error outputs (in the common module)
 -- --------------------------------------------------------------------------
 
 
-{--
-data WorkflowError
-      Validation ValidationError 
-    | Remote RemoteServiceError
-    | DataBase DataBaseError 
-    deriving (Eq, Ord, Show)
---}
+
 
 -- --------------------------------------------------------------------------
 -- the workflow itself

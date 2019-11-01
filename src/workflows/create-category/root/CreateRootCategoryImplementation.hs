@@ -64,12 +64,12 @@ type CheckRefSubCatgrValid =
 --- Validated Category
 
 data ValidatedRootCategory = ValidatedRootCategory {
-        vcategoryId          :: CategoryId
-    ,   vcategoryCode        :: CategoryCode
-    ,   vrootStatus          :: RootStatus
-    ,   venablementStatus    :: EnablementStatus
-    ,   vcategoryDesc        :: LongDescription
-    ,   vsubCategories       :: Set CategoryId
+        vrootCategoryId                 :: CategoryId
+    ,   vrootCategoryCode               :: CategoryCode
+    ,   vrootStatus                     :: RootStatus
+    ,   vrootCategoryEnablementStatus   :: EnablementStatus
+    ,   vrootcategoryDescription        :: LongDescription
+    ,   vrootCatgrRelatedSubCatgrs      :: Set CategoryId
     } deriving (Eq, Ord, Show)
 
 
@@ -142,15 +142,17 @@ validateUnvalidatedCategory uCatgr uCatgrId =
     ValidatedRootCategory <$> id <*> code <*> rootStatus <*> enblmntStatus <*> descpt <*> subCatgrs
       where 
         id = toCatId uCatgrId
-        code = (toCatCd . ucatCd) uCatgr
+        code = (toCatCd . urootCategoryCode) uCatgr
         rootStatus = pure Root
-        enblmntStatus = (toEnblmntStatus . uEnblmnt) uCatgr
-        descpt = (toDescpt . udescpt) uCatgr
-        subCatgrs = (toValidatedSubCatgrs . usubCatgrs) uCatgr
+        enblmntStatus = (toEnblmntStatus . urootCategoryEnablement) uCatgr
+        descpt = (toDescpt . urootCategoryDescription) uCatgr
+        subCatgrs = (toValidatedSubCatgrs . urootCatgrRelatedsubCatgrs) uCatgr
         
       
 
+
 --- Helper functions for validateUnvalidatedCategory start
+
 toCatId :: String -> Either ValidationError CategoryId
 toCatId = mapLeft ValidationError . crtCatgrId
          
@@ -185,9 +187,11 @@ toValidatedSubCatgrs  =
 --- TODO: I should probably use a fold here 
 --- TODO: I should probably use a fold here 
 
+ 
+
 checkRefSubCatgrsValid :: CheckRefSubCatgrsValid 
 checkRefSubCatgrsValid catgrs = 
-    traverse (checkRefSubCatgrValid catgrs) . toList . vsubCategories
+    traverse (checkRefSubCatgrValid catgrs) . toList . vrootCatgrRelatedSubCatgrs
     where checkRefSubCatgrValid :: [Category] -> CategoryId -> Either DomainError CategoryId
           checkRefSubCatgrValid cats catId =
             let ucatId = uwrpCatgrId catId
@@ -232,12 +236,12 @@ checkRefSubCatgrsValid catgrs =
 createRootCategory :: ValidatedRootCategory -> Category
 createRootCategory  =
   Category 
-    <$> vcategoryId
-    <*> vcategoryCode
-    <*> vrootStatus
-    <*> venablementStatus
-    <*> vcategoryDesc
-    <*> vsubCategories
+    <$> vrootCategoryId              
+    <*> vrootCategoryCode            
+    <*> vrootStatus                  
+    <*> vrootCategoryEnablementStatus
+    <*> vrootcategoryDescription     
+    <*> vrootCatgrRelatedSubCatgrs  
 
     
   

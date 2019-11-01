@@ -54,7 +54,7 @@ data LocationDto = LocationDto {
     ,   city :: String
     ,   village :: String
     ,   neighborhood :: String
-    ,   locationAddress :: [String]
+    ,   locationAddresses :: [String]
     } deriving (Generic, Show)
 
 instance ToJSON LocationDto 
@@ -71,7 +71,7 @@ toUnvalidatedLocation dto  =
         ,   ucity = city dto
         ,   uvillage = village dto
         ,   uneighborhood = neighborhood dto
-        ,   uloaddresses = locationAddress dto
+        ,   uloaddresses = locationAddresses dto
         }
         
 
@@ -81,7 +81,7 @@ toLocation dto =
     do  area <- toAdminAreaInfo (region dto, division dto, subdivision dto)
         lieu <- toCityOrVillage (city dto, village dto)
         voisinage <- crtOptNghbrhd $ neighborhood dto
-        addresses <- traverse toAddress $ locationAddress dto
+        addresses <- traverse toAddress $ locationAddresses dto
         return Cct.Location  {
                     Cct.locationAdminArea = area
                 ,   Cct.locationCityOrVillage = lieu
@@ -134,7 +134,7 @@ fromLocation loc =
         ,   city = city
         ,   village = village
         ,   neighborhood = maybeNeighborhood
-        ,   locationAddress = addresses
+        ,   locationAddresses = addresses
         }
 
 fromMaybeAdminArea :: Maybe Cct.AdministrativeAreaInfo -> (String, String, String)
@@ -489,7 +489,7 @@ fromLostItemDeclared =
         <$> uwrpLstItmId . lostItemId 
         <*> uwrpItmNm . lostItemName 
         <*> uwrpCatgrId . lostItemCategoryId 
-        <*> uwrpLgDescpt . lostItemDesc 
+        <*> uwrpLgDescpt . lostItemDescription 
         <*> fmap fromLocation . toList . lostItemLocations 
         <*> lostItemRegistrationTime 
         <*> uwrpDtTmSpan . lostItemDateAndTimeSpan 

@@ -113,16 +113,18 @@ declareLostItemCmd = Register (Command unvalidateLostItem "11:01pm" "felicien@gm
 
 
 uRootCat = UnvalidatedRootCategory {
-    ucatCd = "HUMAN-BEINGS"
-  , udescpt = "This category is the parent category for all sub cats related to lost human beings"
-  , uEnblmnt = "disabled"
-  , usubCatgrs = ["KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"]  
+    urootCategoryCode = "HUMAN-BEINGS"
+  , urootCategoryDescription = "This category is the parent category for all sub cats related to lost human beings"
+  , urootCategoryEnablement = "disabled"
+  , urootCatgrRelatedsubCatgrs = ["KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK"]  
 }
 
 
 
 createCategoryCmd :: LostAndFoundInventoryCmd
 createCategoryCmd = CreateRootCategory (Command uRootCat "11:01pm" "felicien@gmail.com")
+
+
 
 
 res = runExceptT $ handle createCategoryCmd

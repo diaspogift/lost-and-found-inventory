@@ -112,16 +112,14 @@ validateUnvalidatedAttributeRef uAttrRef uUuidCd =
     ValidatedAttributeRef <$> code <*> name <*> desc <*> values <*> units <*> refCats
       where 
         code = toAttrCdRef uUuidCd
-        name = (toAttrNm . uattrNm) uAttrRef
-        desc = (toAttrDescpt . uattrDescpt) uAttrRef
-        values = traverse toAttrVal $ uattrVals uAttrRef
-        units = traverse toAttrUnt $ uattrUnts uAttrRef
-        refCats = traverse toAttrRefCatgrs $ urelatedCatgrs uAttrRef
+        name = (toAttrNm . uattributeName) uAttrRef
+        desc = (toAttrDescpt . uattributeDescription) uAttrRef
+        values = traverse toAttrVal $ uattributesValues uAttrRef
+        units = traverse toAttrUnt $ uattributeUnits uAttrRef
+        refCats = traverse toAttrRefCatgrs $ urelatedCategories uAttrRef
       
----
 
-
----
+        
 
 --- Helper functions for validateUnvalidatedAttributeRef
 

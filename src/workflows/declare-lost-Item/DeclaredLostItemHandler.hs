@@ -151,11 +151,11 @@ checkAttributeInfoValid refferedAttributes uattr ulositem =
                                 unit <- crtOptAttrUnt $ uattrUnit uattr
                                 return  
                                     ValidatedAttribute {
-                                            vattrCode = code
-                                        ,   vattrName = name
-                                        ,   vattrDescription = desc
-                                        ,   vattrValue = valu
-                                        ,   vattrUnit = unit
+                                            vattributeCode = code
+                                        ,   vattributeName = name
+                                        ,   vattributeDescription = desc
+                                        ,   vattributeValue = valu
+                                        ,   vattributeUnit = unit
                                         }
                         Nothing -> Left "invalid referenced attribute"
             _ -> Left "referenced attribute not found"

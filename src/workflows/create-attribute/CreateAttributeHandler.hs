@@ -115,7 +115,7 @@ writeEventToStore :: WriteEvent
 writeEventToStore conn (AttributeRefCreated createdAttribute) = 
     do  let createdAttributeDto = Dto.fromAttributeRefCreated createdAttribute
             createdAttributeEvent = createEvent "CreatedAttribute" Nothing $ withJson createdAttributeDto
-            id = Dto._attrCode createdAttributeDto
+            id = Dto.code createdAttributeDto
         as <- sendEvent conn (StreamName $ pack ( "attr-ref-code-: " <> id)) anyVersion createdAttributeEvent Nothing
         _  <- wait as
         shutdown conn
@@ -152,7 +152,7 @@ createAttributeRefHandler
 
 
         -- get all referenced category / verified they exist
-        let refCatIds = fst <$> urelatedCatgrs unvalidatedAttributeRef
+        let refCatIds = fst <$> urelatedCategories unvalidatedAttributeRef
 
         refCatgrs <- traverse (readOneCategory conn 10) refCatIds
 

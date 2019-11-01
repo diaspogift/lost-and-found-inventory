@@ -17,11 +17,11 @@ type UnvalidatedSubCategoryId = String
 
 
 data UnvalidatedSubCategory = UnvalidatedSubCategory {
-      ucatCd :: String
-    , udescpt :: String
-    , uparentIdCd :: (String, String)
-    , uEnblmnt :: String
-    , usubCatgrs ::   [String]
+      usubCategoryCode          :: String
+    , usubCategoryDescription   :: String
+    , usubCategoryParentIdandCd :: (String, String)
+    , usubCatgrEnablementStatus :: String
+    , usubCatgrRelatedsubCatgrs ::   [String]
     } deriving (Eq, Ord, Show)
 
 

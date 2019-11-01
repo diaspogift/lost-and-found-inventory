@@ -17,11 +17,11 @@ type UnvalidatedAttributeCode = String
 
 
 data UnvalidatedAttributeRef = UnvalidatedAttributeRef {
-      uattrNm :: String
-    , uattrDescpt :: String
-    , uattrVals :: [String]
-    , uattrUnts ::   [String]
-    , urelatedCatgrs :: [(String, String)]
+      uattributeName            :: String
+    , uattributeDescription     :: String
+    , uattributesValues         :: [String]
+    , uattributeUnits           :: [String]
+    , urelatedCategories        :: [(String, String)]
     } deriving (Eq, Ord, Show)
 
 

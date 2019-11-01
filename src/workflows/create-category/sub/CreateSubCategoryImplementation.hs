@@ -64,12 +64,12 @@ type CheckRefSubCatgrValid =
 --- Validated Category
 
 data ValidatedSubCategory = ValidatedSubCategory {
-        vcategoryId          :: CategoryId
-    ,   vcategoryCode        :: CategoryCode
-    ,   vparentIdCd          :: Maybe (CategoryId, CategoryCode)
-    ,   venablementStatus    :: EnablementStatus
-    ,   vcategoryDesc        :: LongDescription
-    ,   vsubCategories       :: Set CategoryId
+        vsubCategoryId                  :: CategoryId
+    ,   vsubCategoryCode                :: CategoryCode
+    ,   vsubCategoryParentIdCd          :: Maybe (CategoryId, CategoryCode)
+    ,   vsubCategoryEnablementStatus    :: EnablementStatus
+    ,   vsubCategoryDescription            :: LongDescription
+    ,   vsubCatgrRelatedSubCatgrs       :: Set CategoryId
     } deriving (Eq, Ord, Show)
 
 
@@ -141,20 +141,20 @@ validateUnvalidatedCategory :: ValidateUnvalidatedSubCategory
 validateUnvalidatedCategory uCatgr uCatgrId = 
     do 
         id <- toCatId uCatgrId
-        code <- toCatCd . ucatCd $ uCatgr
-        parntIdCd <- toMaybePrntIdCd . uparentIdCd $ uCatgr
-        enblmntStatus <- (toEnblmntStatus . uEnblmnt) uCatgr
-        descpt <- toDescpt . udescpt $ uCatgr
-        subCatgrs <- toValidatedSubCatgrs . usubCatgrs $ uCatgr
+        code <- toCatCd . usubCategoryCode $ uCatgr
+        parntIdCd <- toMaybePrntIdCd . usubCategoryParentIdandCd $ uCatgr
+        enblmntStatus <- (toEnblmntStatus . usubCatgrEnablementStatus) uCatgr
+        descpt <- toDescpt . usubCategoryDescription $ uCatgr
+        subCatgrs <- toValidatedSubCatgrs . usubCatgrRelatedsubCatgrs $ uCatgr
 
         return $
             ValidatedSubCategory {
-                    vcategoryId = id  
-                ,   vcategoryCode = code 
-                ,   vparentIdCd = parntIdCd    
-                ,   venablementStatus = enblmntStatus
-                ,   vcategoryDesc = descpt
-                ,   vsubCategories = subCatgrs  
+                    vsubCategoryId                = id  
+                ,   vsubCategoryCode              = code 
+                ,   vsubCategoryParentIdCd        = parntIdCd    
+                ,   vsubCategoryEnablementStatus  = enblmntStatus
+                ,   vsubCategoryDescription          = descpt
+                ,   vsubCatgrRelatedSubCatgrs     = subCatgrs  
                 }
         
             
@@ -207,7 +207,7 @@ toValidatedSubCatgrs  =
 
 checkRefSubCatgrsValid :: CheckRefSubCatgrsValid 
 checkRefSubCatgrsValid catgrs = 
-    traverse (checkRefSubCatgrValid catgrs) . toList . vsubCategories
+    traverse (checkRefSubCatgrValid catgrs) . toList . vsubCatgrRelatedSubCatgrs
     where checkRefSubCatgrValid :: [Category] -> CategoryId -> Either DomainError CategoryId
           checkRefSubCatgrValid cats catId =
             let ucatId = uwrpCatgrId catId
@@ -262,9 +262,9 @@ checkRefPrntCatgrValid maybePrntCatgr vSubCatgr =
                 [] -> return vSubCatgr
                 _ -> Left . DomainError $ "parent - sub categories recursion not alowed"
             where   parentCatgrIn catId subCatId =  catId == subCatId
-                    subCatgrIds = toList . vsubCategories $ vSubCatgr
+                    subCatgrIds = toList . vsubCatgrRelatedSubCatgrs $ vSubCatgr
                     prntCatgrId = categoryId prntCatgr
-        Nothing -> return vSubCatgr {vparentIdCd = Nothing}
+        Nothing -> return vSubCatgr {vsubCategoryParentIdCd = Nothing}
 
 
 
@@ -279,27 +279,27 @@ checkRefPrntCatgrValid maybePrntCatgr vSubCatgr =
 
 createSubCategory :: ValidatedSubCategory -> Category
 createSubCategory vSubCatgr =
-  case vparentIdCd vSubCatgr of
+  case vsubCategoryParentIdCd vSubCatgr of
       Just (prtCatId, prtCatCode) -> 
 
         Category {
-            categoryId = vcategoryId vSubCatgr
-        ,   categoryCode = vcategoryCode vSubCatgr
+            categoryId =        vsubCategoryId vSubCatgr
+        ,   categoryCode =      vsubCategoryCode vSubCatgr
         ,   categoryRootStatus  = Sub . Just $ ParentInfo prtCatId prtCatCode
-        ,   categoryEnablementStatus = venablementStatus vSubCatgr
-        ,   categoryDescription = vcategoryDesc vSubCatgr
-        ,   categoryRelatedSubCategories = vsubCategories vSubCatgr
+        ,   categoryEnablementStatus = vsubCategoryEnablementStatus vSubCatgr
+        ,   categoryDescription = vsubCategoryDescription vSubCatgr
+        ,   categoryRelatedSubCategories = vsubCatgrRelatedSubCatgrs vSubCatgr
         }
 
       Nothing -> 
         
         Category {
-            categoryId = vcategoryId vSubCatgr
-        ,   categoryCode = vcategoryCode vSubCatgr
+            categoryId = vsubCategoryId vSubCatgr
+        ,   categoryCode = vsubCategoryCode vSubCatgr
         ,   categoryRootStatus  = Sub Nothing
-        ,   categoryEnablementStatus = venablementStatus vSubCatgr
-        ,   categoryDescription = vcategoryDesc vSubCatgr
-        ,   categoryRelatedSubCategories = vsubCategories vSubCatgr
+        ,   categoryEnablementStatus = vsubCategoryEnablementStatus vSubCatgr
+        ,   categoryDescription = vsubCategoryDescription vSubCatgr
+        ,   categoryRelatedSubCategories = vsubCatgrRelatedSubCatgrs vSubCatgr
         }
 
 

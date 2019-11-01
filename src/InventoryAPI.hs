@@ -154,8 +154,8 @@ handlerDeclareLostItem declareLostItemForm =
                 return $ DclLstItemResp $ fmap fromDclLstItmEvtDomain events
             Left (DclreLostItemErr error) -> 
                 let errorMsg = fromWorkflowError error
-                    cd = code errorMsg
-                    msg = message errorMsg
+                    cd = worflowErrorCde errorMsg
+                    msg = worflowErrorMsg errorMsg
                     body = cd ++ ": " ++ msg
                 in 
                     case error of
@@ -190,8 +190,8 @@ handlerCreateAttributeRef attributeRefForm =
                 return $ CrtAttrRefResp $ fmap fromCrtAttrEvtDomain events 
             Left (CrteAttribueErr error) -> 
                 let errorMsg = fromWorkflowError error
-                    cd = code errorMsg
-                    msg = message errorMsg
+                    cd = worflowErrorCde errorMsg
+                    msg = worflowErrorMsg errorMsg
                     body = cd ++ ": " ++ msg
                 in
                     case error of
@@ -225,8 +225,8 @@ handleCreateRootCategory rootCategoryForm =
                 return $ CrtRooCatgrResp $ fmap fromCrtRootCatgrEvtDomain events 
             Left (CrteRootCatgrErr error) -> 
                 let errorMsg = fromWorkflowError error
-                    cd = code errorMsg
-                    msg = message errorMsg
+                    cd = worflowErrorCde errorMsg
+                    msg = worflowErrorMsg errorMsg
                     body = cd ++ ": " ++ msg
                 in
                     case error of
@@ -263,8 +263,8 @@ handleCreateSubCategory subCategoryForm =
                 return $ CrtSubCatgrResp $ fmap fromCrtSubCatgrEvtDomain events 
             Left (CrteSubCatgrErr error) -> 
                 let errorMsg = fromWorkflowError error
-                    cd = code errorMsg
-                    msg = message errorMsg
+                    cd = worflowErrorCde errorMsg
+                    msg = worflowErrorMsg errorMsg
                     body = cd ++ ": " ++ msg
                 in
                     case error of

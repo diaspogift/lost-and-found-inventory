@@ -196,11 +196,11 @@ createSubCategoryHandler
         conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)
 
         -- get all referenced sub category / verified they exist and they do not have a parent yet
-        refSubCatgrs <- traverse lookupOneCategory $ usubCatgrs unvalidatedSubCategory
+        refSubCatgrs <- traverse lookupOneCategory $ usubCatgrRelatedsubCatgrs unvalidatedSubCategory
 
         -- get the eventual referred parent category (fail earlier rather than later :)
         
-        let refParentCategory = lookupOneMaybeCategory . fst . uparentIdCd $ unvalidatedSubCategory
+        let refParentCategory = lookupOneMaybeCategory . fst . usubCategoryParentIdandCd $ unvalidatedSubCategory
 
 
         -- get randon uuid for the attribute code 
@@ -209,6 +209,7 @@ createSubCategoryHandler
 
         ---------------------------------------- IO at the boundary end -----------------------------------------
     
+
 
 
     

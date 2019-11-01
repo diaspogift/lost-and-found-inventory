@@ -51,10 +51,10 @@ import GHC.Generics
 
 
 data CreateRootCategoryForm = CreateRootCategoryForm {
-        ccode :: String
-    ,   description :: String
-    ,   enblmntStatuss :: String
-    ,   subCategries ::   [String]
+        code                    :: String
+    ,   description             :: String
+    ,   enablementStatus        :: String
+    ,   relatedSubCategories    ::   [String]
     } deriving (Generic, Show)
 
 instance ToJSON CreateRootCategoryForm 
@@ -68,11 +68,13 @@ instance FromJSON CreateRootCategoryForm
 toUnvalidatedRootCategory :: CreateRootCategoryForm -> UnvalidatedRootCategory
 toUnvalidatedRootCategory  CreateRootCategoryForm{..}= 
     UnvalidatedRootCategory {
-            ucatCd = ccode
-        ,   udescpt = description
-        ,   uEnblmnt = enblmntStatuss
-        ,   usubCatgrs = subCategries
+            urootCategoryCode =             code                 
+        ,   urootCategoryDescription =      description          
+        ,   urootCategoryEnablement =       enablementStatus     
+        ,   urootCatgrRelatedsubCatgrs =    relatedSubCategories 
         }
+
+        
 
 
 -------------------------------------------------------------------------------

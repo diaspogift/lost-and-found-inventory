@@ -17,10 +17,10 @@ type UnvalidatedRootCategoryId = String
 
 
 data UnvalidatedRootCategory = UnvalidatedRootCategory {
-      ucatCd :: String
-    , udescpt :: String
-    , uEnblmnt :: String
-    , usubCatgrs ::   [String]
+      urootCategoryCode              :: String
+    , urootCategoryDescription      :: String
+    , urootCategoryEnablement       :: String
+    , urootCatgrRelatedsubCatgrs    ::   [String]
     } deriving (Eq, Ord, Show)
 
 

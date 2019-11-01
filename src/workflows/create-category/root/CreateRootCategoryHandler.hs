@@ -184,11 +184,8 @@ createRootCategoryHandler
         conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)
 
 
-
         -- get all referenced sub category / verified they exist and they do not have a parent yet
-        let refSubCatIds = usubCatgrs unvalidatedRootCategory
-
-        refSubCatgrs <- traverse lookupOneCategory refSubCatIds
+        refSubCatgrs <- traverse lookupOneCategory $ urootCatgrRelatedsubCatgrs unvalidatedRootCategory
 
         -- get randon uuid for the attribute code 
         unvalidatedCategoryId <- liftIO nextId
@@ -197,7 +194,8 @@ createRootCategoryHandler
         ---------------------------------------- IO at the boundary end -----------------------------------------
     
 
-
+ 
+        
     
         ---------------------------------------- Core business logic start ----------------------------------------
 

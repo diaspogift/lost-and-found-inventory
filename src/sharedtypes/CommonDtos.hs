@@ -51,8 +51,8 @@ import GHC.Generics
 
 
 data WorkflowErrorDto = WorkflowErrorDto {
-        code :: String
-    ,   message :: String
+        worflowErrorCde :: String
+    ,   worflowErrorMsg :: String
     } deriving (Generic, Show)
 
 instance ToJSON WorkflowErrorDto 
@@ -68,26 +68,26 @@ fromWorkflowError domainError =
     case domainError of
         Validation (ValidationError errorMessage) ->
             WorkflowErrorDto {
-                code = "ValidationError"
-            ,   message = errorMessage
+                worflowErrorCde = "ValidationError"
+            ,   worflowErrorMsg = errorMessage
             }
         Domain (DomainError errorMessage) ->
             WorkflowErrorDto {
-                code = "DomainError"
-            ,   message = errorMessage
+                worflowErrorCde = "DomainError"
+            ,   worflowErrorMsg = errorMessage
             }
         Remote remoteServiceError ->
             let serv = service remoteServiceError 
                 httpCd = errorCode remoteServiceError
                 errorMessage = execption remoteServiceError
             in WorkflowErrorDto {
-                code = show httpCd
-            ,   message = serviceName serv  
+                worflowErrorCde = show httpCd
+            ,   worflowErrorMsg = serviceName serv  
             }
         DataBase (DataBaseError errorMessage) ->
             WorkflowErrorDto {
-                    code = "DataBaseError"
-                ,   message = errorMessage
+                    worflowErrorCde = "DataBaseError"
+                ,   worflowErrorMsg = errorMessage
                 } 
 
 

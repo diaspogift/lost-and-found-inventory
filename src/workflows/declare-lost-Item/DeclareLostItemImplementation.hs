@@ -88,37 +88,40 @@ data ValidatedLocation = ValidatedLocation {
     ,   vneighborhood :: Maybe Neighborhood
     ,   vlocationAddresses :: [Address]
     } deriving (Eq, Ord, Show)
+    
 
 data ValidatedAttribute = ValidatedAttribute {
-      vattrCode             :: AttributeCode
-    , vattrName             :: AttributeName
-    , vattrDescription      :: ShortDescription
-    , vattrValue            :: Maybe AttributeValue
-    , vattrUnit             :: Maybe AttributeUnit
+      vattributeCode             :: AttributeCode
+    , vattributeName             :: AttributeName
+    , vattributeDescription      :: ShortDescription
+    , vattributeValue            :: Maybe AttributeValue
+    , vattributeUnit             :: Maybe AttributeUnit
     } deriving (Eq, Ord, Show)
+
 
 data ValidatedPerson = ValidatedPerson {
-      vuserId   :: UserId
-    , vcontact  :: ValidatedContactInformation
-    , vname     :: FullName
+      vpersonId         :: UserId
+    , vpersonContact    :: ValidatedContactInformation
+    , vpersonFullName   :: FullName
     } deriving (Eq, Ord, Show)
 
+
 data ValidatedContactInformation = ValidatedContactInformation {
-      vaddress       :: Maybe PostalAddress
-    , vContactMethod    :: ContactMethod
+      vcontactInfoAddress       :: Maybe PostalAddress
+    , vcontactInfoMethod    :: ContactMethod
     } deriving (Eq, Ord, Show)
 
 
 data ValidatedLostItem = ValidatedLostItem {
-      vlstItmId               :: LostItemId
-  ,   vlstItmNm             :: ItemName
-  ,   vlstItmCatgrId       :: CategoryId
-  ,   vlstItmDescpt             :: LongDescription
-  ,   vlstItmLocts         :: Set ValidatedLocation
-  ,   vlstItmRegTime :: UTCTime
-  ,   vlstItmDteTimeSpan  :: DateTimeSpan
-  ,   vlstItmAttrbts       :: Set ValidatedAttribute
-  ,   vlstItmOwner            :: ValidatedPerson
+      validatedLostItemId               :: LostItemId
+  ,   validatedLostItemName             :: ItemName
+  ,   validatedLostItemCategoryId       :: CategoryId
+  ,   validatedLostItemDescription      :: LongDescription
+  ,   validatedLostItemLocations        :: Set ValidatedLocation
+  ,   validatedLostItemRegistrTime      :: UTCTime
+  ,   validatedLostItemDateTimeSpan     :: DateTimeSpan
+  ,   validatedLostItemAttributes       :: Set ValidatedAttribute
+  ,   validatedLostItemOwner            :: ValidatedPerson
   }
 
 type ValidateUnvalidatedLostItem =
@@ -262,8 +265,8 @@ toContactInfo checkContactInfoValid uc
 
             let contactMethod = PhoneOnly primTel secTel
             return  ValidatedContactInformation {
-                        vaddress = adress
-                    ,   vContactMethod = contactMethod
+                        vcontactInfoAddress = adress
+                    ,   vcontactInfoMethod = contactMethod
                     }
 
     -- no email but only prim phone given
@@ -274,8 +277,8 @@ toContactInfo checkContactInfoValid uc
             primTel <- mapLeft ValidationError $ crtTel givenPrimTel
             let contactMethod = PhoneOnly primTel Nothing
             return  ValidatedContactInformation {
-                        vaddress = adress
-                    ,   vContactMethod = contactMethod
+                        vcontactInfoAddress = adress
+                    ,   vcontactInfoMethod = contactMethod
                     }
     
     -- just email given
@@ -286,8 +289,8 @@ toContactInfo checkContactInfoValid uc
             email <- mapLeft ValidationError $ crtEmailAddress givenEmail
             let contactMethod = EmailOnly email
             return  ValidatedContactInformation {
-                        vaddress = adress
-                    ,   vContactMethod = contactMethod
+                        vcontactInfoAddress = adress
+                    ,   vcontactInfoMethod = contactMethod
                     }
             
     -- email and prim phone given
@@ -303,8 +306,8 @@ toContactInfo checkContactInfoValid uc
                 ,   bothContactInfoSndTel   = Nothing
                 }
             return  ValidatedContactInformation {
-                        vaddress = adress
-                    ,   vContactMethod = contactMethod
+                        vcontactInfoAddress = adress
+                    ,   vcontactInfoMethod = contactMethod
                     }
 
     -- email, prim and sec phones given
@@ -323,8 +326,8 @@ toContactInfo checkContactInfoValid uc
                 }
 
             return  ValidatedContactInformation {
-                        vaddress = adress
-                    ,   vContactMethod = contactMethod
+                        vcontactInfoAddress = adress
+                    ,   vcontactInfoMethod = contactMethod
                     }
 
     | otherwise = Left $ ValidationError "Provide at least one contact method (Phone or Email)"
@@ -497,19 +500,24 @@ creatteLostItem :: ValidatedLostItem -> DeclaredLostItem
 creatteLostItem  =
 
     DeclaredLostItem 
-        <$> vlstItmId 
-        <*> vlstItmNm 
-        <*> vlstItmCatgrId 
-        <*> vlstItmDescpt 
-        <*> fromList . fmap toLocation . toList . vlstItmLocts 
-        <*> vlstItmDteTimeSpan 
-        <*> vlstItmRegTime 
-        <*> fromList . fmap toAttribute . toList . vlstItmAttrbts 
-        <*> toPerson . vlstItmOwner 
+        <$> validatedLostItemId 
+        <*> validatedLostItemName 
+        <*> validatedLostItemCategoryId 
+        <*> validatedLostItemDescription 
+        <*> fromList 
+            . fmap toLocation 
+            . toList 
+            . validatedLostItemLocations 
+        <*> validatedLostItemDateTimeSpan 
+        <*> validatedLostItemRegistrTime 
+        <*> fromList 
+            . fmap toAttribute 
+            . toList 
+            . validatedLostItemAttributes 
+        <*> toPerson . validatedLostItemOwner 
 
     
-
-
+      
 --- Helper functions
 ---
 ---
@@ -518,26 +526,26 @@ creatteLostItem  =
 toPerson :: ValidatedPerson -> Person
 toPerson = 
   Person 
-    <$> vuserId
-    <*> toContactInformation . vcontact
-    <*> vname
+    <$> vpersonId
+    <*> toContactInformation . vpersonContact
+    <*> vpersonFullName
   
 
 toContactInformation :: ValidatedContactInformation -> ContactInformation
 toContactInformation = 
   ContactInformation 
-    <$> vaddress
-    <*> vContactMethod
+    <$> vcontactInfoAddress
+    <*> vcontactInfoMethod
 
 
 toAttribute :: ValidatedAttribute -> Attribute
 toAttribute valAttr = 
   Attribute {
-      attributeCode = vattrCode valAttr     
-    , attributeName = vattrName valAttr     
-    , attributeDescription = vattrDescription valAttr
-    , attributeValue = vattrValue valAttr  
-    , attributeUnit = vattrUnit valAttr    
+      attributeCode = vattributeCode valAttr     
+    , attributeName = vattributeName valAttr     
+    , attributeDescription = vattributeDescription valAttr
+    , attributeValue = vattributeValue valAttr  
+    , attributeUnit = vattributeUnit valAttr    
     }
 
 
@@ -565,7 +573,7 @@ toLocation vLoc =
 
 checkRefCatgrEnabled :: ValidatedLostItem -> Category-> Either DomainError ValidatedLostItem
 checkRefCatgrEnabled vli refCatgr 
-    | vlstItmCatgrId vli == categoryId refCatgr = 
+    | validatedLostItemCategoryId vli == categoryId refCatgr = 
         case categoryEnablementStatus refCatgr of
             Disabled reason ->
                 Left . DomainError 
@@ -576,6 +584,7 @@ checkRefCatgrEnabled vli refCatgr
     | otherwise =  Left . DomainError $ "category ids don't match"
 
 
+    
 
 
 

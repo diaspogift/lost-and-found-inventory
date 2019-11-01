@@ -51,12 +51,12 @@ import GHC.Generics
 
 
 data CreateSubCategoryForm = CreateSubCategoryForm {
-        ccode :: String
-    ,   description :: String
-    ,   parentId :: String
-    ,   parentCode :: String
-    ,   enblmntStatuss :: String
-    ,   subCategries ::   [String]
+        code                    :: String
+    ,   description             :: String
+    ,   parentId                :: String
+    ,   parentCode              :: String
+    ,   enblementStatus         :: String
+    ,   relatedSubCategories    :: [String]
     } deriving (Generic, Show)
 
 instance ToJSON CreateSubCategoryForm 
@@ -70,11 +70,11 @@ instance FromJSON CreateSubCategoryForm
 toUnvalidatedSubCategory :: CreateSubCategoryForm -> UnvalidatedSubCategory
 toUnvalidatedSubCategory  CreateSubCategoryForm{..} = 
     UnvalidatedSubCategory {
-            ucatCd = ccode
-        ,   udescpt = description
-        ,   uparentIdCd = (parentId, parentCode)
-        ,   uEnblmnt = enblmntStatuss
-        ,   usubCatgrs = subCategries
+            usubCategoryCode          = code
+        ,   usubCategoryDescription   = description
+        ,   usubCategoryParentIdandCd = (parentId, parentCode)
+        ,   usubCatgrEnablementStatus = enblementStatus
+        ,   usubCatgrRelatedsubCatgrs = relatedSubCategories
         }
 
 

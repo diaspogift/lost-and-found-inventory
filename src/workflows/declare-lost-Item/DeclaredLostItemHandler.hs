@@ -228,16 +228,13 @@ declareLostItemHandler
     lookupOneCategory
     readOneCategory
     readOneAttributeRef
-    writeEventsToStore
+    writeDeclaredLostItemEvents
     nextId
     (Command unvalidatedLostItem curTime userId) = 
 
         ---------------------------------------- IO at the boundary start -----------------------------------------
      
-    do  -- get event store connection // TODO: lookup env ... or Reader Monad ??????
-        conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)
-
-        -- retrieve the referenced categoryId
+    do  -- retrieve the referenced categoryId
         let strCatgryId = uliCategoryId unvalidatedLostItem
 
         -- retrieve adminitrative area map 
@@ -245,11 +242,11 @@ declareLostItemHandler
                   
 
         -- retrieve referenced category from event store
-        referencedCatgr <- readOneCategory conn 10 strCatgryId
+        referencedCatgr <- ExceptT $ liftIO $ readOneCategory 10 strCatgryId
 
 
         -- retrieve referenced attributes
-        refAttributes <- traverse (readOneAttributeRef conn 10) $ uattrCode <$> uliattributes unvalidatedLostItem
+        refAttributes <- ExceptT $ liftIO $ fmap sequence $ traverse (readOneAttributeRef 10) $ uattrCode <$> uliattributes unvalidatedLostItem
         
         -- get creation time
         declarationTime <- liftIO getCurrentTime
@@ -298,7 +295,7 @@ declareLostItemHandler
             Right allEvents -> 
                 do
                     let declLostItemEvts = filter persistableEvts allEvents
-                    res <- liftIO $ writeEventsToStore  conn lostItemUuid declLostItemEvts
+                    res <- liftIO $ writeDeclaredLostItemEvents lostItemUuid declLostItemEvts
                     liftEither events
             Left errorMsg -> liftEither $ Left errorMsg
 

@@ -47,6 +47,21 @@ import Data.Text (pack)
 
 type LocalStreamId = String
 
+--- Read types
+---
+---
+
+type ReadOneCategory  = 
+    Int32 -> LocalStreamId -> IO (Either WorkflowError Category)
+
+
+type ReadOneAttributeRef  = 
+    Int32 -> LocalStreamId -> IO (Either WorkflowError AttributeRef)
+
+--- Write types
+---
+---
+
 type WriteDeclaredLostItemEvents = 
     LocalStreamId -> [DeclareLostItemEvent] -> IO ()
 

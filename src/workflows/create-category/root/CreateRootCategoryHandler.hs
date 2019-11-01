@@ -156,12 +156,8 @@ createRootCategoryHandler
 
         ---------------------------------------- IO at the boundary start -----------------------------------------
      
-    do  -- get event store connection // TODO: lookup env ... or Reader Monad ??????
-        conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)
-
-
-        -- get all referenced sub category / verified they exist and they do not have a parent yet
-        refSubCatgrs <- traverse (readOneCategory conn 10) $ urootCatgrRelatedsubCatgrs unvalidatedRootCategory
+    do  -- get all referenced sub category / verified they exist and they do not have a parent yet
+        refSubCatgrs <- ExceptT $ liftIO $ fmap sequence $ traverse (readOneCategory 10) $ urootCatgrRelatedsubCatgrs unvalidatedRootCategory
 
         -- get randon uuid for the attribute code 
         unvalidatedCategoryId <- liftIO nextId
@@ -193,7 +189,7 @@ createRootCategoryHandler
         case events of  
             Right allEvents -> 
                 do
-                    _ <- liftIO $ writeCreateRootCategoryEvents conn unvalidatedCategoryId allEvents
+                    _ <- liftIO $ writeCreateRootCategoryEvents unvalidatedCategoryId allEvents
 
                     liftEither events
             Left errorMsg -> liftEither $ Left errorMsg

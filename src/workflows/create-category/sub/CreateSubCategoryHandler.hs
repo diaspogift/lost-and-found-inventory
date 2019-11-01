@@ -168,18 +168,15 @@ createSubCategoryHandler
 
         ---------------------------------------- IO at the boundary start -----------------------------------------
      
-    do  -- get event store connection // TODO: lookup env ... or Reader Monad ??????
-        conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)
-
-        -- get all referenced sub category / verified they exist and they do not have a parent yet
-        refSubCatgrs <- traverse (readOneCategory conn 10) $ usubCatgrRelatedsubCatgrs unvalidatedSubCategory
+    do  -- get all referenced sub category / verified they exist and they do not have a parent yet
+        refSubCatgrs <- ExceptT $ liftIO $ fmap sequence $ traverse (readOneCategory 10) $ usubCatgrRelatedsubCatgrs unvalidatedSubCategory
 
         -- get the eventual referred parent category (fail earlier rather than later :)
         let (strPrntCatId, strPrntCatCd) = usubCategoryParentIdandCd unvalidatedSubCategory
 
         if notNull strPrntCatId && notNull strPrntCatCd 
         then 
-            do  refParentCategory <- readOneCategory conn 10 strPrntCatId
+            do  refParentCategory <- ExceptT $ liftIO $ readOneCategory 10 strPrntCatId
                 unvalidatedCategoryId <- liftIO nextId
 
                 let events =
@@ -192,7 +189,7 @@ createSubCategoryHandler
                 case events of  
                     Right allEvents -> 
                         do
-                            _ <- liftIO $ writeCreateSubCategoryEvents conn unvalidatedCategoryId allEvents
+                            _ <- liftIO $ writeCreateSubCategoryEvents unvalidatedCategoryId allEvents
 
                             liftEither events
                     Left errorMsg -> liftEither $ Left errorMsg
@@ -208,7 +205,7 @@ createSubCategoryHandler
                 case events of  
                     Right allEvents -> 
                         do
-                            _ <- liftIO $ writeCreateSubCategoryEvents conn unvalidatedCategoryId allEvents
+                            _ <- liftIO $ writeCreateSubCategoryEvents unvalidatedCategoryId allEvents
 
                             liftEither events
                     Left errorMsg -> liftEither $ Left errorMsg

@@ -1,197 +1,162 @@
 {-# LANGUAGE OverloadedStrings #-} -- That library uses `Text` pervasively. This pragma permits to use
                                    -- String literal when a Text is needed.
-
-
 module EventStore where
 
-import CommonSimpleTypes
-import CommonCompoundTypes
-import CommonDtos
-
-import CreateRootCategoryDto
-import CreateRootCategoryPublicTypes
-
-import CreateSubCategoryDto
-import CreateSubCategoryPublicTypes
-
-import CreateAttributePublicTypes
-
-import InventorySystemCommands
-import DeclaredLostItemPublicTypes
-
-import DeclareLostItemImplementation
-import DeclareLostItemDto
-
-import Data.Time
+import Control.Concurrent.Async (wait)
+import Data.Aeson
 import Data.Maybe
+
+
+import Database.EventStore
 
 import Data.ByteString.Lazy.Char8 (fromStrict)
 import Data.Text.Internal (Text)
 import Data.ByteString.Internal (ByteString)
 
+import CreateRootCategoryDto
+import CreateSubCategoryDto
+import CreateAttributeDto
+import CommonSimpleTypes
+import CommonCompoundTypes
+import CommonDtos
 
+import DeclaredLostItemPublicTypes
+import DeclareLostItemDto
 
-import Data.Text (pack)
+import CreateRootCategoryPublicTypes
+import CreateSubCategoryPublicTypes
+import CreateAttributePublicTypes
 
-import Data.UUID.V4
-import Data.UUID hiding (null) -- Internal
-
-import Data.Set hiding (filter, null)
-
+import Control.Monad.Reader
 import Control.Monad.Except
 
-import Data.Int
-
-
 import Data.Either.Combinators
-
-import Control.Applicative
-
-
-import Control.Concurrent.Async 
-
-import Database.EventStore
-
-
-import Data.Aeson
-
-
---- TODO: refactoring into a shared module ???????????
-import CreateAttributeDto
---- ?????????
+import Data.Int
+import Data.Text (pack)
 
 
 
 
--- ==========================================================================
--- This file contains the definitions of PUBLIC types 
--- (exposed at the boundary of the bounded context )
--- related to the Declare LostItem workflow 
--- ==========================================================================
 
 
 
 -- =============================================================================
--- IO Dependencies types
+-- Helper types
 -- =============================================================================
 
 
 type LocalStreamId = String
 
-
-type WriteDeclaredLostItemEvents = 
-    Connection -> LocalStreamId -> [DeclareLostItemEvent] -> IO ()
-
-type WriteCreateAttributeRefEvents = 
-    Connection -> CreateAttributeEvent -> IO ()
-
-type WriteCreateRootCategoryEvents = 
-    Connection -> LocalStreamId -> [CreateRootCategoryEvent] -> IO ()
-
-type WriteCreateSubCategoryEvents = 
-    Connection -> LocalStreamId -> [CreateSubCategoryEvent] -> IO ()
-
+--- Read types
+---
+---
 
 type ReadOneCategory  = 
-    Connection -> Int32 -> LocalStreamId -> ExceptT WorkflowError IO Category
+    Int32 -> LocalStreamId -> IO (Either WorkflowError Category)
 
 
 type ReadOneAttributeRef  = 
-    Connection -> Int32 -> LocalStreamId -> ExceptT WorkflowError IO AttributeRef
+    Int32 -> LocalStreamId -> IO (Either WorkflowError AttributeRef)
 
+--- Write types
+---
+---
+
+type WriteDeclaredLostItemEvents = 
+    LocalStreamId -> [DeclareLostItemEvent] -> IO ()
+
+type WriteCreateAttributeRefEvents = 
+    LocalStreamId -> CreateAttributeEvent -> IO ()
+
+type WriteCreateRootCategoryEvents = 
+    LocalStreamId -> [CreateRootCategoryEvent] -> IO ()
+
+type WriteCreateSubCategoryEvents = 
+    LocalStreamId -> [CreateSubCategoryEvent] -> IO ()
 
 
 
 
 
 -- =============================================================================
--- Workflow dependencies dummy Implementations
+-- Read operations
 -- =============================================================================
 
+--- Category
 
 
---- TODO: Consider using a Tree Structure for the  AdministrativeMap data type
----
----
+readOneCategoryWithReaderT :: Int32 -> String -> ExceptT  WorkflowError (ReaderT Connection IO) Category
+readOneCategoryWithReaderT eventNum streamId = do
+    conn <- ask -- gives you the environment which in this case is a String
+    rs <- liftIO $ readEventsForward conn (StreamName $ pack $ "root-category- :" <> streamId) streamStart eventNum NoResolveLink Nothing >>= wait
+    case rs of
+        ReadSuccess sl@(Slice resolvedEvents mm) -> do
 
-
-
-
-
-
-
-
+            let recordedEvts1 = mapMaybe resolvedEventRecord resolvedEvents
+            let pairs = fmap eventDataPair recordedEvts1
+            let events = fmap eventDataPairTypes pairs
+            let reducedEvent = rebuildRootCategoryDto events
             
+            liftEither $ mapLeft DataBase $ toCategoryDomain reducedEvent
 
--- =============================================================================
--- Event store function impls
--- =============================================================================
+        e -> liftEither $ mapLeft DataBase $ Left $ DataBaseError $ "Read Category failure: " <> show e
+    where
+        
+        eventDataPair recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
 
+        eventDataPairTypes :: 
+            (Data.Text.Internal.Text, Data.ByteString.Internal.ByteString)
+            -> CreateRootCategoryEventDto
+        eventDataPairTypes (evtName, strEventData) 
+            | evtName == "CreatedRootCategory" = 
+                let rs = fromMaybe  (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe RootCategoryCreatedDto)
+                in RootCatCR rs
 
+            | evtName == "SubCategoriesAdded" = 
+                let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe RSubCategoriesAddedDto)
+                in RSubCatsADD rs
 
+        applyDtoEvent :: CreateRootCategoryEventDto -> CreateRootCategoryEventDto -> CreateRootCategoryEventDto
+        applyDtoEvent (RootCatCR acc) (RootCatCR elm) = RootCatCR acc
+        applyDtoEvent (RootCatCR acc) (RSubCatsADD subs) = 
+            let crtSubs = rsubCategrs acc
+                addedSubs = fmap sub subs
+            in RootCatCR $ acc { rsubCategrs = crtSubs ++ addedSubs }
 
-
-
----------------------------------------
--- Shared functions
----------------------------------------
-
-
-readOneCategory :: ReadOneCategory
-readOneCategory conn evtNum streamId  =
-    do
-        rs <- liftIO $ readEventsForward conn (StreamName $ pack $ "root-category- :" <> streamId ) streamStart evtNum NoResolveLink Nothing >>= wait
-        case rs of
-            ReadSuccess sl@(Slice resolvedEvents mm) -> do
-                
-                
-
-                let recordedEvts = mapMaybe resolvedEventRecord resolvedEvents
-                let pairs = fmap eventDataPair recordedEvts
-                let events = fmap eventDataPairTypes pairs
-                let reducedEvent = rebuildRootCategoryDto events
-                
-                liftEither . mapLeft DataBase $ toCategoryDomain reducedEvent
-
-            e -> liftEither . mapLeft DataBase . Left . DataBaseError $ "Read failure: " <> show e
-        where 
-            eventDataPair recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
-
-            eventDataPairTypes :: 
-                (Data.Text.Internal.Text, Data.ByteString.Internal.ByteString)
-                -> CreateRootCategoryEventDto
-            eventDataPairTypes (evtName, strEventData) 
-                | evtName == "CreatedRootCategory" = 
-                    let rs = fromMaybe  (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe RootCategoryCreatedDto)
-                    in RootCatCR rs
-
-                | evtName == "SubCategoriesAdded" = 
-                    let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe SubCategoriesAddedDto)
-                    in RSubCatsADD rs
-                | otherwise = error "invalid event"
-
-            applyDtoEvent :: CreateRootCategoryEventDto -> CreateRootCategoryEventDto -> CreateRootCategoryEventDto
-            applyDtoEvent (RootCatCR acc) (RootCatCR elm) = RootCatCR acc
-            applyDtoEvent (RootCatCR acc) (RSubCatsADD subs) = 
-                let crtSubs = rsubCategrs acc
-                    addedSubs = fmap sub subs
-                in RootCatCR $ acc { rsubCategrs = crtSubs ++ addedSubs }
-
-            rebuildRootCategoryDto :: [CreateRootCategoryEventDto] -> CreateRootCategoryEventDto
-            rebuildRootCategoryDto =  foldr1 applyDtoEvent
-
-            toCategoryDomain :: CreateRootCategoryEventDto -> Either DataBaseError Category
-            toCategoryDomain (RootCatCR rtCatgrDto) = 
-                let res = rootCatgrDtoToDomain rtCatgrDto
-                in case res of
-                    Left erroMsg -> Left . DataBaseError $ erroMsg
-                    Right result -> return result
-    
+        rebuildRootCategoryDto :: [CreateRootCategoryEventDto] -> CreateRootCategoryEventDto
+        rebuildRootCategoryDto =  foldr1 applyDtoEvent
 
 
-readOneAttributeRef :: ReadOneAttributeRef
-readOneAttributeRef conn evtNum streamId =
-    do
+        toCategoryDomain :: CreateRootCategoryEventDto -> Either DataBaseError Category
+        toCategoryDomain (RootCatCR rtCatgrDto) = 
+            let res = rootCatgrDtoToDomain rtCatgrDto
+            in case res of
+                Left erroMsg -> Left . DataBaseError $ erroMsg
+                Right result -> return result
+
+
+
+
+
+
+
+readOneCategory :: Int32 -> String -> IO (Either WorkflowError Category)
+readOneCategory num id = do
+    conn <- connect defaultSettings (Static "localhost" 1113)
+    let uwrpEither = runExceptT $ readOneCategoryWithReaderT num id
+    let uwrpReader = runReaderT uwrpEither
+    uwrpReader conn
+
+
+
+
+
+--- AttributeRef
+
+
+readOneAttributeRefWithReaderT :: Int32 -> String -> ExceptT  WorkflowError (ReaderT Connection IO) AttributeRef
+readOneAttributeRefWithReaderT evtNum streamId = do
+        conn <- ask
         rs <- liftIO $ readEventsForward conn (StreamName $ pack $ "attr-ref-code-: " <> streamId ) streamStart evtNum NoResolveLink Nothing >>= wait
         case rs of
             ReadSuccess sl@(Slice resolvedEvents mm) -> do
@@ -205,7 +170,7 @@ readOneAttributeRef conn evtNum streamId =
                 
                 liftEither . mapLeft DataBase $ toAttributeRefDomain1 reducedEvent
 
-            e -> liftEither . mapLeft DataBase . Left . DataBaseError $ "Read failure: " <> show e
+            e -> liftEither . mapLeft DataBase . Left . DataBaseError $ "Read AttributeRef failure: " <> show e
         where
             eventDataPair1 recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
 
@@ -232,7 +197,27 @@ readOneAttributeRef conn evtNum streamId =
                 in case res of
                     Left erroMsg -> Left . DataBaseError $ erroMsg
                     Right result -> return result
-                
+
+
+  
+
+
+
+readOneAttributeRef :: Int32 -> String -> IO (Either WorkflowError AttributeRef)
+readOneAttributeRef num id = do
+    conn <- connect defaultSettings (Static "localhost" 1113)
+    let uwrpEither = runExceptT $ readOneAttributeRefWithReaderT num id
+    let uwrpReader = runReaderT uwrpEither
+    uwrpReader conn
+
+
+
+
+
+-- =============================================================================
+-- Write operations
+-- =============================================================================
+
 
 
 
@@ -244,14 +229,15 @@ readOneAttributeRef conn evtNum streamId =
 
 
 
-writeDeclaredLostItemEvents :: WriteDeclaredLostItemEvents
-writeDeclaredLostItemEvents conn streamId evts = 
+writeDeclaredLostItemEventsWithReaderT :: LocalStreamId -> [DeclareLostItemEvent] -> ReaderT Connection IO ()  
+writeDeclaredLostItemEventsWithReaderT streamId evts = 
 
-    do  let persistableEvts = fmap toEvent evts
-        as <- sendEvents conn (StreamName $ pack ( "lost-item-stream-id-: " <> streamId)) anyVersion persistableEvts Nothing
-        _  <- wait as
-        shutdown conn
-        waitTillClosed conn
+    do  conn <- ask
+        let persistableEvts = fmap toEvent evts
+        as <- liftIO $ sendEvents conn (StreamName $ pack ( "lost-item-stream-id-: " <> streamId)) anyVersion persistableEvts Nothing
+        _  <- liftIO $ wait as
+        liftIO $ shutdown conn
+        liftIO $ waitTillClosed conn
         where toEvent (LostItemDeclared lid) =
                 let lidDto = fromLostItemDeclared lid
 
@@ -271,6 +257,15 @@ writeDeclaredLostItemEvents conn streamId evts =
                 in createEvent "AttributesAdded" Nothing $ withJson attrsaDto
 
 
+    
+writeDeclaredLostItemEvents :: LocalStreamId -> [DeclareLostItemEvent] -> IO ()
+writeDeclaredLostItemEvents id evts = do
+    conn <- connect defaultSettings (Static "localhost" 1113)
+    let uwrpReader = runReaderT $ writeDeclaredLostItemEventsWithReaderT id evts
+    uwrpReader conn
+
+
+
 ---------------------------------------
 -- Create RootCategory
 ---------------------------------------
@@ -278,13 +273,14 @@ writeDeclaredLostItemEvents conn streamId evts =
 
 
 
-writeCreateRootCategoryEvents :: WriteCreateRootCategoryEvents
-writeCreateRootCategoryEvents conn streamId evts = 
-    do  let persistableEvtss = fmap toEvent evts
-        as <- sendEvents conn (StreamName $ pack ( "root-category- :" <> streamId)) anyVersion persistableEvtss Nothing
-        _  <- wait as
-        shutdown conn
-        waitTillClosed conn
+writeCreateRootCategoryEventsWithReaderT :: LocalStreamId -> [CreateRootCategoryEvent] -> ReaderT Connection IO ()
+writeCreateRootCategoryEventsWithReaderT streamId evts = 
+    do  conn <- ask
+        let persistableEvtss = fmap toEvent evts
+        as <- liftIO $ sendEvents conn (StreamName $ pack ( "root-category- :" <> streamId)) anyVersion persistableEvtss Nothing
+        _  <- liftIO $ wait as
+        liftIO $ shutdown conn
+        liftIO $ waitTillClosed conn
         where toEvent (RootCategoryCreated createdRootCat) =
                 let createdRootCategoryDto = fromRootCategoryCreated createdRootCat
                 in createEvent "CreatedRootCategory" Nothing $ withJson createdRootCategoryDto
@@ -292,6 +288,13 @@ writeCreateRootCategoryEvents conn streamId evts =
                 let addedSubCatgrDtos = fromRootSubCategoriesAdded subCatgrsAdded
                 in createEvent "SubCategoriesAdded" Nothing $ withJson addedSubCatgrDtos
 
+
+
+writeCreateRootCategoryEvents :: LocalStreamId -> [CreateRootCategoryEvent] -> IO ()
+writeCreateRootCategoryEvents id evts = do
+    conn <- connect defaultSettings (Static "localhost" 1113)
+    let uwrpReader = runReaderT $ writeCreateRootCategoryEventsWithReaderT id evts
+    uwrpReader conn
 
 
 
@@ -306,13 +309,14 @@ writeCreateRootCategoryEvents conn streamId evts =
 
 
 
-writeCreateSubCategoryEvents :: WriteCreateSubCategoryEvents
-writeCreateSubCategoryEvents conn streamId evts = 
-    do  let persistableEvts = fmap toEvent evts
-        as <- sendEvents conn (StreamName $ pack ( "root-category- :" <> streamId)) anyVersion persistableEvts Nothing
-        _  <- wait as
-        shutdown conn
-        waitTillClosed conn
+writeCreateSubCategoryEventsWithReaderT :: LocalStreamId -> [CreateSubCategoryEvent] -> ReaderT Connection IO ()
+writeCreateSubCategoryEventsWithReaderT streamId evts = 
+    do  conn <- ask
+        let persistableEvts = fmap toEvent evts
+        as <- liftIO $ sendEvents conn (StreamName $ pack ( "root-category- :" <> streamId)) anyVersion persistableEvts Nothing
+        _  <- liftIO $ wait as
+        liftIO $ shutdown conn
+        liftIO $ waitTillClosed conn
         where toEvent (SubCategoryCreated createdSubCat) =
                 let createdSubCategoryDto = fromSubCategoryCreated createdSubCat
                 in createEvent "CreatedSubCategory" Nothing $ withJson createdSubCategoryDto
@@ -322,6 +326,13 @@ writeCreateSubCategoryEvents conn streamId evts =
 
 
 
+
+
+writeCreateSubCategoryEvents :: LocalStreamId -> [CreateSubCategoryEvent] -> IO ()
+writeCreateSubCategoryEvents id evts = do
+    conn <- connect defaultSettings (Static "localhost" 1113)
+    let uwrpReader = runReaderT $ writeCreateSubCategoryEventsWithReaderT id evts
+    uwrpReader conn
 
 
 
@@ -334,17 +345,21 @@ writeCreateSubCategoryEvents conn streamId evts =
 
 
 
-writeCreateAttributeRefEvents :: WriteCreateAttributeRefEvents
-writeCreateAttributeRefEvents conn (AttributeRefCreated createdAttribute) = 
-    do  let createdAttributeDto = fromAttributeRefCreated createdAttribute
+writeCreateAttributeRefEventsWithReaderT :: LocalStreamId -> CreateAttributeEvent -> ReaderT Connection IO ()
+writeCreateAttributeRefEventsWithReaderT streamId (AttributeRefCreated createdAttribute) = 
+    do  conn <- ask
+        let createdAttributeDto = fromAttributeRefCreated createdAttribute
             createdAttributeEvent = createEvent "CreatedAttribute" Nothing $ withJson createdAttributeDto
-            id = code createdAttributeDto
-        as <- sendEvent conn (StreamName $ pack ( "attr-ref-code-: " <> id)) anyVersion createdAttributeEvent Nothing
-        _  <- wait as
-        shutdown conn
-        waitTillClosed conn
+            -- id = code createdAttributeDto
+        as <- liftIO $ sendEvent conn (StreamName $ pack ( "attr-ref-code-: " <> streamId)) anyVersion createdAttributeEvent Nothing
+        _  <- liftIO $ wait as
+        liftIO $ shutdown conn
+        liftIO $ waitTillClosed conn
 
 
-
-
-
+    
+writeCreateAttributeRefEvents :: LocalStreamId -> CreateAttributeEvent -> IO ()
+writeCreateAttributeRefEvents id evts = do
+    conn <- connect defaultSettings (Static "localhost" 1113)
+    let uwrpReader = runReaderT $ writeCreateAttributeRefEventsWithReaderT id evts
+    uwrpReader conn

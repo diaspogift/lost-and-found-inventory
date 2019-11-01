@@ -113,12 +113,8 @@ createAttributeRefHandler
 
         ---------------------------------------- IO at the boundary start -----------------------------------------
      
-    do  -- get event store connection // TODO: lookup env ... or Reader Monad ??????
-        conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)
-
-
-        -- get all referenced categories / verified they actually exist
-        refCatgrs <- traverse (readOneCategory conn 10) $ fst <$> urelatedCategories unvalidatedAttributeRef
+    do  -- get all referenced categories / verified they actually exist
+        refCatgrs <- ExceptT $ liftIO $ fmap sequence $ traverse (readOneCategory 10) $ fst <$> urelatedCategories unvalidatedAttributeRef
 
 
         -- get randon uuid for the attribute code 
@@ -151,7 +147,7 @@ createAttributeRefHandler
                 do
                     let crtAttrRefEvet = filter isCreateAttributeRefEvent allEvents
                         evt = head crtAttrRefEvet
-                    res <- liftIO $ writeCreateAttributeRefEvents conn evt
+                    res <- liftIO $ writeCreateAttributeRefEvents attributeCode evt
                     liftEither events
             Left errorMsg -> liftEither $ Left errorMsg
 

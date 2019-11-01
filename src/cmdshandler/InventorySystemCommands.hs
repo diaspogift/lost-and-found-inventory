@@ -5,6 +5,7 @@ import CommonCompoundTypes
 import DeclaredLostItemPublicTypes
 import CreateAttributePublicTypes
 import CreateRootCategoryPublicTypes
+import CreateSubCategoryPublicTypes
 
 import Data.Time
 import Prelude hiding (last)
@@ -42,6 +43,7 @@ type ClaimFoundItemCmd = InventoryCommand UnvalidatedLostItem
 type MatchFoundItemCmd = InventoryCommand UnvalidatedLostItem
 type CreateAttributeRefCmd = InventoryCommand UnvalidatedAttributeRef
 type CreateRootCategoryCmd = InventoryCommand UnvalidatedRootCategory
+type CreateSubCategoryCmd = InventoryCommand UnvalidatedSubCategory
 
 
 data LostAndFoundInventoryCmd = 
@@ -51,6 +53,7 @@ data LostAndFoundInventoryCmd =
     | Match MatchFoundItemCmd 
     | CreateAttribute CreateAttributeRefCmd
     | CreateRootCategory CreateRootCategoryCmd
+    | CreateSubCategory CreateSubCategoryCmd
     deriving (Eq, Ord, Show)
 
 
@@ -68,6 +71,7 @@ data InventoryEvent =
       DclreLostItemEvt [DeclareLostItemEvent]
     | CrteAttribueEvt [CreateAttributeEvent]
     | CrteRootCatgrEvt [CreateRootCategoryEvent]
+    | CrteSubCatgrEvt [CreateSubCategoryEvent]
 
 
 
@@ -83,6 +87,7 @@ data InventoryError =
       DclreLostItemErr WorkflowError
     | CrteAttribueErr WorkflowError 
     | CrteRootCatgrErr WorkflowError 
+    | CrteSubCatgrErr WorkflowError 
 
    
 

@@ -2,16 +2,16 @@
                                    -- String literal when a Text is needed.
 
 
-module CreateRootCategoryHandler where
+module CreateSubCategoryHandler where
 
 import CommonSimpleTypes
 import CommonCompoundTypes
 
 import InventorySystemCommands
-import CreateRootCategoryPublicTypes
+import CreateSubCategoryPublicTypes
 
-import CreateRootCategoryImplementation
-import qualified CreateRootCategoryDto as Dto
+import CreateSubCategoryImplementation
+import qualified CreateSubCategoryDto as Dto
 --import CreateAttributeDto
 
 import Data.Time
@@ -57,16 +57,16 @@ import Data.Aeson
 type LookupOneCategory = 
     String -> ExceptT WorkflowError IO Category
 
+type LookupOneMaybeCategory = 
+    String -> Maybe Category
 
 type LocalStreamId = String
 
 type WriteEvent = 
-    Connection -> LocalStreamId -> [CreateRootCategoryEvent] -> IO ()
-
-    
+    Connection -> LocalStreamId -> [CreateSubCategoryEvent] -> IO ()
 
 
-type NextId = IO UnvalidatedRootCategoryId
+type NextId = IO UnvalidatedSubCategoryId
 
 
 
@@ -88,8 +88,18 @@ lookupOneCategoryBase categories categoryId =
             Nothing -> liftEither $ mapLeft DataBase $ Left $ DataBaseError "category not found"
 
 
+lookupOneMaybeCategoryBase :: 
+    [(String, Category)] -> LookupOneMaybeCategory
+lookupOneMaybeCategoryBase categories categoryId = 
+    lookup categoryId categories
+      
+
 lookupOneCategory :: LookupOneCategory 
 lookupOneCategory = lookupOneCategoryBase allCategories 
+
+
+lookupOneMaybeCategory :: LookupOneMaybeCategory 
+lookupOneMaybeCategory = lookupOneMaybeCategoryBase allCategories 
 
 nextId :: NextId
 nextId = 
@@ -106,9 +116,9 @@ writeEventsToStore conn streamId evts =
         _  <- wait as
         shutdown conn
         waitTillClosed conn
-        where toEvent (RootCategoryCreated createdRootCat) =
-                let createdRootCategoryDto = Dto.fromRootCategoryCreated createdRootCat
-                in createEvent "CreatedRootCategory" Nothing $ withJson createdRootCategoryDto
+        where toEvent (SubCategoryCreated createdSubCat) =
+                let createdSubCategoryDto = Dto.fromSubCategoryCreated createdSubCat
+                in createEvent "CreatedSubCategory" Nothing $ withJson createdSubCategoryDto
               toEvent (SubCategoriesAdded subCatgrsAdded) =
                 let addedSubCatgrDtos = Dto.fromSubCategoriesAdded subCatgrsAdded
                 in createEvent "SubCategoriesAdded" Nothing $ withJson addedSubCatgrDtos
@@ -120,7 +130,7 @@ writeEventsToStore conn streamId evts =
 
 checkRefSubCatgrValidBase :: 
     [(String, Category)] 
-    -> UnvalidatedRootCategoryId
+    -> UnvalidatedSubCategoryId
     -> Either RefSubCategoryValidationError CategoryId -- CheckRefSubCatgrValid
 checkRefSubCatgrValidBase cats ucatId =
     let maybeCat = lookup ucatId cats
@@ -163,32 +173,35 @@ checkRefSubCatgrValid = checkRefSubCatgrValidBase allCategories
 
 
 
-createRootCategoryHandler :: 
+createSubCategoryHandler :: 
     LookupOneCategory
+    -> LookupOneMaybeCategory
     -> WriteEvent
     -> CheckRefSubCatgrValid
     -> NextId
-    -> CreateRootCategoryCmd 
-    -> ExceptT WorkflowError IO [CreateRootCategoryEvent]
+    -> CreateSubCategoryCmd 
+    -> ExceptT WorkflowError IO [CreateSubCategoryEvent]
     
-createRootCategoryHandler 
+createSubCategoryHandler 
     lookupOneCategory
+    lookupOneMaybeCategory
     writeEventToStore
     checkRefSubCatgrValid
     nextId
-    (Command unvalidatedRootCategory curTime userId) = 
+    (Command unvalidatedSubCategory curTime userId) = 
 
         ---------------------------------------- IO at the boundary start -----------------------------------------
      
     do  -- get event store connection // TODO: lookup env ... or Reader Monad ??????
         conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)
 
-
-
         -- get all referenced sub category / verified they exist and they do not have a parent yet
-        let refSubCatIds = usubCatgrs unvalidatedRootCategory
+        refSubCatgrs <- traverse lookupOneCategory $ usubCatgrs unvalidatedSubCategory
 
-        refSubCatgrs <- traverse lookupOneCategory refSubCatIds
+        -- get the eventual referred parent category (fail earlier rather than later :)
+        
+        let refParentCategory = lookupOneMaybeCategory . fst . uparentIdCd $ unvalidatedSubCategory
+
 
         -- get randon uuid for the attribute code 
         unvalidatedCategoryId <- liftIO nextId
@@ -203,9 +216,10 @@ createRootCategoryHandler
 
         -- call workflow
         let events =
-                createRootCatgory 
+                createSubCatgory 
                     refSubCatgrs
-                    unvalidatedRootCategory             -- Input
+                    refParentCategory
+                    unvalidatedSubCategory             -- Input
                     unvalidatedCategoryId                       -- Input
               
         ---------------------------------------- Core business logic end ----------------------------------------
@@ -233,10 +247,11 @@ createRootCategoryHandler
 ---
 ---
 
-publicCreateRootCategoryHandler :: CreateRootCategoryCmd -> ExceptT WorkflowError IO [CreateRootCategoryEvent]
-publicCreateRootCategoryHandler = 
-    createRootCategoryHandler 
+publicCreateSubCategoryHandler :: CreateSubCategoryCmd -> ExceptT WorkflowError IO [CreateSubCategoryEvent]
+publicCreateSubCategoryHandler = 
+    createSubCategoryHandler 
         lookupOneCategory
+        lookupOneMaybeCategory
         writeEventsToStore
         checkRefSubCatgrValid
         nextId

@@ -15,6 +15,10 @@ import CreateRootCategoryPublicTypes
 import CreateRootCategoryImplementation
 import CreateRootCategoryHandler
 
+import CreateSubCategoryPublicTypes
+import CreateSubCategoryImplementation
+import CreateSubCategoryHandler
+
 import InventorySystemCommands
 
 import Data.Time
@@ -72,7 +76,15 @@ handle command =
                     . mapBothCreateRootCategoryErrorAndEvent 
                     . runExceptT 
                     . publicCreateRootCategoryHandler 
-                    $ createRootCategoryCmd    
+                    $ createRootCategoryCmd  
+                    
+        
+        CreateSubCategory createSubCategoryCmd -> 
+            ExceptT . liftIO 
+                    . mapBothCreateSubCategoryErrorAndEvent 
+                    . runExceptT 
+                    . publicCreateSubCategoryHandler 
+                    $ createSubCategoryCmd 
         
         
         Declare declareFoundItemCmd ->
@@ -116,5 +128,11 @@ mapBothCreateRootCategoryErrorAndEvent createCatgrHandler =
             Right evts -> return $ Right $ CrteRootCatgrEvt evts 
             Left errMsg -> return $ Left $ CrteRootCatgrErr errMsg
 
+mapBothCreateSubCategoryErrorAndEvent :: IO (Either WorkflowError [CreateSubCategoryEvent]) -> IO (Either InventoryError InventoryEvent)
+mapBothCreateSubCategoryErrorAndEvent createCatgrHandler = 
+    do  ucreateCatgrHandler <- createCatgrHandler
+        case ucreateCatgrHandler of
+            Right evts -> return $ Right $ CrteSubCatgrEvt evts 
+            Left errMsg -> return $ Left $ CrteSubCatgrErr errMsg
 
 

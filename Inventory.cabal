@@ -41,6 +41,12 @@ library
                      , CreateRootCategoryDto
                      , CreateRootCategoryHandler
 
+                    
+                     , CreateSubCategoryPublicTypes
+                     , CreateSubCategoryImplementation
+                     , CreateSubCategoryDto
+                     , CreateSubCategoryHandler
+
 
                      , InventorySystemCommands
                      , InventorySystemCommandsHandler

@@ -31,6 +31,9 @@ import CreateAttributePublicTypes
 import CreateRootCategoryDto
 import CreateRootCategoryPublicTypes
 
+import CreateSubCategoryDto
+import CreateSubCategoryPublicTypes
+
 import Control.Monad.Except
 import Data.ByteString.Lazy.Char8
 
@@ -77,12 +80,15 @@ type API =
     :<|> "root-categories"
             :> ReqBody '[JSON] CreateRootCategoryForm
             :> Post '[JSON] RestCallResponse
-
+    :<|> "sub-categories"
+            :> ReqBody '[JSON] CreateSubCategoryForm
+            :> Post '[JSON] RestCallResponse
 
 data RestCallResponse =  
       DclLstItemResp RespDclLstItemWorkflow 
     | CrtAttrRefResp RespCrtAttrRefWorkflow
     | CrtRooCatgrResp RespCrtRootCatWorkflow
+    | CrtSubCatgrResp RespCrtSubCatWorkflow
     deriving (Generic, Show)
 
 
@@ -116,6 +122,7 @@ routes =
     :<|> handlerDeclareLostItem
     :<|> handlerCreateAttributeRef
     :<|> handleCreateRootCategory
+    :<|> handleCreateSubCategory
 
 
 
@@ -163,8 +170,6 @@ handlerDeclareLostItem declareLostItemForm =
 
 
 
-                        
-
 handlerCreateAttributeRef :: 
     CreateAttributeRefForm -> Handler RestCallResponse
 handlerCreateAttributeRef attributeRefForm = 
@@ -196,6 +201,7 @@ handlerCreateAttributeRef attributeRefForm =
                             throwError $ toServantError 404 cd msg
                         Remote err ->
                             throwError $ toServantError 400 cd msg
+
 
 
 
@@ -235,6 +241,45 @@ handleCreateRootCategory rootCategoryForm =
 
 
 
+
+
+handleCreateSubCategory :: 
+    CreateSubCategoryForm -> Handler RestCallResponse
+handleCreateSubCategory subCategoryForm = 
+    do
+        -- setting up the create sub catergory command
+
+        let unvalidatedSubCategory = toUnvalidatedSubCategory subCategoryForm
+            createSubCategoryCmd = CreateSubCategory (Command unvalidatedSubCategory "2019 10 10 12:34:56" "111111111111111111111111111111111111")
+
+        -- calling the command handler and lifting the result into the Handler Transformer 
+
+        res <- liftIO . runExceptT . handle $ createSubCategoryCmd
+
+        -- Handling the response
+
+        case res of 
+            Right (CrteSubCatgrEvt events) -> 
+                return $ CrtSubCatgrResp $ fmap fromCrtSubCatgrEvtDomain events 
+            Left (CrteSubCatgrErr error) -> 
+                let errorMsg = fromWorkflowError error
+                    cd = code errorMsg
+                    msg = message errorMsg
+                    body = cd ++ ": " ++ msg
+                in
+                    case error of
+                        Validation (ValidationError err) ->
+                            throwError $ toServantError 400 cd msg
+                        Domain (DomainError err) ->
+                            throwError $ toServantError 406 cd msg
+                        DataBase (DataBaseError err) ->
+                            throwError $ toServantError 404 cd msg
+                        Remote err ->
+                            throwError $ toServantError 400 cd msg
+
+
+
+
 toServantError :: Int -> String -> String -> ServerError
 toServantError code reason body = 
     ServerError {
@@ -244,3 +289,6 @@ toServantError code reason body =
         errHeaders = []
         }
                                     
+
+
+

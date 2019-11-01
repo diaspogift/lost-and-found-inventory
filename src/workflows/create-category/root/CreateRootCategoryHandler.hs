@@ -140,7 +140,7 @@ checkRefSubCatgrValid = checkRefSubCatgrValidBase allCategories
 
 
 createRootCategoryHandler :: 
-    LookupOneCategory
+    ReadOneCategory
     -> WriteCreateRootCategoryEvents
     -> CheckRefSubCatgrValid
     -> NextId
@@ -148,7 +148,7 @@ createRootCategoryHandler ::
     -> ExceptT WorkflowError IO [CreateRootCategoryEvent]
     
 createRootCategoryHandler 
-    lookupOneCategory
+    readOneCategory
     writeCreateRootCategoryEvents
     checkRefSubCatgrValid
     nextId
@@ -161,7 +161,7 @@ createRootCategoryHandler
 
 
         -- get all referenced sub category / verified they exist and they do not have a parent yet
-        refSubCatgrs <- traverse lookupOneCategory $ urootCatgrRelatedsubCatgrs unvalidatedRootCategory
+        refSubCatgrs <- traverse (readOneCategory conn 10) $ urootCatgrRelatedsubCatgrs unvalidatedRootCategory
 
         -- get randon uuid for the attribute code 
         unvalidatedCategoryId <- liftIO nextId
@@ -210,7 +210,7 @@ createRootCategoryHandler
 publicCreateRootCategoryHandler :: CreateRootCategoryCmd -> ExceptT WorkflowError IO [CreateRootCategoryEvent]
 publicCreateRootCategoryHandler = 
     createRootCategoryHandler 
-        lookupOneCategory
+        readOneCategory
         writeCreateRootCategoryEvents
         checkRefSubCatgrValid
         nextId

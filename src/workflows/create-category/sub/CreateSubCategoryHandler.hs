@@ -150,7 +150,7 @@ checkRefSubCatgrValid = checkRefSubCatgrValidBase allCategories
 
 
 createSubCategoryHandler :: 
-    LookupOneCategory
+    ReadOneCategory
     -> LookupOneMaybeCategory
     -> WriteCreateSubCategoryEvents
     -> CheckRefSubCatgrValid
@@ -159,7 +159,7 @@ createSubCategoryHandler ::
     -> ExceptT WorkflowError IO [CreateSubCategoryEvent]
     
 createSubCategoryHandler 
-    lookupOneCategory
+    readOneCategory
     lookupOneMaybeCategory
     writeEventToStore
     checkRefSubCatgrValid
@@ -172,7 +172,7 @@ createSubCategoryHandler
         conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)
 
         -- get all referenced sub category / verified they exist and they do not have a parent yet
-        refSubCatgrs <- traverse lookupOneCategory $ usubCatgrRelatedsubCatgrs unvalidatedSubCategory
+        refSubCatgrs <- traverse (readOneCategory conn 10) $ usubCatgrRelatedsubCatgrs unvalidatedSubCategory
 
         -- get the eventual referred parent category (fail earlier rather than later :)
         
@@ -227,7 +227,7 @@ createSubCategoryHandler
 publicCreateSubCategoryHandler :: CreateSubCategoryCmd -> ExceptT WorkflowError IO [CreateSubCategoryEvent]
 publicCreateSubCategoryHandler = 
     createSubCategoryHandler 
-        lookupOneCategory
+        readOneCategory
         lookupOneMaybeCategory
         writeCreateSubCategoryEvents
         checkRefSubCatgrValid

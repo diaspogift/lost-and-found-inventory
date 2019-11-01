@@ -14,7 +14,6 @@ import CreateRootCategoryPublicTypes
 import CreateSubCategoryDto
 import CreateSubCategoryPublicTypes
 
-import CreateAttributeDto
 import CreateAttributePublicTypes
 
 import InventorySystemCommands

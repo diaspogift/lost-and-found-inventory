@@ -117,11 +117,9 @@ createAttributeRefHandler
         conn <- liftIO $ connect defaultSettings (Static "localhost" 1113)
 
 
+        -- get all referenced categories / verified they actually exist
+        refCatgrs <- traverse (readOneCategory conn 10) $ fst <$> urelatedCategories unvalidatedAttributeRef
 
-        -- get all referenced category / verified they exist
-        let refCatIds = fst <$> urelatedCategories unvalidatedAttributeRef
-
-        refCatgrs <- traverse (readOneCategory conn 10) refCatIds
 
         -- get randon uuid for the attribute code 
         attributeCode <- liftIO nextId

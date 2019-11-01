@@ -147,7 +147,7 @@ checkRefSubCatgrValid = checkRefSubCatgrValidBase allCategories
 -- =============================================================================
 
 
-
+--- TODO: Refactor duplicate code
 
 createSubCategoryHandler :: 
     ReadOneCategory
@@ -175,12 +175,49 @@ createSubCategoryHandler
         refSubCatgrs <- traverse (readOneCategory conn 10) $ usubCatgrRelatedsubCatgrs unvalidatedSubCategory
 
         -- get the eventual referred parent category (fail earlier rather than later :)
-        
-        let refParentCategory = lookupOneMaybeCategory . fst . usubCategoryParentIdandCd $ unvalidatedSubCategory
+        let (strPrntCatId, strPrntCatCd) = usubCategoryParentIdandCd unvalidatedSubCategory
+
+        if notNull strPrntCatId && notNull strPrntCatCd 
+        then 
+            do  refParentCategory <- readOneCategory conn 10 strPrntCatId
+                unvalidatedCategoryId <- liftIO nextId
+
+                let events =
+                        createSubCatgory 
+                            refSubCatgrs
+                            (Just refParentCategory)
+                            unvalidatedSubCategory             -- Input
+                            unvalidatedCategoryId              -- Input
+
+                case events of  
+                    Right allEvents -> 
+                        do
+                            _ <- liftIO $ writeCreateSubCategoryEvents conn unvalidatedCategoryId allEvents
+
+                            liftEither events
+                    Left errorMsg -> liftEither $ Left errorMsg
+        else
+            do  unvalidatedCategoryId <- liftIO nextId
+                let events =
+                        createSubCatgory 
+                            refSubCatgrs
+                            Nothing
+                            unvalidatedSubCategory             -- Input
+                            unvalidatedCategoryId              -- Input
+
+                case events of  
+                    Right allEvents -> 
+                        do
+                            _ <- liftIO $ writeCreateSubCategoryEvents conn unvalidatedCategoryId allEvents
+
+                            liftEither events
+                    Left errorMsg -> liftEither $ Left errorMsg
 
 
-        -- get randon uuid for the attribute code 
-        unvalidatedCategoryId <- liftIO nextId
+
+    
+
+  
 
 
         ---------------------------------------- IO at the boundary end -----------------------------------------
@@ -192,12 +229,7 @@ createSubCategoryHandler
         ---------------------------------------- Core business logic start ----------------------------------------
 
         -- call workflow
-        let events =
-                createSubCatgory 
-                    refSubCatgrs
-                    refParentCategory
-                    unvalidatedSubCategory             -- Input
-                    unvalidatedCategoryId                       -- Input
+       
               
         ---------------------------------------- Core business logic end ----------------------------------------
 
@@ -207,13 +239,7 @@ createSubCategoryHandler
         ---------------------------------------- Side effects handling start ----------------------------------------
 
         -- publish / persit event(s) into the event store and other interested third parties 
-        case events of  
-            Right allEvents -> 
-                do
-                    _ <- liftIO $ writeCreateSubCategoryEvents conn unvalidatedCategoryId allEvents
-
-                    liftEither events
-            Left errorMsg -> liftEither $ Left errorMsg
+        
 
 
         ---------------------------------------- Side effects handling end ----------------------------------------

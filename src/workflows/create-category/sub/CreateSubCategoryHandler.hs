@@ -35,6 +35,8 @@ import Control.Concurrent.Async
 
 import Database.EventStore
 
+import EventStore
+
 
 import Data.Aeson
 
@@ -59,11 +61,6 @@ type LookupOneCategory =
 
 type LookupOneMaybeCategory = 
     String -> Maybe Category
-
-type LocalStreamId = String
-
-type WriteEvent = 
-    Connection -> LocalStreamId -> [CreateSubCategoryEvent] -> IO ()
 
 
 type NextId = IO UnvalidatedSubCategoryId
@@ -104,27 +101,6 @@ lookupOneMaybeCategory = lookupOneMaybeCategoryBase allCategories
 nextId :: NextId
 nextId = 
     let id = nextRandom in fmap toString id
-
-
----
-
-
-writeEventsToStore :: WriteEvent
-writeEventsToStore conn streamId evts = 
-    do  let persistableEvts = fmap toEvent evts
-        as <- sendEvents conn (StreamName $ pack ( "root-category- :" <> streamId)) anyVersion persistableEvts Nothing
-        _  <- wait as
-        shutdown conn
-        waitTillClosed conn
-        where toEvent (SubCategoryCreated createdSubCat) =
-                let createdSubCategoryDto = Dto.fromSubCategoryCreated createdSubCat
-                in createEvent "CreatedSubCategory" Nothing $ withJson createdSubCategoryDto
-              toEvent (SubCategoriesAdded subCatgrsAdded) =
-                let addedSubCatgrDtos = Dto.fromSubCategoriesAdded subCatgrsAdded
-                in createEvent "SubCategoriesAdded" Nothing $ withJson addedSubCatgrDtos
-
----
-
 
 
 
@@ -176,7 +152,7 @@ checkRefSubCatgrValid = checkRefSubCatgrValidBase allCategories
 createSubCategoryHandler :: 
     LookupOneCategory
     -> LookupOneMaybeCategory
-    -> WriteEvent
+    -> WriteCreateSubCategoryEvents
     -> CheckRefSubCatgrValid
     -> NextId
     -> CreateSubCategoryCmd 
@@ -234,7 +210,7 @@ createSubCategoryHandler
         case events of  
             Right allEvents -> 
                 do
-                    _ <- liftIO $ writeEventsToStore conn unvalidatedCategoryId allEvents
+                    _ <- liftIO $ writeCreateSubCategoryEvents conn unvalidatedCategoryId allEvents
 
                     liftEither events
             Left errorMsg -> liftEither $ Left errorMsg
@@ -253,7 +229,7 @@ publicCreateSubCategoryHandler =
     createSubCategoryHandler 
         lookupOneCategory
         lookupOneMaybeCategory
-        writeEventsToStore
+        writeCreateSubCategoryEvents
         checkRefSubCatgrValid
         nextId
 

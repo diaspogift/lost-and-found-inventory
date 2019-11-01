@@ -22,6 +22,8 @@ library
                      , src/workflows/create-category/root
                      , src/workflows/create-category/sub
 
+                     , src/eventstore
+
   exposed-modules:     CommonSimpleTypes
                      , CommonCompoundTypes
 
@@ -51,8 +53,12 @@ library
                      , InventorySystemCommands
                      , InventorySystemCommandsHandler
 
+
+                     , EventStore
                      , EventStorePlayGround
                      , InventoryAPI
+
+                     
 
   build-depends:       base >= 4.7 && < 5
                      , containers

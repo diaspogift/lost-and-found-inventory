@@ -18,6 +18,7 @@ import Data.ByteString.Internal (ByteString)
 import CreateRootCategoryDto
 import CommonSimpleTypes
 import CommonCompoundTypes
+import CommonDtos
 
 
 eventStore :: IO ()
@@ -81,21 +82,21 @@ eventDataPairTypes (evtName, strEventData)
         in RootCatCR rs
 
     | evtName == "SubCategoriesAdded" = 
-        let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe SubCategoriesAddedDto)
-        in SubCatsADD rs
+        let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe RSubCategoriesAddedDto)
+        in RSubCatsADD rs
 
 applyDtoEvent :: CreateRootCategoryEventDto -> CreateRootCategoryEventDto -> CreateRootCategoryEventDto
 applyDtoEvent (RootCatCR acc) (RootCatCR elm) = RootCatCR acc
-applyDtoEvent (RootCatCR acc) (SubCatsADD subs) = 
-    let crtSubs = subCategrs acc
+applyDtoEvent (RootCatCR acc) (RSubCatsADD subs) = 
+    let crtSubs = rsubCategrs acc
         addedSubs = fmap sub subs
-    in RootCatCR $ acc { subCategrs = crtSubs ++ addedSubs }
+    in RootCatCR $ acc { rsubCategrs = crtSubs ++ addedSubs }
 
 rebuildRootCategoryDto :: [CreateRootCategoryEventDto] -> CreateRootCategoryEventDto
 rebuildRootCategoryDto =  foldr1 applyDtoEvent
 
 toCategoryDomain :: CreateRootCategoryEventDto -> Either ErrorMessage Category
-toCategoryDomain (RootCatCR rtCatgrDto) = toDomain rtCatgrDto
+toCategoryDomain (RootCatCR rtCatgrDto) = rootCatgrDtoToDomain rtCatgrDto
    
 
 

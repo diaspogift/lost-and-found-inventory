@@ -51,6 +51,7 @@ data RootStatus =
       Root
     | Sub (Maybe ParentInfo)
     deriving (Eq, Ord, Show)
+    
 
 
 
@@ -1869,3 +1870,19 @@ attributes = rights [colorAttributeRef, weightAttributeRef]
 allAttributes = 
     fmap catToTuple attributes
         where catToTuple attr = (uwrpAttrCd $ attributeRefCode attr, attr) 
+
+
+
+
+
+
+
+
+
+
+----- ?????? -----
+
+data AddedSubCategory = AddedSubCategory {
+        addedSubCategoryParent  :: ParentCategoryId 
+    ,   addSubCategoryId     :: SubCategoryId
+    } deriving (Eq, Ord, Show)

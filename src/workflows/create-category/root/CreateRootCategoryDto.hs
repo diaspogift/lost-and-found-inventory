@@ -51,7 +51,7 @@ import GHC.Generics
 
 
 data CreateRootCategoryForm = CreateRootCategoryForm {
-        code                    :: String
+        rcode                    :: String
     ,   description             :: String
     ,   enablementStatus        :: String
     ,   relatedSubCategories    ::   [String]
@@ -68,7 +68,7 @@ instance FromJSON CreateRootCategoryForm
 toUnvalidatedRootCategory :: CreateRootCategoryForm -> UnvalidatedRootCategory
 toUnvalidatedRootCategory  CreateRootCategoryForm{..}= 
     UnvalidatedRootCategory {
-            urootCategoryCode =             code                 
+            urootCategoryCode =             rcode                 
         ,   urootCategoryDescription =      description          
         ,   urootCategoryEnablement =       enablementStatus     
         ,   urootCatgrRelatedsubCatgrs =    relatedSubCategories 
@@ -84,18 +84,18 @@ toUnvalidatedRootCategory  CreateRootCategoryForm{..}=
 
 
 data RootCategoryCreatedDto = RootCategoryCreatedDto {
-        catId           :: String
-    ,   catCode         :: String
+        rcatId           :: String
+    ,   rcatCode         :: String
 
-    ,   rtStatus        :: String
-    ,   prtCatgrId      :: String
-    ,   prtCatgrCode    :: String
+    ,   rrtStatus        :: String
+    ,   rprtCatgrId      :: String
+    ,   rprtCatgrCode    :: String
 
-    ,   enblmntStatus   :: String
-    ,   enblmntReason   :: String
+    ,   renblmntStatus   :: String
+    ,   renblmntReason   :: String
 
-    ,   catDesc         :: String
-    ,   subCategrs      :: [String]
+    ,   rcatDesc         :: String
+    ,   rsubCategrs      :: [String]
     } deriving (Generic, Show)
 
 
@@ -106,21 +106,21 @@ instance FromJSON RootCategoryCreatedDto
 
 
 -- Helper functions for converting from / to domain as well as to other states
-toDomain :: RootCategoryCreatedDto -> Either ErrorMessage Category
-toDomain dto = do
-    id <- crtCatgrId . catId $ dto
-    code <- crtCatgrCd . catCode $ dto
+rootCatgrDtoToDomain :: RootCategoryCreatedDto -> Either ErrorMessage Category
+rootCatgrDtoToDomain dto = do
+    id <- crtCatgrId . rcatId $ dto
+    code <- crtCatgrCd . rcatCode $ dto
 
-    let rootStatusInfo = (rtStatus dto, prtCatgrId dto,  prtCatgrCode dto)
+    let rootStatusInfo = (rrtStatus dto, rprtCatgrId dto,  rprtCatgrCode dto)
 
     rtStts <- toRootStatus rootStatusInfo
 
-    let enblmntStatusInfo = (enblmntStatus dto, enblmntReason dto) 
+    let enblmntStatusInfo = (renblmntStatus dto, renblmntReason dto) 
 
     enblmntStts <- toEnablementStatus enblmntStatusInfo
 
-    descpt <- crtLgDescpt . catDesc $ dto
-    subs <- traverse crtCatgrId . subCategrs $ dto
+    descpt <- crtLgDescpt . rcatDesc $ dto
+    subs <- traverse crtCatgrId . rsubCategrs $ dto
     return 
         Category {
             categoryId = id
@@ -145,16 +145,10 @@ toDomain dto = do
 -- ----------------------------------------------------------------------------
 
 
-type SubCategoriesAddedDto = [AddedSubCategoryDto]
+type RSubCategoriesAddedDto = [AddedSubCategoryDto]
 
-data AddedSubCategoryDto = AddedSubCategoryDto {
-        parent  :: String 
-    ,   sub     :: String
-    } deriving (Generic, Show)
 
-instance ToJSON AddedSubCategoryDto
 
-instance FromJSON AddedSubCategoryDto
 
 
 
@@ -163,15 +157,15 @@ instance FromJSON AddedSubCategoryDto
 fromRootCategoryCreated :: RootCategoryCreated -> RootCategoryCreatedDto
 fromRootCategoryCreated catgr = 
     RootCategoryCreatedDto {
-            catId = id        
-        ,   catCode = code     
-        ,   rtStatus = rtSttusType     
-        ,   prtCatgrId = prtCatgrId   
-        ,   prtCatgrCode = prtCatgrCode
-        ,   enblmntStatus = enblmntSttus
-        ,   enblmntReason = enblmntReason  
-        ,   catDesc = descpt        
-        ,   subCategrs = subCatgrs     
+            rcatId = id        
+        ,   rcatCode = code     
+        ,   rrtStatus = rtSttusType     
+        ,   rprtCatgrId = prtCatgrId   
+        ,   rprtCatgrCode = prtCatgrCode
+        ,   renblmntStatus = enblmntSttus
+        ,   renblmntReason = enblmntReason  
+        ,   rcatDesc = descpt        
+        ,   rsubCategrs = subCatgrs     
     }
     where id = uwrpCatgrId . categoryId $ catgr
           code = uwpCatgrCd . categoryCode $ catgr
@@ -183,13 +177,13 @@ fromRootCategoryCreated catgr =
 
 
 
-fromSubCategoriesAdded :: SubCategoriesAdded -> SubCategoriesAddedDto
-fromSubCategoriesAdded = 
+fromRootSubCategoriesAdded :: SubCategoriesAdded -> RSubCategoriesAddedDto
+fromRootSubCategoriesAdded = 
     fmap toSubCategoriesAddedDto 
     where toSubCategoriesAddedDto AddedSubCategory{..} = 
             AddedSubCategoryDto {
-                parent  = uwrpCatgrId parent 
-            ,   sub = uwrpCatgrId sub
+                parent  = uwrpCatgrId addedSubCategoryParent 
+            ,   sub = uwrpCatgrId addSubCategoryId
             } 
 
     
@@ -202,7 +196,7 @@ fromSubCategoriesAdded =
 
 data CreateRootCategoryEventDto = 
         RootCatCR RootCategoryCreatedDto
-    |   SubCatsADD SubCategoriesAddedDto 
+    |   RSubCatsADD RSubCategoriesAddedDto 
     deriving (Generic, Show)
 
 instance ToJSON CreateRootCategoryEventDto
@@ -227,8 +221,8 @@ fromCrtRootCatgrEvtDomain evt =
             let key = "createrootcategory"
                 val = fromRootCategoryCreated rootAttr
             in  singleton key (RootCatCR val)
-        SubCategoriesAdded subcatAdded ->
+        RSubCategoriesAdded subcatAdded ->
             let key = "subcategoriesadded"
-                val = fromSubCategoriesAdded subcatAdded
-            in singleton key (SubCatsADD val)
+                val = fromRootSubCategoriesAdded subcatAdded
+            in singleton key (RSubCatsADD val)
         

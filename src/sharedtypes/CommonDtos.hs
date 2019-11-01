@@ -91,3 +91,16 @@ fromWorkflowError domainError =
                 } 
 
 
+--------
+
+
+
+data AddedSubCategoryDto = AddedSubCategoryDto {
+        parent  :: String 
+    ,   sub     :: String
+    } deriving (Generic, Show)
+
+
+instance ToJSON AddedSubCategoryDto
+
+instance FromJSON AddedSubCategoryDto

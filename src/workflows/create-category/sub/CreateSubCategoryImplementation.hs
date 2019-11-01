@@ -316,10 +316,10 @@ createSubCategory vSubCatgr =
 createEvents :: Category -> [CreateSubCategoryEvent]
 createEvents  cat =
         let rtCatCrtedEvt = singleton . SubCategoryCreated . createCategoryCreatedEvt $ cat 
-            subCatsAddedEvt = singleton . SubCategoriesAdded . createSubCategoryAddedEvt $ cat
+            subCatsAddedEvt = singleton . SSubCategoriesAdded . createSubCategoryAddedEvt $ cat
         in 
             case head subCatsAddedEvt of 
-                SubCategoriesAdded [] -> rtCatCrtedEvt
+                SSubCategoriesAdded [] -> rtCatCrtedEvt
                 _ -> concat [rtCatCrtedEvt, subCatsAddedEvt]
 
   

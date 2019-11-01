@@ -35,6 +35,8 @@ import Control.Concurrent.Async
 
 import Database.EventStore
 
+import EventStore
+
 
 import Data.Aeson
 
@@ -57,13 +59,6 @@ import Data.Aeson
 type LookupOneCategory = 
     String -> ExceptT WorkflowError IO Category
 
-
-type LocalStreamId = String
-
-type WriteEvent = 
-    Connection -> LocalStreamId -> [CreateRootCategoryEvent] -> IO ()
-
-    
 
 
 type NextId = IO UnvalidatedRootCategoryId
@@ -95,25 +90,6 @@ nextId :: NextId
 nextId = 
     let id = nextRandom in fmap toString id
 
-
----
-
-
-writeEventsToStore :: WriteEvent
-writeEventsToStore conn streamId evts = 
-    do  let persistableEvts = fmap toEvent evts
-        as <- sendEvents conn (StreamName $ pack ( "root-category- :" <> streamId)) anyVersion persistableEvts Nothing
-        _  <- wait as
-        shutdown conn
-        waitTillClosed conn
-        where toEvent (RootCategoryCreated createdRootCat) =
-                let createdRootCategoryDto = Dto.fromRootCategoryCreated createdRootCat
-                in createEvent "CreatedRootCategory" Nothing $ withJson createdRootCategoryDto
-              toEvent (SubCategoriesAdded subCatgrsAdded) =
-                let addedSubCatgrDtos = Dto.fromSubCategoriesAdded subCatgrsAdded
-                in createEvent "SubCategoriesAdded" Nothing $ withJson addedSubCatgrDtos
-
----
 
 
 
@@ -165,7 +141,7 @@ checkRefSubCatgrValid = checkRefSubCatgrValidBase allCategories
 
 createRootCategoryHandler :: 
     LookupOneCategory
-    -> WriteEvent
+    -> WriteCreateRootCategoryEvents
     -> CheckRefSubCatgrValid
     -> NextId
     -> CreateRootCategoryCmd 
@@ -173,7 +149,7 @@ createRootCategoryHandler ::
     
 createRootCategoryHandler 
     lookupOneCategory
-    writeEventToStore
+    writeCreateRootCategoryEvents
     checkRefSubCatgrValid
     nextId
     (Command unvalidatedRootCategory curTime userId) = 
@@ -217,7 +193,7 @@ createRootCategoryHandler
         case events of  
             Right allEvents -> 
                 do
-                    _ <- liftIO $ writeEventsToStore conn unvalidatedCategoryId allEvents
+                    _ <- liftIO $ writeCreateRootCategoryEvents conn unvalidatedCategoryId allEvents
 
                     liftEither events
             Left errorMsg -> liftEither $ Left errorMsg
@@ -235,7 +211,7 @@ publicCreateRootCategoryHandler :: CreateRootCategoryCmd -> ExceptT WorkflowErro
 publicCreateRootCategoryHandler = 
     createRootCategoryHandler 
         lookupOneCategory
-        writeEventsToStore
+        writeCreateRootCategoryEvents
         checkRefSubCatgrValid
         nextId
 

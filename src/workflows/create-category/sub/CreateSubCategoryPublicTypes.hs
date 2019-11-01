@@ -35,11 +35,6 @@ data UnvalidatedSubCategory = UnvalidatedSubCategory {
 type SubCategoryCreated = Category
 type SubCategoriesAdded = [AddedSubCategory]
 
-data AddedSubCategory = AddedSubCategory {
-        parent  :: ParentCategoryId 
-    ,   sub     :: SubCategoryId
-    } deriving (Eq, Ord, Show)
-
 
 
 
@@ -57,7 +52,7 @@ data AddedSubCategory = AddedSubCategory {
 
 data CreateSubCategoryEvent =
         SubCategoryCreated  SubCategoryCreated 
-    |   SubCategoriesAdded SubCategoriesAdded
+    |   SSubCategoriesAdded SubCategoriesAdded
     deriving (Eq, Ord, Show)
 
 

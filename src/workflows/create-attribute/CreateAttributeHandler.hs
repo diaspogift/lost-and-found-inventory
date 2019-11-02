@@ -28,6 +28,7 @@ import Database.EventStore
 import EventStore
 
 
+import Data.Char (toUpper)
 
 
 
@@ -85,7 +86,7 @@ lookupOneCategory = lookupOneCategoryBase allCategories
 
 nextId :: NextId
 nextId = 
-    let id = nextRandom in fmap toString id
+    let id = nextRandom in fmap (fmap toUpper . toString) id
 
 
 

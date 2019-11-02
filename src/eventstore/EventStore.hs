@@ -88,7 +88,7 @@ type WriteCreateSubCategoryEvents =
 readOneCategoryWithReaderT :: Int32 -> String -> ExceptT  WorkflowError (ReaderT Connection IO) Category
 readOneCategoryWithReaderT eventNum streamId = do
     conn <- ask -- gives you the environment which in this case is a String
-    rs <- liftIO $ readEventsForward conn (StreamName $ pack $ "root-category- :" <> streamId) streamStart eventNum NoResolveLink Nothing >>= wait
+    rs <- liftIO $ readEventsForward conn (StreamName $ pack streamId) streamStart eventNum NoResolveLink Nothing >>= wait
     case rs of
         ReadSuccess sl@(Slice resolvedEvents mm) -> do
 
@@ -115,6 +115,11 @@ readOneCategoryWithReaderT eventNum streamId = do
             | evtName == "SubCategoriesAdded" = 
                 let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe RSubCategoriesAddedDto)
                 in RSubCatsADD rs
+
+
+           {-  | evtName == "CreatedSubCategory" =
+                let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe SSubCategoriesAddedDto)
+                in SSubCatsADD rs -}
 
         applyDtoEvent :: CreateRootCategoryEventDto -> CreateRootCategoryEventDto -> CreateRootCategoryEventDto
         applyDtoEvent (RootCatCR acc) (RootCatCR elm) = RootCatCR acc
@@ -157,7 +162,7 @@ readOneCategory num id = do
 readOneAttributeRefWithReaderT :: Int32 -> String -> ExceptT  WorkflowError (ReaderT Connection IO) AttributeRef
 readOneAttributeRefWithReaderT evtNum streamId = do
         conn <- ask
-        rs <- liftIO $ readEventsForward conn (StreamName $ pack $ "attr-ref-code-: " <> streamId ) streamStart evtNum NoResolveLink Nothing >>= wait
+        rs <- liftIO $ readEventsForward conn (StreamName $ pack streamId ) streamStart evtNum NoResolveLink Nothing >>= wait
         case rs of
             ReadSuccess sl@(Slice resolvedEvents mm) -> do
                 
@@ -234,7 +239,7 @@ writeDeclaredLostItemEventsWithReaderT streamId evts =
 
     do  conn <- ask
         let persistableEvts = fmap toEvent evts
-        as <- liftIO $ sendEvents conn (StreamName $ pack ( "lost-item-stream-id-: " <> streamId)) anyVersion persistableEvts Nothing
+        as <- liftIO $ sendEvents conn (StreamName $ pack streamId) anyVersion persistableEvts Nothing
         _  <- liftIO $ wait as
         liftIO $ shutdown conn
         liftIO $ waitTillClosed conn
@@ -277,7 +282,7 @@ writeCreateRootCategoryEventsWithReaderT :: LocalStreamId -> [CreateRootCategory
 writeCreateRootCategoryEventsWithReaderT streamId evts = 
     do  conn <- ask
         let persistableEvtss = fmap toEvent evts
-        as <- liftIO $ sendEvents conn (StreamName $ pack ( "root-category- :" <> streamId)) anyVersion persistableEvtss Nothing
+        as <- liftIO $ sendEvents conn (StreamName $ pack streamId) anyVersion persistableEvtss Nothing
         _  <- liftIO $ wait as
         liftIO $ shutdown conn
         liftIO $ waitTillClosed conn
@@ -313,7 +318,7 @@ writeCreateSubCategoryEventsWithReaderT :: LocalStreamId -> [CreateSubCategoryEv
 writeCreateSubCategoryEventsWithReaderT streamId evts = 
     do  conn <- ask
         let persistableEvts = fmap toEvent evts
-        as <- liftIO $ sendEvents conn (StreamName $ pack ( "root-category- :" <> streamId)) anyVersion persistableEvts Nothing
+        as <- liftIO $ sendEvents conn (StreamName $ pack streamId) anyVersion persistableEvts Nothing
         _  <- liftIO $ wait as
         liftIO $ shutdown conn
         liftIO $ waitTillClosed conn
@@ -351,7 +356,7 @@ writeCreateAttributeRefEventsWithReaderT streamId (AttributeRefCreated createdAt
         let createdAttributeDto = fromAttributeRefCreated createdAttribute
             createdAttributeEvent = createEvent "CreatedAttribute" Nothing $ withJson createdAttributeDto
             -- id = code createdAttributeDto
-        as <- liftIO $ sendEvent conn (StreamName $ pack ( "attr-ref-code-: " <> streamId)) anyVersion createdAttributeEvent Nothing
+        as <- liftIO $ sendEvent conn (StreamName $ pack streamId) anyVersion createdAttributeEvent Nothing
         _  <- liftIO $ wait as
         liftIO $ shutdown conn
         liftIO $ waitTillClosed conn

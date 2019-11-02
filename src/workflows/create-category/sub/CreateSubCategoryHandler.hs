@@ -40,6 +40,7 @@ import EventStore
 
 import Data.Aeson
 
+import Data.Char (toUpper)
 
 
 
@@ -100,7 +101,7 @@ lookupOneMaybeCategory = lookupOneMaybeCategoryBase allCategories
 
 nextId :: NextId
 nextId = 
-    let id = nextRandom in fmap toString id
+    let id = nextRandom in fmap (fmap toUpper . toString) id
 
 
 

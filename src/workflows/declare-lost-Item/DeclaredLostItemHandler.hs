@@ -36,6 +36,7 @@ import EventStore
 
 import Database.EventStore
 
+import Data.Char (toUpper)
 
 
 
@@ -197,7 +198,7 @@ loadAdministrativeAreaMap country =
 
 nextId :: NextId
 nextId = 
-    let id = nextRandom in fmap toString id
+    let id = nextRandom in fmap (fmap toUpper . toString) id
 
 
 

@@ -146,7 +146,7 @@ subCatgrDtoToDomain dto = do
 -- ----------------------------------------------------------------------------
 
 
-type SubCategoriesAddedDto = [AddedSubCategoryDto]
+type SSubCategoriesAddedDto = [AddedSubCategoryDto]
 
 
 
@@ -177,7 +177,7 @@ fromSubCategoryCreated catgr =
 
 
 
-fromSubSubCategoriesAdded :: SubCategoriesAdded -> SubCategoriesAddedDto
+fromSubSubCategoriesAdded :: SubCategoriesAdded -> SSubCategoriesAddedDto
 fromSubSubCategoriesAdded = 
     fmap toSubCategoriesAddedDto 
     where toSubCategoriesAddedDto AddedSubCategory{..} = 
@@ -196,7 +196,7 @@ fromSubSubCategoriesAdded =
 
 data CreateSubCategoryEventDto = 
         SubCatCR SubCategoryCreatedDto
-    |   SSubCatsADD SubCategoriesAddedDto 
+    |   SSubCatsADD SSubCategoriesAddedDto 
     deriving (Generic, Show)
 
 instance ToJSON CreateSubCategoryEventDto

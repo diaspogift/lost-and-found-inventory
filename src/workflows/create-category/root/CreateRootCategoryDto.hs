@@ -13,7 +13,11 @@ import Data.Aeson
 import CommonSimpleTypes
 import CommonDtos
 import CommonCompoundTypes
+import CreateCategoryCommonPublicTypes
 import CreateRootCategoryPublicTypes
+import CreateSubCategoryPublicTypes
+
+import CreateCategoryCommonDto
 
 
 import Prelude hiding (last, id)
@@ -51,7 +55,7 @@ import GHC.Generics
 
 
 data CreateRootCategoryForm = CreateRootCategoryForm {
-        rcode                    :: String
+        code            :: String
     ,   description             :: String
     ,   enablementStatus        :: String
     ,   relatedSubCategories    ::   [String]
@@ -68,161 +72,19 @@ instance FromJSON CreateRootCategoryForm
 toUnvalidatedRootCategory :: CreateRootCategoryForm -> UnvalidatedRootCategory
 toUnvalidatedRootCategory  CreateRootCategoryForm{..}= 
     UnvalidatedRootCategory {
-            urootCategoryCode =             rcode                 
-        ,   urootCategoryDescription =      description          
-        ,   urootCategoryEnablement =       enablementStatus     
-        ,   urootCatgrRelatedsubCatgrs =    relatedSubCategories 
+            urootCategoryCode           = code                 
+        ,   urootCategoryDescription    = description          
+        ,   urootCategoryEnablement     = enablementStatus     
+        ,   urootCatgrRelatedsubCatgrs  = relatedSubCategories 
         }
 
         
 
 
 -------------------------------------------------------------------------------
--- DTO for RootCategoryCreated Event
+-- DTO for CategoryCreated Event
 -- ----------------------------------------------------------------------------
 
 
 
-data RootCategoryCreatedDto = RootCategoryCreatedDto {
-        rcatId           :: String
-    ,   rcatCode         :: String
 
-    ,   rrtStatus        :: String
-    ,   rprtCatgrId      :: String
-    ,   rprtCatgrCode    :: String
-
-    ,   renblmntStatus   :: String
-    ,   renblmntReason   :: String
-
-    ,   rcatDesc         :: String
-    ,   rsubCategrs      :: [String]
-    } deriving (Generic, Show)
-
-
-instance ToJSON RootCategoryCreatedDto
-
-instance FromJSON RootCategoryCreatedDto
-
-
-
--- Helper functions for converting from / to domain as well as to other states
-rootCatgrDtoToDomain :: RootCategoryCreatedDto -> Either ErrorMessage Category
-rootCatgrDtoToDomain dto = do
-    id <- crtCatgrId . rcatId $ dto
-    code <- crtCatgrCd . rcatCode $ dto
-
-    let rootStatusInfo = (rrtStatus dto, rprtCatgrId dto,  rprtCatgrCode dto)
-
-    rtStts <- toRootStatus rootStatusInfo
-
-    let enblmntStatusInfo = (renblmntStatus dto, renblmntReason dto) 
-
-    enblmntStts <- toEnablementStatus enblmntStatusInfo
-
-    descpt <- crtLgDescpt . rcatDesc $ dto
-    subs <- traverse crtCatgrId . rsubCategrs $ dto
-    return 
-        Category {
-            categoryId = id
-        ,   categoryCode = code
-        ,   categoryRootStatus = rtStts
-        ,   categoryEnablementStatus = enblmntStts
-        ,   categoryDescription = descpt
-        ,   categoryRelatedSubCategories = Data.Set.fromList subs
-        }
-
-
-
-
-
-
-
-
-
-
--------------------------------------------------------------------------------
--- DTO for SubCategory Added Event
--- ----------------------------------------------------------------------------
-
-
-type RSubCategoriesAddedDto = [AddedSubCategoryDto]
-
-
-
-
-
-
--- Helper functions for converting from / to domain as well as to other states
-
-fromRootCategoryCreated :: RootCategoryCreated -> RootCategoryCreatedDto
-fromRootCategoryCreated catgr = 
-    RootCategoryCreatedDto {
-            rcatId = id        
-        ,   rcatCode = code     
-        ,   rrtStatus = rtSttusType     
-        ,   rprtCatgrId = prtCatgrId   
-        ,   rprtCatgrCode = prtCatgrCode
-        ,   renblmntStatus = enblmntSttus
-        ,   renblmntReason = enblmntReason  
-        ,   rcatDesc = descpt        
-        ,   rsubCategrs = subCatgrs     
-    }
-    where id = uwrpCatgrId . categoryId $ catgr
-          code = uwpCatgrCd . categoryCode $ catgr
-          (rtSttusType, prtCatgrId, prtCatgrCode) = fromRootStatus . categoryRootStatus $ catgr
-          (enblmntSttus, enblmntReason) = fromEnblmntStatus . categoryEnablementStatus $ catgr
-          descpt = uwrpLgDescpt . categoryDescription $ catgr
-          subCatgrs = fmap uwrpCatgrId . toList . categoryRelatedSubCategories $ catgr
-
-
-
-
-fromRootSubCategoriesAdded :: SubCategoriesAdded -> RSubCategoriesAddedDto
-fromRootSubCategoriesAdded = 
-    fmap toSubCategoriesAddedDto 
-    where toSubCategoriesAddedDto AddedSubCategory{..} = 
-            AddedSubCategoryDto {
-                parent  = uwrpCatgrId addedSubCategoryParent 
-            ,   sub = uwrpCatgrId addSubCategoryId
-            } 
-
-    
-
--- ----------------------------------------------------------------------------
--- DTO for WorkflowError 
--- ----------------------------------------------------------------------------
-
---- 
-
-data CreateRootCategoryEventDto = 
-        RootCatCR RootCategoryCreatedDto
-    |   RSubCatsADD RSubCategoriesAddedDto 
-    deriving (Generic, Show)
-
-instance ToJSON CreateRootCategoryEventDto
-
----
-
-type CreateRootAttributeEventResponse = Map String CreateRootCategoryEventDto
-
-instance ToJSONKey CreateRootAttributeEventResponse
-
----
-
-type RespCrtRootCatWorkflow = [CreateRootAttributeEventResponse] 
-
-
--- Helper function
-
-fromCrtRootCatgrEvtDomain :: CreateRootCategoryEvent -> CreateRootAttributeEventResponse
-fromCrtRootCatgrEvtDomain evt = 
-    case evt of
-        RootCategoryCreated rootAttr ->
-            let key = "createrootcategory"
-                val = fromRootCategoryCreated rootAttr
-            in  singleton key (RootCatCR val)
-        RSubCategoriesAdded subcatAdded ->
-            let key = "subcategoriesadded"
-                val = fromRootSubCategoriesAdded subcatAdded
-            in singleton key (RSubCatsADD val)
-        

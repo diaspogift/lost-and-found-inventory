@@ -28,13 +28,15 @@ import Data.Either
 -- Category-related types
 -- ===============================================================
 
+data Category = 
+      RootCategory CategoryInfo 
+    | SubCategory CategoryInfo (Maybe ParentInfo ) 
+    deriving (Eq, Ord, Show)
 
 
-
-data Category = Category {
+data CategoryInfo = CategoryInfo {
         categoryId                  :: CategoryId
     ,   categoryCode                :: CategoryCode
-    ,   categoryRootStatus          :: RootStatus
     ,   categoryEnablementStatus    :: EnablementStatus
     ,   categoryDescription         :: LongDescription
     ,   categoryRelatedSubCategories:: Set CategoryId
@@ -47,14 +49,14 @@ data ParentInfo = ParentInfo {
 } deriving (Eq, Ord, Show) 
 
 
-data RootStatus =
-      Root
-    | Sub (Maybe ParentInfo)
-    deriving (Eq, Ord, Show)
     
 
+data EnablementStatus =
+      Enabled Reason
+    | Disabled Reason
+    deriving (Eq, Ord, Show)
 
-
+{- 
 -- helper functions
 
 fromRootStatus :: RootStatus -> (String, String, String)
@@ -62,7 +64,6 @@ fromRootStatus Root = ("Root", "", "")
 fromRootStatus (Sub Nothing) = ("Sub", "", "")
 fromRootStatus (Sub (Just (ParentInfo prtCatId prtCatCode))) = ("Sub", uwrpCatgrId prtCatId, uwpCatgrCd prtCatCode)
 
-notNull = not . null
 
 toRootStatus :: (String, String, String) -> Either ErrorMessage RootStatus
 toRootStatus (rtSttsType, subCatPrtId, subCatPrtCd)
@@ -76,6 +77,9 @@ toRootStatus (rtSttsType, subCatPrtId, subCatPrtCd)
            return . Sub . Just $ ParentInfo pId pCd
     | otherwise = Left $ "inconsistent data format of " 
                             <> "(" <> rtSttsType <> "," <> subCatPrtId <> "," <> subCatPrtCd <> ")"
+ -}
+
+notNull = not . null
 
 
 
@@ -89,10 +93,6 @@ toEnablementStatus (enblmntType, reason)
                     <> "(" <> enblmntType <> "," <> reason <> ")"
 
 
-data EnablementStatus =
-      Enabled Reason
-    | Disabled Reason
-    deriving (Eq, Ord, Show)
 
 
 
@@ -1716,10 +1716,10 @@ wouriDivision = DivisionItem Wouri wouriSubDivisions
 -- Categories sample data
 --
 
-categories = rights [kidsSubHumanCategory, humansCategory, documentsCategory, personalItemsCategory, electronicsCategory]
+{- categories = rights [kidsSubHumanCategory, humansCategory, documentsCategory, personalItemsCategory, electronicsCategory]
 allCategories = 
     fmap toTuple categories
-        where toTuple cat = (uwrpCatgrId $ categoryId cat, cat) 
+        where toTuple cat = (uwrpCatgrId $ categoryId cat, cat)  -}
 
 
 hCatId = "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"
@@ -1734,10 +1734,9 @@ humansCategory =
         catdesc <- crtLgDescpt "Human Category: It captures anything related to lost humans"
         catCode <- crtCatgrCd "HUMAN-BEINGS"
         return $
-            Category {
+            RootCategory CategoryInfo {
                 categoryId = catid
             ,   categoryCode = catCode
-            ,   categoryRootStatus = Root
             ,   categoryEnablementStatus = Enabled "at creation"
             ,   categoryDescription = catdesc
             ,   categoryRelatedSubCategories = fromList []  
@@ -1755,10 +1754,9 @@ kidsSubHumanCategory =
         ,   parentInfoCode = prntCode
     }
         return $
-            Category {
+            RootCategory CategoryInfo {
                 categoryId = catid
             ,   categoryCode = catCode
-            ,   categoryRootStatus = Sub Nothing 
             ,   categoryEnablementStatus = Enabled "at creation"
             ,   categoryDescription = catdesc
             ,   categoryRelatedSubCategories = fromList []  
@@ -1770,10 +1768,9 @@ documentsCategory =
         catCode <- crtCatgrCd "DOCUMENTS-ITEMS"
 
         return $
-            Category {
+            RootCategory CategoryInfo {
                     categoryId = catid
                 ,   categoryCode = catCode
-                ,   categoryRootStatus = Root
                 ,   categoryEnablementStatus = Enabled "at creation"
                 ,   categoryDescription = catdesc
                 ,   categoryRelatedSubCategories = fromList []  
@@ -1785,10 +1782,9 @@ personalItemsCategory =
         catCode <- crtCatgrCd "PERSONAL-ITEMS"
 
         return $
-            Category {
+            RootCategory CategoryInfo {
                     categoryId = catid
                 ,   categoryCode = catCode
-                ,   categoryRootStatus = Root
                 ,   categoryEnablementStatus = Enabled "at creation"
                 ,   categoryDescription = catdesc
                 ,   categoryRelatedSubCategories = fromList []  
@@ -1801,10 +1797,9 @@ electronicsCategory =
         catCode <- crtCatgrCd "ELECTRONICS"
 
         return $
-            Category {
+            RootCategory CategoryInfo {
                     categoryId = catid
                 ,   categoryCode = catCode
-                ,   categoryRootStatus = Root
                 ,   categoryEnablementStatus = Enabled "at creation"
                 ,   categoryDescription = catdesc
                 ,   categoryRelatedSubCategories = fromList []  

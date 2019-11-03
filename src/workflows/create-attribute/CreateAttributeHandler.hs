@@ -71,18 +71,6 @@ type NextId = IO UnvalidatedAttributeCode
 -- =============================================================================
 
 
-lookupOneCategoryBase :: 
-    [(String, Category)] -> LookupOneCategory
-lookupOneCategoryBase categories categoryId = 
-    do  let maybeCategory = lookup categoryId categories
-        --print maybeCategory
-        case maybeCategory of
-            Just category -> liftEither $ Right category
-            Nothing -> liftEither $ mapLeft DataBase $ Left $ DataBaseError "category not found"
-
-
-lookupOneCategory :: LookupOneCategory 
-lookupOneCategory = lookupOneCategoryBase allCategories 
 
 nextId :: NextId
 nextId = 
@@ -100,14 +88,12 @@ nextId =
 
 
 createAttributeRefHandler :: 
-    LookupOneCategory
-    -> WriteCreateAttributeRefEvents
+    WriteCreateAttributeRefEvents
     -> NextId
     -> CreateAttributeRefCmd 
     -> ExceptT WorkflowError IO [CreateAttributeEvent]
     
 createAttributeRefHandler 
-    lookupOneCategory
     writeCreateAttributeRefEvents
     nextId
     (Command unvalidatedAttributeRef curTime userId) = 
@@ -165,7 +151,6 @@ createAttributeRefHandler
 publicCreateAttributeRefHandler :: CreateAttributeRefCmd -> ExceptT WorkflowError IO [CreateAttributeEvent]
 publicCreateAttributeRefHandler = 
     createAttributeRefHandler 
-        lookupOneCategory
         writeCreateAttributeRefEvents
         nextId
 

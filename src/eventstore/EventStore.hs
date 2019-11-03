@@ -13,8 +13,10 @@ import Data.ByteString.Lazy.Char8 (fromStrict)
 import Data.Text.Internal (Text)
 import Data.ByteString.Internal (ByteString)
 
+import CreateCategoryCommonDto
 import CreateRootCategoryDto
 import CreateSubCategoryDto
+
 import CreateAttributeDto
 import CommonSimpleTypes
 import CommonCompoundTypes
@@ -23,8 +25,10 @@ import CommonDtos
 import DeclaredLostItemPublicTypes
 import DeclareLostItemDto
 
+import CreateCategoryCommonPublicTypes
 import CreateRootCategoryPublicTypes
 import CreateSubCategoryPublicTypes
+
 import CreateAttributePublicTypes
 
 import Control.Monad.Reader
@@ -69,10 +73,10 @@ type WriteCreateAttributeRefEvents =
     LocalStreamId -> CreateAttributeEvent -> IO ()
 
 type WriteCreateRootCategoryEvents = 
-    LocalStreamId -> [CreateRootCategoryEvent] -> IO ()
+    LocalStreamId -> [CreateCategoryEvent] -> IO ()
 
 type WriteCreateSubCategoryEvents = 
-    LocalStreamId -> [CreateSubCategoryEvent] -> IO ()
+    LocalStreamId -> [CreateCategoryEvent] -> IO ()
 
 
 
@@ -95,7 +99,7 @@ readOneCategoryWithReaderT eventNum streamId = do
             let recordedEvts1 = mapMaybe resolvedEventRecord resolvedEvents
             let pairs = fmap eventDataPair recordedEvts1
             let events = fmap eventDataPairTypes pairs
-            let reducedEvent = rebuildRootCategoryDto events
+            let reducedEvent = rebuildCategoryDto events
             
             liftEither $ mapLeft DataBase $ toCategoryDomain reducedEvent
 
@@ -106,35 +110,35 @@ readOneCategoryWithReaderT eventNum streamId = do
 
         eventDataPairTypes :: 
             (Data.Text.Internal.Text, Data.ByteString.Internal.ByteString)
-            -> CreateRootCategoryEventDto
+            -> CreateCategoryEventDto
         eventDataPairTypes (evtName, strEventData) 
-            | evtName == "CreatedRootCategory" = 
-                let rs = fromMaybe  (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe RootCategoryCreatedDto)
-                in RootCatCR rs
+            | evtName == "CreatedCategory" = 
+                let rs = fromMaybe  (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe CategoryCreatedDto)
+                in CatgrCreated rs
 
             | evtName == "SubCategoriesAdded" = 
-                let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe RSubCategoriesAddedDto)
-                in RSubCatsADD rs
+                let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe SubCategoriesAddedDto)
+                in SubCatgrsAdded rs
 
 
            {-  | evtName == "CreatedSubCategory" =
                 let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe SSubCategoriesAddedDto)
                 in SSubCatsADD rs -}
 
-        applyDtoEvent :: CreateRootCategoryEventDto -> CreateRootCategoryEventDto -> CreateRootCategoryEventDto
-        applyDtoEvent (RootCatCR acc) (RootCatCR elm) = RootCatCR acc
-        applyDtoEvent (RootCatCR acc) (RSubCatsADD subs) = 
-            let crtSubs = rsubCategrs acc
+        applyDtoEvent :: CreateCategoryEventDto -> CreateCategoryEventDto -> CreateCategoryEventDto
+        applyDtoEvent (CatgrCreated acc) (CatgrCreated elm) = CatgrCreated acc
+        applyDtoEvent (CatgrCreated acc) (SubCatgrsAdded subs) = 
+            let crtSubs = subCategrs acc
                 addedSubs = fmap sub subs
-            in RootCatCR $ acc { rsubCategrs = crtSubs ++ addedSubs }
+            in CatgrCreated $ acc { subCategrs = crtSubs ++ addedSubs }
 
-        rebuildRootCategoryDto :: [CreateRootCategoryEventDto] -> CreateRootCategoryEventDto
-        rebuildRootCategoryDto =  foldr1 applyDtoEvent
+        rebuildCategoryDto :: [CreateCategoryEventDto] -> CreateCategoryEventDto
+        rebuildCategoryDto =  foldr1 applyDtoEvent
 
 
-        toCategoryDomain :: CreateRootCategoryEventDto -> Either DataBaseError Category
-        toCategoryDomain (RootCatCR rtCatgrDto) = 
-            let res = rootCatgrDtoToDomain rtCatgrDto
+        toCategoryDomain :: CreateCategoryEventDto -> Either DataBaseError Category
+        toCategoryDomain (CatgrCreated catgrDto) = 
+            let res = catgrDtoToDomain catgrDto
             in case res of
                 Left erroMsg -> Left . DataBaseError $ erroMsg
                 Right result -> return result
@@ -278,7 +282,7 @@ writeDeclaredLostItemEvents id evts = do
 
 
 
-writeCreateRootCategoryEventsWithReaderT :: LocalStreamId -> [CreateRootCategoryEvent] -> ReaderT Connection IO ()
+writeCreateRootCategoryEventsWithReaderT :: LocalStreamId -> [CreateCategoryEvent] -> ReaderT Connection IO ()
 writeCreateRootCategoryEventsWithReaderT streamId evts = 
     do  conn <- ask
         let persistableEvtss = fmap toEvent evts
@@ -286,16 +290,16 @@ writeCreateRootCategoryEventsWithReaderT streamId evts =
         _  <- liftIO $ wait as
         liftIO $ shutdown conn
         liftIO $ waitTillClosed conn
-        where toEvent (RootCategoryCreated createdRootCat) =
-                let createdRootCategoryDto = fromRootCategoryCreated createdRootCat
-                in createEvent "CreatedRootCategory" Nothing $ withJson createdRootCategoryDto
-              toEvent (RSubCategoriesAdded subCatgrsAdded) =
-                let addedSubCatgrDtos = fromRootSubCategoriesAdded subCatgrsAdded
+        where toEvent (CategoryCreated createdCatgr) =
+                let createdCategoryDto = fromCategoryCreated createdCatgr
+                in createEvent "CreatedCategory" Nothing $ withJson createdCategoryDto
+              toEvent (SubCategoriesAdded subCatgrsAdded) =
+                let addedSubCatgrDtos = fromSubCategoriesAdded subCatgrsAdded
                 in createEvent "SubCategoriesAdded" Nothing $ withJson addedSubCatgrDtos
 
 
 
-writeCreateRootCategoryEvents :: LocalStreamId -> [CreateRootCategoryEvent] -> IO ()
+writeCreateRootCategoryEvents :: LocalStreamId -> [CreateCategoryEvent] -> IO ()
 writeCreateRootCategoryEvents id evts = do
     conn <- connect defaultSettings (Static "localhost" 1113)
     let uwrpReader = runReaderT $ writeCreateRootCategoryEventsWithReaderT id evts
@@ -314,7 +318,7 @@ writeCreateRootCategoryEvents id evts = do
 
 
 
-writeCreateSubCategoryEventsWithReaderT :: LocalStreamId -> [CreateSubCategoryEvent] -> ReaderT Connection IO ()
+writeCreateSubCategoryEventsWithReaderT :: LocalStreamId -> [CreateCategoryEvent] -> ReaderT Connection IO ()
 writeCreateSubCategoryEventsWithReaderT streamId evts = 
     do  conn <- ask
         let persistableEvts = fmap toEvent evts
@@ -322,18 +326,18 @@ writeCreateSubCategoryEventsWithReaderT streamId evts =
         _  <- liftIO $ wait as
         liftIO $ shutdown conn
         liftIO $ waitTillClosed conn
-        where toEvent (SubCategoryCreated createdSubCat) =
-                let createdSubCategoryDto = fromSubCategoryCreated createdSubCat
-                in createEvent "CreatedSubCategory" Nothing $ withJson createdSubCategoryDto
-              toEvent (SSubCategoriesAdded subCatgrsAdded) =
-                let addedSubCatgrDtos = fromSubSubCategoriesAdded subCatgrsAdded
+        where toEvent (CategoryCreated createdSubCat) =
+                let createdCategoryDto = fromCategoryCreated createdSubCat
+                in createEvent "CreatedCategory" Nothing $ withJson createdCategoryDto
+              toEvent (SubCategoriesAdded subCatgrsAdded) =
+                let addedSubCatgrDtos = fromSubCategoriesAdded subCatgrsAdded
                 in createEvent "SubCategoriesAdded" Nothing $ withJson addedSubCatgrDtos
 
 
 
 
 
-writeCreateSubCategoryEvents :: LocalStreamId -> [CreateSubCategoryEvent] -> IO ()
+writeCreateSubCategoryEvents :: LocalStreamId -> [CreateCategoryEvent] -> IO ()
 writeCreateSubCategoryEvents id evts = do
     conn <- connect defaultSettings (Static "localhost" 1113)
     let uwrpReader = runReaderT $ writeCreateSubCategoryEventsWithReaderT id evts

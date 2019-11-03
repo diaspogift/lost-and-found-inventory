@@ -9,6 +9,7 @@ import CommonCompoundTypes
 
 import InventorySystemCommands
 import CreateSubCategoryPublicTypes
+import CreateCategoryCommonPublicTypes
 
 import CreateSubCategoryImplementation
 import qualified CreateSubCategoryDto as Dto
@@ -64,7 +65,7 @@ type LookupOneMaybeCategory =
     String -> Maybe Category
 
 
-type NextId = IO UnvalidatedSubCategoryId
+type NextId = IO UnvalidatedCategoryId
 
 
 
@@ -76,28 +77,7 @@ type NextId = IO UnvalidatedSubCategoryId
 
 ---
 
-lookupOneCategoryBase :: 
-    [(String, Category)] -> LookupOneCategory
-lookupOneCategoryBase categories categoryId = 
-    do  let maybeCategory = lookup categoryId categories
-        --print maybeCategory
-        case maybeCategory of
-            Just category -> liftEither $ Right category
-            Nothing -> liftEither $ mapLeft DataBase $ Left $ DataBaseError "category not found"
 
-
-lookupOneMaybeCategoryBase :: 
-    [(String, Category)] -> LookupOneMaybeCategory
-lookupOneMaybeCategoryBase categories categoryId = 
-    lookup categoryId categories
-      
-
-lookupOneCategory :: LookupOneCategory 
-lookupOneCategory = lookupOneCategoryBase allCategories 
-
-
-lookupOneMaybeCategory :: LookupOneMaybeCategory 
-lookupOneMaybeCategory = lookupOneMaybeCategoryBase allCategories 
 
 nextId :: NextId
 nextId = 
@@ -105,43 +85,7 @@ nextId =
 
 
 
-checkRefSubCatgrValidBase :: 
-    [(String, Category)] 
-    -> UnvalidatedSubCategoryId
-    -> Either RefSubCategoryValidationError CategoryId -- CheckRefSubCatgrValid
-checkRefSubCatgrValidBase cats ucatId =
-    let maybeCat = lookup ucatId cats
-    in case maybeCat of
-        Just cat ->
-            verifyNotRootAndNotSub cat
-        Nothing -> 
-            Left $ 
-                "referenced sub category with id : " 
-                ++ ucatId  ++ " not found"
-            
-        where verifyNotRootAndNotSub Category { categoryEnablementStatus = es, categoryRootStatus = rs, categoryId = cid } =
-                case es of 
-                    Disabled reason ->
-                        Left $ 
-                            "referenced sub category with id : " 
-                            ++ uwrpCatgrId cid  ++ " is disabled for reason: " ++ reason 
-                    Enabled _ ->
-                        case rs of
-                            Root ->
-                                Left $
-                                "referenced sub category with id : " 
-                                ++ uwrpCatgrId cid ++ " is a root category"
-                            Sub maybeParentInfo -> 
-                                case maybeParentInfo of 
-                                    Just parentInfo -> 
-                                        Left $
-                                        "referenced sub category with id : " 
-                                        ++ uwrpCatgrId cid ++ " is already a sub for: " ++ "<<<<<<<<<< TODO >>>>>>>>>>>>"
-                                    Nothing -> Right cid
-           
-                
-checkRefSubCatgrValid :: CheckRefSubCatgrValid
-checkRefSubCatgrValid = checkRefSubCatgrValidBase allCategories
+
 
 -- =============================================================================
 -- Create Attribute Ref Command Handler Implementation
@@ -152,18 +96,14 @@ checkRefSubCatgrValid = checkRefSubCatgrValidBase allCategories
 
 createSubCategoryHandler :: 
     ReadOneCategory
-    -> LookupOneMaybeCategory
     -> WriteCreateSubCategoryEvents
-    -> CheckRefSubCatgrValid
     -> NextId
     -> CreateSubCategoryCmd 
-    -> ExceptT WorkflowError IO [CreateSubCategoryEvent]
+    -> ExceptT WorkflowError IO [CreateCategoryEvent]
     
 createSubCategoryHandler 
     readOneCategory
-    lookupOneMaybeCategory
     writeEventToStore
-    checkRefSubCatgrValid
     nextId
     (Command unvalidatedSubCategory curTime userId) = 
 
@@ -248,13 +188,11 @@ createSubCategoryHandler
 ---
 ---
 
-publicCreateSubCategoryHandler :: CreateSubCategoryCmd -> ExceptT WorkflowError IO [CreateSubCategoryEvent]
+publicCreateSubCategoryHandler :: CreateSubCategoryCmd -> ExceptT WorkflowError IO [CreateCategoryEvent]
 publicCreateSubCategoryHandler = 
     createSubCategoryHandler 
         readOneCategory
-        lookupOneMaybeCategory
         writeCreateSubCategoryEvents
-        checkRefSubCatgrValid
         nextId
 
         

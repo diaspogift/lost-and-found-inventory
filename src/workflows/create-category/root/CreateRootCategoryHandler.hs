@@ -9,6 +9,7 @@ import CommonCompoundTypes
 
 import InventorySystemCommands
 import CreateRootCategoryPublicTypes
+import CreateCategoryCommonPublicTypes
 
 import CreateRootCategoryImplementation
 import qualified CreateRootCategoryDto as Dto
@@ -62,7 +63,7 @@ type LookupOneCategory =
 
 
 
-type NextId = IO UnvalidatedRootCategoryId
+type NextId = IO UnvalidatedCategoryId
 
 
 
@@ -74,18 +75,7 @@ type NextId = IO UnvalidatedRootCategoryId
 
 ---
 
-lookupOneCategoryBase :: 
-    [(String, Category)] -> LookupOneCategory
-lookupOneCategoryBase categories categoryId = 
-    do  let maybeCategory = lookup categoryId categories
-        --print maybeCategory
-        case maybeCategory of
-            Just category -> liftEither $ Right category
-            Nothing -> liftEither $ mapLeft DataBase $ Left $ DataBaseError "category not found"
 
-
-lookupOneCategory :: LookupOneCategory 
-lookupOneCategory = lookupOneCategoryBase allCategories 
 
 nextId :: NextId
 nextId = 
@@ -94,44 +84,6 @@ nextId =
 
 
 
-
-checkRefSubCatgrValidBase :: 
-    [(String, Category)] 
-    -> UnvalidatedRootCategoryId
-    -> Either RefSubCategoryValidationError CategoryId -- CheckRefSubCatgrValid
-checkRefSubCatgrValidBase cats ucatId =
-    let maybeCat = lookup ucatId cats
-    in case maybeCat of
-        Just cat ->
-            verifyNotRootAndNotSub cat
-        Nothing -> 
-            Left $ 
-                "referenced sub category with id : " 
-                ++ ucatId  ++ " not found"
-            
-        where verifyNotRootAndNotSub Category { categoryEnablementStatus = es, categoryRootStatus = rs, categoryId = cid } =
-                case es of 
-                    Disabled reason ->
-                        Left $ 
-                            "referenced sub category with id : " 
-                            ++ uwrpCatgrId cid  ++ " is disabled for reason: " ++ reason 
-                    Enabled _ ->
-                        case rs of
-                            Root ->
-                                Left $
-                                "referenced sub category with id : " 
-                                ++ uwrpCatgrId cid ++ " is a root category"
-                            Sub maybeParentInfo -> 
-                                case maybeParentInfo of 
-                                    Just parentInfo -> 
-                                        Left $
-                                        "referenced sub category with id : " 
-                                        ++ uwrpCatgrId cid ++ " is already a sub for: " ++ "<<<<<<<<<< TODO >>>>>>>>>>>>"
-                                    Nothing -> Right cid
-           
-                
-checkRefSubCatgrValid :: CheckRefSubCatgrValid
-checkRefSubCatgrValid = checkRefSubCatgrValidBase allCategories
 
 -- =============================================================================
 -- Create Attribute Ref Command Handler Implementation
@@ -143,15 +95,13 @@ checkRefSubCatgrValid = checkRefSubCatgrValidBase allCategories
 createRootCategoryHandler :: 
     ReadOneCategory
     -> WriteCreateRootCategoryEvents
-    -> CheckRefSubCatgrValid
     -> NextId
     -> CreateRootCategoryCmd 
-    -> ExceptT WorkflowError IO [CreateRootCategoryEvent]
+    -> ExceptT WorkflowError IO [CreateCategoryEvent]
     
 createRootCategoryHandler 
     readOneCategory
     writeCreateRootCategoryEvents
-    checkRefSubCatgrValid
     nextId
     (Command unvalidatedRootCategory curTime userId) = 
 
@@ -204,12 +154,11 @@ createRootCategoryHandler
 ---
 ---
 
-publicCreateRootCategoryHandler :: CreateRootCategoryCmd -> ExceptT WorkflowError IO [CreateRootCategoryEvent]
+publicCreateRootCategoryHandler :: CreateRootCategoryCmd -> ExceptT WorkflowError IO [CreateCategoryEvent]
 publicCreateRootCategoryHandler = 
     createRootCategoryHandler 
         readOneCategory
         writeCreateRootCategoryEvents
-        checkRefSubCatgrValid
         nextId
 
         

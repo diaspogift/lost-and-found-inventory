@@ -28,6 +28,8 @@ import  DeclaredLostItemPublicTypes
 import CreateAttributeDto
 import CreateAttributePublicTypes
 
+import CreateCategoryCommonDto
+
 import CreateRootCategoryDto
 import CreateRootCategoryPublicTypes
 
@@ -87,8 +89,8 @@ type API =
 data RestCallResponse =  
       DclLstItemResp RespDclLstItemWorkflow 
     | CrtAttrRefResp RespCrtAttrRefWorkflow
-    | CrtRooCatgrResp RespCrtRootCatWorkflow
-    | CrtSubCatgrResp RespCrtSubCatWorkflow
+    | CrtRooCatgrResp RespCrtCatgrWorkflow
+    | CrtSubCatgrResp RespCrtCatgrWorkflow
     deriving (Generic, Show)
 
 
@@ -222,7 +224,7 @@ handleCreateRootCategory rootCategoryForm =
 
         case res of 
             Right (CrteRootCatgrEvt events) -> 
-                return $ CrtRooCatgrResp $ fmap fromCrtRootCatgrEvtDomain events 
+                return $ CrtRooCatgrResp $ fmap fromCrtCatgrEvtDomain events 
             Left (CrteRootCatgrErr error) -> 
                 let errorMsg = fromWorkflowError error
                     cd = worflowErrorCde errorMsg
@@ -260,7 +262,7 @@ handleCreateSubCategory subCategoryForm =
 
         case res of 
             Right (CrteSubCatgrEvt events) -> 
-                return $ CrtSubCatgrResp $ fmap fromCrtSubCatgrEvtDomain events 
+                return $ CrtSubCatgrResp $ fmap fromCrtCatgrEvtDomain events 
             Left (CrteSubCatgrErr error) -> 
                 let errorMsg = fromWorkflowError error
                     cd = worflowErrorCde errorMsg

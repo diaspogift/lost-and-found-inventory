@@ -572,12 +572,22 @@ toLocation vLoc =
 
 
 checkRefCatgrEnabled :: ValidatedLostItem -> Category-> Either DomainError ValidatedLostItem
-checkRefCatgrEnabled vli refCatgr 
+checkRefCatgrEnabled vli (RootCategory refCatgr) 
     | validatedLostItemCategoryId vli == categoryId refCatgr = 
         case categoryEnablementStatus refCatgr of
             Disabled reason ->
                 Left . DomainError 
-                    $ "the referenced category is daisabled for the following reason: " 
+                    $ "the referenced category is disabled for the following reason: " 
+                    <> reason
+            Enabled _ -> return vli
+
+    | otherwise =  Left . DomainError $ "category ids don't match"
+checkRefCatgrEnabled vli (SubCategory refCatgr _) 
+    | validatedLostItemCategoryId vli == categoryId refCatgr = 
+        case categoryEnablementStatus refCatgr of
+            Disabled reason ->
+                Left . DomainError 
+                    $ "the referenced category is disabled for the following reason: " 
                     <> reason
             Enabled _ -> return vli
 

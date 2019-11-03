@@ -15,10 +15,16 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
+  
                      , src/sharedtypes
+
                      , src/cmdshandler
+
                      , src/workflows/declare-lost-item
+
                      , src/workflows/create-attribute
+
+                     , src/workflows/create-category
                      , src/workflows/create-category/root
                      , src/workflows/create-category/sub
 
@@ -37,16 +43,15 @@ library
                      , CreateAtributeDto
                      , CreateAttributeHandler
 
+                     , CreateCategoryDto
+                     , CreateCategoryCommonPublicTypes
 
                      , CreateRootCategoryPublicTypes
                      , CreateRootCategoryImplementation
-                     , CreateRootCategoryDto
                      , CreateRootCategoryHandler
 
-                    
                      , CreateSubCategoryPublicTypes
                      , CreateSubCategoryImplementation
-                     , CreateSubCategoryDto
                      , CreateSubCategoryHandler
 
 
@@ -55,7 +60,7 @@ library
 
 
                      , EventStore
-                     , EventStorePlayGround
+--                   , EventStorePlayGround
                      , InventoryAPI
 
                      

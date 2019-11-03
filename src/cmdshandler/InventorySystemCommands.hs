@@ -4,7 +4,9 @@ import CommonSimpleTypes
 import CommonCompoundTypes
 import DeclaredLostItemPublicTypes
 import CreateAttributePublicTypes
+
 import CreateRootCategoryPublicTypes
+import CreateCategoryCommonPublicTypes
 import CreateSubCategoryPublicTypes
 
 import Data.Time
@@ -70,8 +72,8 @@ data LostAndFoundInventoryCmd =
 data InventoryEvent = 
       DclreLostItemEvt [DeclareLostItemEvent]
     | CrteAttribueEvt [CreateAttributeEvent]
-    | CrteRootCatgrEvt [CreateRootCategoryEvent]
-    | CrteSubCatgrEvt [CreateSubCategoryEvent]
+    | CrteRootCatgrEvt [CreateCategoryEvent]
+    | CrteSubCatgrEvt [CreateCategoryEvent]
 
 
 

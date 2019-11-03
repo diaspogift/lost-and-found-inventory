@@ -2,17 +2,20 @@ module CreateSubCategoryPublicTypes where
 
 import CommonSimpleTypes
 import CommonCompoundTypes
+import CreateCategoryCommonPublicTypes
+
 
 -- ==========================================================================
 -- This file contains the definitions of PUBLIC types 
 -- (exposed at the boundary of the bounded context)
--- related to the CreateSubCategory workflow 
+-- related to the CreateRootCategory workflow 
 -- ==========================================================================
 
 -- --------------------------------------------------------------------------
 -- inputs to the workflow
 -- --------------------------------------------------------------------------
-type UnvalidatedSubCategoryId = String
+
+
 
 
 
@@ -25,45 +28,6 @@ data UnvalidatedSubCategory = UnvalidatedSubCategory {
     } deriving (Eq, Ord, Show)
 
 
--- --------------------------------------------------------------------------
--- outputs from the workflow (success case)
--- --------------------------------------------------------------------------
-
-
--- Event will be created if the creation is successfull
-
-type SubCategoryCreated = Category
-type SubCategoriesAdded = [AddedSubCategory]
-
-
-
-
-
--- Create Category state (Category type in Common Shared Compound Types)
--- 
--- data Category = Category {...}
---
---
-
-
-
-
--- The possible events resulting from the CreateSubCategory workflow
-
-data CreateSubCategoryEvent =
-        SubCategoryCreated  SubCategoryCreated 
-    |   SSubCategoriesAdded SubCategoriesAdded
-    deriving (Eq, Ord, Show)
-
-
-
--- --------------------------------------------------------------------------
--- error outputs (Refer to the domain erros defined in The common shared types)
--- --------------------------------------------------------------------------
-
-
-
-
 
 
 
@@ -73,6 +37,6 @@ data CreateSubCategoryEvent =
 
 
 
-type CreateCategory = 
-    UnvalidatedSubCategory -> Either WorkflowError [CreateSubCategoryEvent]
+type CreateSubCategory = 
+    UnvalidatedSubCategory -> Either WorkflowError [CreateCategoryEvent]
 

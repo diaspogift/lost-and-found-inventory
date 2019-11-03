@@ -156,39 +156,6 @@ sendAcknowledgment :: SendAcknowledgment
 sendAcknowledgment declarationAcknowledgment = 
     Sent  -- DeclarationAcknowledgment -> SendResult             
         
-    
-lookupOneCategoryBase :: 
-    [(String, Category)] -> LookupOneCategory
-lookupOneCategoryBase categories categoryId = 
-    do  let maybeCategory = lookup categoryId categories
-        --print maybeCategory
-        case maybeCategory of
-            Just category -> liftEither $ Right category
-            Nothing -> liftEither $ mapLeft DataBase $ Left $ DataBaseError "category not found"
-
-
-lookupOneCategory :: LookupOneCategory 
-lookupOneCategory = lookupOneCategoryBase allCategories 
-
-
-lookupAttributesBase :: 
-    [(String, AttributeRef)]
-    -> LookupAttributes
-lookupAttributesBase attributeRefs attrCodes =
-    do  let maybeAttributeRefs =   sequence $ recursiveLookup attrCodes attributeRefs
-        --print maybeAttributeRefs
-        case maybeAttributeRefs of
-            Just attributes -> liftEither $ Right attributes
-            Nothing -> liftEither $ mapLeft DataBase $ Left $ DataBaseError "attribute not found"
-
-
-recursiveLookup :: [String] -> [(String, AttributeRef)] -> [Maybe AttributeRef]
-recursiveLookup [] _ = []
-recursiveLookup (x:xs) attrRefs = (lookup x attrRefs) : (recursiveLookup xs attrRefs)
-
-                
-lookupAttributes :: LookupAttributes
-lookupAttributes = lookupAttributesBase allAttributes
 
 
 loadAdministrativeAreaMap :: LoadAdministrativeAreaMap
@@ -216,7 +183,6 @@ nextId =
 
 declareLostItemHandler :: 
     LoadAdministrativeAreaMap
-    -> LookupOneCategory 
     -> ReadOneCategory
     -> ReadOneAttributeRef
     -> WriteDeclaredLostItemEvents
@@ -226,7 +192,6 @@ declareLostItemHandler ::
     
 declareLostItemHandler 
     loadAdministrativeAreaMap
-    lookupOneCategory
     readOneCategory
     readOneAttributeRef
     writeDeclaredLostItemEvents
@@ -317,7 +282,6 @@ publicDeclareLostItemHandler :: DeclareLostItemCmd -> ExceptT WorkflowError IO [
 publicDeclareLostItemHandler = 
     declareLostItemHandler 
         loadAdministrativeAreaMap
-        lookupOneCategory
         readOneCategory
         readOneAttributeRef
         writeDeclaredLostItemEvents

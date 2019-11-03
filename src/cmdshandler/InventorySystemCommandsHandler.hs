@@ -11,6 +11,8 @@ import CreateAttributePublicTypes
 import CreateAttributeImplementation
 import CreateAttributeHandler
 
+import CreateCategoryCommonPublicTypes
+
 import CreateRootCategoryPublicTypes
 import CreateRootCategoryImplementation
 import CreateRootCategoryHandler
@@ -121,14 +123,14 @@ mapBothCreateAttributeErrorAndEvent createAttrHandler =
             Right evts -> return $ Right $ CrteAttribueEvt evts 
             Left errMsg -> return $ Left $ CrteAttribueErr errMsg
 
-mapBothCreateRootCategoryErrorAndEvent :: IO (Either WorkflowError [CreateRootCategoryEvent]) -> IO (Either InventoryError InventoryEvent)
+mapBothCreateRootCategoryErrorAndEvent :: IO (Either WorkflowError [CreateCategoryEvent]) -> IO (Either InventoryError InventoryEvent)
 mapBothCreateRootCategoryErrorAndEvent createCatgrHandler = 
     do  ucreateCatgrHandler <- createCatgrHandler
         case ucreateCatgrHandler of
             Right evts -> return $ Right $ CrteRootCatgrEvt evts 
             Left errMsg -> return $ Left $ CrteRootCatgrErr errMsg
 
-mapBothCreateSubCategoryErrorAndEvent :: IO (Either WorkflowError [CreateSubCategoryEvent]) -> IO (Either InventoryError InventoryEvent)
+mapBothCreateSubCategoryErrorAndEvent :: IO (Either WorkflowError [CreateCategoryEvent]) -> IO (Either InventoryError InventoryEvent)
 mapBothCreateSubCategoryErrorAndEvent createCatgrHandler = 
     do  ucreateCatgrHandler <- createCatgrHandler
         case ucreateCatgrHandler of

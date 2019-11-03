@@ -2,6 +2,7 @@ module CreateRootCategoryPublicTypes where
 
 import CommonSimpleTypes
 import CommonCompoundTypes
+import CreateCategoryCommonPublicTypes
 
 -- ==========================================================================
 -- This file contains the definitions of PUBLIC types 
@@ -12,58 +13,15 @@ import CommonCompoundTypes
 -- --------------------------------------------------------------------------
 -- inputs to the workflow
 -- --------------------------------------------------------------------------
-type UnvalidatedRootCategoryId = String
 
 
 
 data UnvalidatedRootCategory = UnvalidatedRootCategory {
-      urootCategoryCode              :: String
+      urootCategoryCode             :: String
     , urootCategoryDescription      :: String
     , urootCategoryEnablement       :: String
     , urootCatgrRelatedsubCatgrs    ::   [String]
     } deriving (Eq, Ord, Show)
-
-
--- --------------------------------------------------------------------------
--- outputs from the workflow (success case)
--- --------------------------------------------------------------------------
-
-
--- Event will be created if the creation is successfull
-
-type RootCategoryCreated = Category
-type SubCategoriesAdded = [AddedSubCategory]
-
-
-
-
-
-
-
--- Create Category state (Category type in Common Shared Compound Types)
--- 
--- data Category = Category {...}
---
---
-
-
-
-
--- The possible events resulting from the CreateRootCategory workflow
-
-data CreateRootCategoryEvent =
-        RootCategoryCreated  RootCategoryCreated 
-    |   RSubCategoriesAdded SubCategoriesAdded
-    deriving (Eq, Ord, Show)
-
-
-
--- --------------------------------------------------------------------------
--- error outputs (Refer to the domain erros defined in The common shared types)
--- --------------------------------------------------------------------------
-
-
-
 
 
 
@@ -74,6 +32,6 @@ data CreateRootCategoryEvent =
 
 
 
-type CreateCategory = 
-    UnvalidatedRootCategory -> Either WorkflowError [CreateRootCategoryEvent]
+type CreateRootCategory = 
+    UnvalidatedRootCategory -> Either WorkflowError [CreateCategoryEvent]
 

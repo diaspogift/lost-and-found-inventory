@@ -2,8 +2,8 @@ module CreateSubCategoryImplementation where
 
 import CommonSimpleTypes
 import CommonCompoundTypes
+import CreateCategoryCommonPublicTypes
 import CreateSubCategoryPublicTypes
-
 
 import Data.Time
 import Prelude hiding (last)
@@ -57,7 +57,7 @@ import Data.UUID hiding (null) -- Internal
 type RefSubCategoryValidationError = String
 
 type CheckRefSubCatgrValid = 
-    UnvalidatedSubCategoryId
+    UnvalidatedCategoryId
     -> Either RefSubCategoryValidationError CategoryId
 
 
@@ -76,7 +76,7 @@ data ValidatedSubCategory = ValidatedSubCategory {
 
 type ValidateUnvalidatedSubCategory =
   UnvalidatedSubCategory 
-  -> UnvalidatedSubCategoryId 
+  -> UnvalidatedCategoryId 
   -> Either ValidationError ValidatedSubCategory
 
 
@@ -115,7 +115,7 @@ type CreateSubCategory =
 
 
 type CreateEvents =
-  Category -> [CreateSubCategoryEvent]
+  Category -> [CreateCategoryEvent]
 
 
 
@@ -207,38 +207,34 @@ toValidatedSubCatgrs  =
 
 checkRefSubCatgrsValid :: CheckRefSubCatgrsValid 
 checkRefSubCatgrsValid catgrs = 
+
     traverse (checkRefSubCatgrValid catgrs) . toList . vsubCatgrRelatedSubCatgrs
     where checkRefSubCatgrValid :: [Category] -> CategoryId -> Either DomainError CategoryId
-          checkRefSubCatgrValid cats catId =
-            let ucatId = uwrpCatgrId catId
-                singletonCat = filter (\cat ->  categoryId cat == catId) cats
-            in case singletonCat of
-                [cat] ->
-                    verifyNotRootAndNotSub cat
+          checkRefSubCatgrValid cats catId = 
+
+            let singletonCatgr = filter (\cat ->  toCatgrId cat == catId) cats
+
+            in case singletonCatgr of
+                [catgr] -> 
+                    checkIsSubAndEnabled catId catgr
                 _ -> 
-                    Left . DomainError $ 
-                        "referenced sub category with id : " 
-                        ++ ucatId  ++ " not found"
+                    Left $ DomainError "referenced sub category not found"
+                
+            where   toCatgrId (RootCategory catgrInfo) = categoryId catgrInfo
+                    toCatgrId (SubCategory catgrInfo _) = categoryId catgrInfo
+
+
+      
                     
-                where verifyNotRootAndNotSub Category { categoryEnablementStatus = es, categoryRootStatus = rs, categoryId = cid } =
-                        case es of 
-                            Disabled reason ->
-                                Left . DomainError $ 
-                                    "referenced sub category with id : " 
-                                    ++ uwrpCatgrId cid  ++ " is disabled for reason: " ++ reason 
-                            Enabled _ ->
-                                case rs of
-                                    Root ->
-                                        Left . DomainError $
-                                            "referenced sub category with id : " 
-                                            ++ uwrpCatgrId cid ++ " is a root category"
-                                    Sub maybeParentInfo -> 
-                                        case maybeParentInfo of 
-                                            Just parentInfo -> 
-                                                Left . DomainError $
-                                                    "referenced sub category with id : " 
-                                                    ++ uwrpCatgrId cid ++ " is already a sub for: " ++ "<<<<<<<<<< TODO >>>>>>>>>>>>"
-                                            Nothing -> Right cid
+checkIsSubAndEnabled :: CategoryId -> Category -> Either DomainError CategoryId                 
+checkIsSubAndEnabled catId (RootCategory _) =  
+    Left $ DomainError "a root category cannot be sub category"
+checkIsSubAndEnabled catId (SubCategory _ (Just _)) =
+    Left $ DomainError "the sub category is already sub for: TODO "
+checkIsSubAndEnabled catId (SubCategory CategoryInfo {categoryEnablementStatus = enblmnt } Nothing) =
+    case enblmnt of
+        Disabled reason -> Left . DomainError $ "the sub category is disabled for: " <> reason
+        Enabled info -> return catId
 
 
 
@@ -255,16 +251,24 @@ checkRefSubCatgrsValid catgrs =
 
 
 checkRefPrntCatgrValid :: Maybe Category -> ValidatedSubCategory -> Either DomainError ValidatedSubCategory
-checkRefPrntCatgrValid maybePrntCatgr vSubCatgr =
-    case maybePrntCatgr of
-        Just prntCatgr ->
-            case filter (parentCatgrIn prntCatgrId) subCatgrIds of
-                [] -> return vSubCatgr
-                _ -> Left . DomainError $ "parent - sub categories recursion not alowed"
-            where   parentCatgrIn catId subCatId =  catId == subCatId
-                    subCatgrIds = toList . vsubCatgrRelatedSubCatgrs $ vSubCatgr
-                    prntCatgrId = categoryId prntCatgr
-        Nothing -> return vSubCatgr {vsubCategoryParentIdCd = Nothing}
+checkRefPrntCatgrValid Nothing vSubCatgr =
+    return vSubCatgr {vsubCategoryParentIdCd = Nothing}
+checkRefPrntCatgrValid (Just (RootCategory prntCatgr)) vSubCatgr =
+    case filter (parentCatgrIn prntCatgrId) subCatgrIds of
+            [] -> return vSubCatgr
+            _ -> Left . DomainError $ "parent - sub categories recursion not alowed"
+        where   parentCatgrIn catId subCatId =  catId == subCatId
+                subCatgrIds = toList . vsubCatgrRelatedSubCatgrs $ vSubCatgr
+                prntCatgrId = categoryId prntCatgr
+checkRefPrntCatgrValid (Just (SubCategory prntCatgr _)) vSubCatgr =
+    case filter (parentCatgrIn prntCatgrId) subCatgrIds of
+            [] -> return vSubCatgr
+            _ -> Left . DomainError $ "parent - sub categories recursion not alowed"
+        where   parentCatgrIn catId subCatId =  catId == subCatId
+                subCatgrIds = toList . vsubCatgrRelatedSubCatgrs $ vSubCatgr
+                prntCatgrId = categoryId prntCatgr
+
+ 
 
 
 
@@ -279,28 +283,19 @@ checkRefPrntCatgrValid maybePrntCatgr vSubCatgr =
 
 createSubCategory :: ValidatedSubCategory -> Category
 createSubCategory vSubCatgr =
-  case vsubCategoryParentIdCd vSubCatgr of
-      Just (prtCatId, prtCatCode) -> 
-
-        Category {
+    case vsubCategoryParentIdCd vSubCatgr of
+        Just (prtCatId, prtCatCode) -> 
+            SubCategory categoryInfo (Just $ ParentInfo prtCatId prtCatCode)
+        Nothing -> SubCategory categoryInfo Nothing
+        where categoryInfo = CategoryInfo {
             categoryId =        vsubCategoryId vSubCatgr
         ,   categoryCode =      vsubCategoryCode vSubCatgr
-        ,   categoryRootStatus  = Sub . Just $ ParentInfo prtCatId prtCatCode
         ,   categoryEnablementStatus = vsubCategoryEnablementStatus vSubCatgr
         ,   categoryDescription = vsubCategoryDescription vSubCatgr
         ,   categoryRelatedSubCategories = vsubCatgrRelatedSubCatgrs vSubCatgr
         }
+  
 
-      Nothing -> 
-        
-        Category {
-            categoryId = vsubCategoryId vSubCatgr
-        ,   categoryCode = vsubCategoryCode vSubCatgr
-        ,   categoryRootStatus  = Sub Nothing
-        ,   categoryEnablementStatus = vsubCategoryEnablementStatus vSubCatgr
-        ,   categoryDescription = vsubCategoryDescription vSubCatgr
-        ,   categoryRelatedSubCategories = vsubCatgrRelatedSubCatgrs vSubCatgr
-        }
 
 
 
@@ -313,13 +308,13 @@ createSubCategory vSubCatgr =
 
 
 
-createEvents :: Category -> [CreateSubCategoryEvent]
+createEvents :: Category -> [CreateCategoryEvent]
 createEvents  cat =
-        let rtCatCrtedEvt = singleton . SubCategoryCreated . createCategoryCreatedEvt $ cat 
-            subCatsAddedEvt = singleton . SSubCategoriesAdded . createSubCategoryAddedEvt $ cat
+        let rtCatCrtedEvt = singleton . CategoryCreated . createCategoryCreatedEvt $ cat 
+            subCatsAddedEvt = singleton . SubCategoriesAdded . createSubCategoryAddedEvt $ cat
         in 
             case head subCatsAddedEvt of 
-                SSubCategoriesAdded [] -> rtCatCrtedEvt
+                SubCategoriesAdded [] -> rtCatCrtedEvt
                 _ -> concat [rtCatCrtedEvt, subCatsAddedEvt]
 
   
@@ -329,12 +324,12 @@ createEvents  cat =
 ---
 ---
 
-createCategoryCreatedEvt :: Category -> SubCategoryCreated
-createCategoryCreatedEvt createdCategory = 
-    createdCategory { categoryRelatedSubCategories = fromList []}
+createCategoryCreatedEvt :: Category -> CategoryCreated
+createCategoryCreatedEvt (SubCategory createdCategory prntInfo) = 
+    SubCategory (createdCategory { categoryRelatedSubCategories = fromList []}) prntInfo
 
 createSubCategoryAddedEvt :: Category -> [AddedSubCategory]
-createSubCategoryAddedEvt Category { categoryId = id, categoryRelatedSubCategories = subCatgrs} =
+createSubCategoryAddedEvt (SubCategory CategoryInfo { categoryId = id, categoryRelatedSubCategories = subCatgrs} _ ) =
     fmap (AddedSubCategory id) . toList $ subCatgrs
     
 
@@ -357,8 +352,8 @@ createSubCatgory ::
   [Category] 
   -> Maybe Category
   -> UnvalidatedSubCategory 
-  -> UnvalidatedSubCategoryId 
-  -> Either WorkflowError [CreateSubCategoryEvent]
+  -> UnvalidatedCategoryId 
+  -> Either WorkflowError [CreateCategoryEvent]
 
 createSubCatgory  
   referredSubCatgrs             -- Input   

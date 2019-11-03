@@ -23,8 +23,10 @@ import CommonDtos
 import DeclaredLostItemPublicTypes
 import DeclareLostItemDto
 
+import CreateCategoryCommonPublicTypes
 import CreateRootCategoryPublicTypes
 import CreateSubCategoryPublicTypes
+
 import CreateAttributePublicTypes
 
 import Control.Monad.Reader
@@ -69,10 +71,10 @@ type WriteCreateAttributeRefEvents =
     LocalStreamId -> CreateAttributeEvent -> IO ()
 
 type WriteCreateRootCategoryEvents = 
-    LocalStreamId -> [CreateRootCategoryEvent] -> IO ()
+    LocalStreamId -> [CreateCategoryEvent] -> IO ()
 
 type WriteCreateSubCategoryEvents = 
-    LocalStreamId -> [CreateSubCategoryEvent] -> IO ()
+    LocalStreamId -> [CreateCategoryEvent] -> IO ()
 
 
 
@@ -106,17 +108,17 @@ readOneCategoryWithReaderT eventNum streamId = do
 
         eventDataPairTypes :: 
             (Data.Text.Internal.Text, Data.ByteString.Internal.ByteString)
-            -> CreateRootCategoryEventDto
+            -> CreateCategoryEventDto
         eventDataPairTypes (evtName, strEventData) 
-            | evtName == "CreatedRootCategory" = 
-                let rs = fromMaybe  (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe RootCategoryCreatedDto)
+            | evtName == "CreatedCategory" = 
+                let rs = fromMaybe  (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe CategoryCreatedDto)
                 in RootCatCR rs
 
             | evtName == "SubCategoriesAdded" = 
-                let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe RSubCategoriesAddedDto)
+                let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe SubCategoriesAddedDto)
                 in RSubCatsADD rs
 
-        applyDtoEvent :: CreateRootCategoryEventDto -> CreateRootCategoryEventDto -> CreateRootCategoryEventDto
+        applyDtoEvent :: CreateCategoryEventDto -> CreateCategoryEventDto -> CreateCategoryEventDto
         applyDtoEvent (RootCatCR acc) (RootCatCR elm) = RootCatCR acc
         applyDtoEvent (RootCatCR acc) (RSubCatsADD subs) = 
             let crtSubs = rsubCategrs acc

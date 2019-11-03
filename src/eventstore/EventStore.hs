@@ -241,12 +241,12 @@ readOneAttributeRef num id = do
 writeDeclaredLostItemEventsWithReaderT :: LocalStreamId -> [DeclareLostItemEvent] -> ReaderT Connection IO ()  
 writeDeclaredLostItemEventsWithReaderT streamId evts = 
 
-    do  conn <- ask
+    do  connec <- ask
         let persistableEvts = fmap toEvent evts
-        as <- liftIO $ sendEvents conn (StreamName $ pack streamId) anyVersion persistableEvts Nothing
+        as <- liftIO $ sendEvents connec (StreamName $ pack streamId) anyVersion persistableEvts Nothing
         _  <- liftIO $ wait as
-        liftIO $ shutdown conn
-        liftIO $ waitTillClosed conn
+        liftIO $ shutdown connec
+        liftIO $ waitTillClosed connec
         where toEvent (LostItemDeclared lid) =
                 let lidDto = fromLostItemDeclared lid
 

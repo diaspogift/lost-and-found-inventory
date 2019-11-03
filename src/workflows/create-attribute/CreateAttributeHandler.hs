@@ -1,7 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-} -- That library uses `Text` pervasively. This pragma permits to use
-                                   -- String literal when a Text is needed.
-
-
 module CreateAttributeHandler where
 
 import CommonSimpleTypes

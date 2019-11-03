@@ -199,6 +199,8 @@ handlerCreateAttributeRef attributeRefForm =
                     case error of
                         Validation (ValidationError err) ->
                             throwError $ toServantError 400 cd msg
+                        Domain (DomainError err) ->
+                            throwError $ toServantError 406 cd msg
                         DataBase (DataBaseError err) ->
                             throwError $ toServantError 404 cd msg
                         Remote err ->

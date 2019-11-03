@@ -97,11 +97,11 @@ createAttributeRefHandler
         ---------------------------------------- IO at the boundary start -----------------------------------------
      
     do  -- get all referenced categories / verified they actually exist
-        refCatgrs <- ExceptT $ liftIO $ fmap sequence $ traverse (readOneCategory 10) $ fst <$> urelatedCategories unvalidatedAttributeRef
+        referencedCatgrs <- ExceptT $ liftIO $ fmap sequence $ traverse (readOneCategory 10) $ fst <$> urelatedCategories unvalidatedAttributeRef
 
 
         -- get randon uuid for the attribute code 
-        attributeCode <- liftIO nextId
+        attributeRefCode <- liftIO nextId
 
 
         ---------------------------------------- IO at the boundary end -----------------------------------------
@@ -115,7 +115,8 @@ createAttributeRefHandler
         let events =
                 createAttributeReference 
                     unvalidatedAttributeRef             -- Input
-                    attributeCode                       -- Input
+                    attributeRefCode                       -- Input
+                    referencedCatgrs                           -- Input
               
         ---------------------------------------- Core business logic end ----------------------------------------
 
@@ -130,7 +131,7 @@ createAttributeRefHandler
                 do
                     let crtAttrRefEvet = filter isCreateAttributeRefEvent allEvents
                         evt = head crtAttrRefEvet
-                    res <- liftIO $ writeCreateAttributeRefEvents attributeCode evt
+                    res <- liftIO $ writeCreateAttributeRefEvents attributeRefCode evt
                     liftEither events
             Left errorMsg -> liftEither $ Left errorMsg
 

@@ -92,6 +92,7 @@ type CreateEvents =
   AttributeRef -> [CreateAttributeEvent]
 
 
+
 -- ==========================================================================================
 -- Section 2 : Implementation
 -- ==========================================================================================
@@ -99,11 +100,23 @@ type CreateEvents =
 
 
 
+checkRefCatgrEnabled :: Category -> Either DomainError Bool                 
+checkRefCatgrEnabled (RootCategory CategoryInfo {categoryEnablementStatus = enblmnt }) =  
+    case enblmnt of
+        Disabled reason -> Left . DomainError $ "the reffered category is disabled for: " <> reason
+        Enabled _ -> return True
+checkRefCatgrEnabled (SubCategory CategoryInfo {categoryEnablementStatus = enblmnt } _) =
+    case enblmnt of
+        Disabled reason -> Left . DomainError $ "the reffered category is disabled for: " <> reason
+        Enabled _ -> return True
+
+
 
 
 -- ----------------------------------------------------------------------------
 -- Validation step
 -- ----------------------------------------------------------------------------
+
 
 
 
@@ -212,11 +225,13 @@ createAttrRefCreatedEvt declaredLostItem = declaredLostItem
 createAttributeReference ::
   UnvalidatedAttributeRef
   -> UnvalidatedAttributeCode
+  -> [Category]
   -> Either WorkflowError [CreateAttributeEvent]
 
 createAttributeReference                 
   unvalidatedAttributeRef           -- Input
-  unValidatedlostItemUuid =         -- Input
+  unValidatedlostItemUuid           -- Input
+  referencedCategories =            -- Input
     do  
         -- Validation step
         validatedAttrRef 
@@ -225,6 +240,12 @@ createAttributeReference
                     validateUnvalidatedAttributeRef
                         unvalidatedAttributeRef
                         unValidatedlostItemUuid
+
+        -- Verify that referred categories are enabled
+        _
+            <-  mapLeft 
+                    Domain $ 
+                        traverse checkRefCatgrEnabled referencedCategories
 
         -- Creation step
         createdAttrRef 

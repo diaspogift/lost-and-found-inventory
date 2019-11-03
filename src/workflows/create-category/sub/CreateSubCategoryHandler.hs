@@ -54,11 +54,7 @@ import Data.Char (toUpper)
 -- =============================================================================
 
 
-type LookupOneCategory = 
-    String -> ExceptT WorkflowError IO Category
 
-type LookupOneMaybeCategory = 
-    String -> Maybe Category
 
 
 type NextId = IO UnvalidatedCategoryId

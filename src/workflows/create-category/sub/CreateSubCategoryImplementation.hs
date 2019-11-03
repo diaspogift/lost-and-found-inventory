@@ -234,11 +234,26 @@ checkIsSubAndEnabled catId (SubCategory _ (Just _)) =
 checkIsSubAndEnabled catId (SubCategory CategoryInfo {categoryEnablementStatus = enblmnt } Nothing) =
     case enblmnt of
         Disabled reason -> Left . DomainError $ "the sub category is disabled for: " <> reason
-        Enabled info -> return catId
+        Enabled _ -> return catId
 
 
 
 
+checkRefPrntCatgrEnabled :: Maybe Category -> Either DomainError (Maybe Bool)                 
+checkRefPrntCatgrEnabled (Just (RootCategory CategoryInfo {categoryEnablementStatus = enblmnt })) =  
+    case enblmnt of
+        Disabled reason -> Left . DomainError $ "the parent category is disabled for: " <> reason
+        Enabled _ -> return $ Just True
+checkRefPrntCatgrEnabled (Just (SubCategory CategoryInfo {categoryEnablementStatus = enblmnt } _)) =
+    case enblmnt of
+        Disabled reason -> Left . DomainError $ "the parent category is disabled for: " <> reason
+        Enabled _ -> return $ Just True
+checkRefPrntCatgrEnabled Nothing = return Nothing
+
+        
+
+
+        
 
 
 
@@ -250,19 +265,19 @@ checkIsSubAndEnabled catId (SubCategory CategoryInfo {categoryEnablementStatus =
 -- ----------------------------------------------------------------------------
 
 
-checkRefPrntCatgrValid :: Maybe Category -> ValidatedSubCategory -> Either DomainError ValidatedSubCategory
-checkRefPrntCatgrValid Nothing vSubCatgr =
-    return vSubCatgr {vsubCategoryParentIdCd = Nothing}
-checkRefPrntCatgrValid (Just (RootCategory prntCatgr)) vSubCatgr =
+checkRefPrntCatgrNotInSubs :: Maybe Category -> ValidatedSubCategory -> Either DomainError Bool
+checkRefPrntCatgrNotInSubs Nothing vSubCatgr =
+    return True
+checkRefPrntCatgrNotInSubs (Just (RootCategory prntCatgr)) vSubCatgr =
     case filter (parentCatgrIn prntCatgrId) subCatgrIds of
-            [] -> return vSubCatgr
+            [] -> return True
             _ -> Left . DomainError $ "parent - sub categories recursion not alowed"
         where   parentCatgrIn catId subCatId =  catId == subCatId
                 subCatgrIds = toList . vsubCatgrRelatedSubCatgrs $ vSubCatgr
                 prntCatgrId = categoryId prntCatgr
-checkRefPrntCatgrValid (Just (SubCategory prntCatgr _)) vSubCatgr =
+checkRefPrntCatgrNotInSubs (Just (SubCategory prntCatgr _)) vSubCatgr =
     case filter (parentCatgrIn prntCatgrId) subCatgrIds of
-            [] -> return vSubCatgr
+            [] -> return True
             _ -> Left . DomainError $ "parent - sub categories recursion not alowed"
         where   parentCatgrIn catId subCatId =  catId == subCatId
                 subCatgrIds = toList . vsubCatgrRelatedSubCatgrs $ vSubCatgr
@@ -377,18 +392,27 @@ createSubCatgory
                         validatedCatgr 
                         
         -- Vefify (if present) that the referred parent category **exists** and is not part of the subs categories specified
-        validatedCatgrN
+        -- and it is enabled
+        _
             <- mapLeft 
                 Domain $
-                    checkRefPrntCatgrValid 
+                    checkRefPrntCatgrNotInSubs 
                         referencedParentCatgr
                         validatedCatgr
 
+        -- Vefify (if present) that the referred parent category enablement status is enabled
+        _
+            <- mapLeft 
+                Domain $
+                    checkRefPrntCatgrEnabled 
+                        referencedParentCatgr
+
         -- Creation step
+
         createdCatgr 
             <- return $ 
                     createSubCategory
-                        validatedCatgrN
+                        validatedCatgr
 
         -- Events creation step
         return $ createEvents createdCatgr

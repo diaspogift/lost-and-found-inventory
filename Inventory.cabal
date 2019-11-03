@@ -30,6 +30,11 @@ library
 
                      , src/eventstore
 
+                     , src/capabilities
+                     , src/authentication
+                     , src/authorization
+                     
+
   exposed-modules:     CommonSimpleTypes
                      , CommonCompoundTypes
 
@@ -61,6 +66,10 @@ library
 
                      , EventStore
 --                   , EventStorePlayGround
+                     , Capabilities
+                     , Authentication
+                     , Authorization
+                    
                      , InventoryAPI
 
                      

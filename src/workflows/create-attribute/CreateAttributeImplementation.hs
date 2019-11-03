@@ -103,11 +103,11 @@ type CreateEvents =
 checkRefCatgrEnabled :: Category -> Either DomainError Bool                 
 checkRefCatgrEnabled (RootCategory CategoryInfo {categoryEnablementStatus = enblmnt }) =  
     case enblmnt of
-        Disabled reason -> Left . DomainError $ "the reffered category is disabled for: " <> reason
+        Disabled reason -> Left . DomainError $ "the referred category is disabled for this reason: " <> reason
         Enabled _ -> return True
 checkRefCatgrEnabled (SubCategory CategoryInfo {categoryEnablementStatus = enblmnt } _) =
     case enblmnt of
-        Disabled reason -> Left . DomainError $ "the reffered category is disabled for: " <> reason
+        Disabled reason -> Left . DomainError $ "the referred category is disabled for this reason: " <> reason
         Enabled _ -> return True
 
 
@@ -242,8 +242,7 @@ createAttributeReference
                         unValidatedlostItemUuid
 
         -- Verify that referred categories are enabled
-        _
-            <-  mapLeft 
+        _   <-  mapLeft 
                     Domain $ 
                         traverse checkRefCatgrEnabled referencedCategories
 

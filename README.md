@@ -9,9 +9,9 @@ The goal of this project is to set up an electronic platform allowing the public
 
 1.  Declare Lost Items 
 2.  Register Found Items
-3.  Matched Lost and Found Item and notify the stakeholders
+3.  Match Lost and Found Item and notify the stakeholders
 4.  Search Lost Items
-5.  Connect users with the information needed to recover their lost and items
+5.  Connect users with the information needed to recover their lost and found items
 
 
 ```

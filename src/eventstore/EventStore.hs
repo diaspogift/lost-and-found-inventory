@@ -59,6 +59,10 @@ type ReadOneCategory  =
     Int32 -> LocalStreamId -> IO (Either WorkflowError Category)
 
 
+type ReadOneDeclaredLostItem  = 
+    LostItemId -> IO (Either WorkflowError DeclaredLostItem)
+
+
 type ReadOneAttributeRef  = 
     Int32 -> LocalStreamId -> IO (Either WorkflowError AttributeRef)
 
@@ -86,7 +90,27 @@ type WriteCreateSubCategoryEvents =
 -- Read operations
 -- =============================================================================
 
+
+
+
+
+---------------------------------------
+-- Declare Lost Item
+---------------------------------------
+
+
+
+readOneDeclaredLostItem :: ReadOneDeclaredLostItem
+readOneDeclaredLostItem = undefined
+
+
+
+
+
+---------------------------------------
 --- Category
+---------------------------------------
+
 
 
 readOneCategoryWithReaderT :: Int32 -> String -> ExceptT  WorkflowError (ReaderT Connection IO) Category
@@ -159,8 +183,10 @@ readOneCategory num id = do
 
 
 
-
+---------------------------------------
 --- AttributeRef
+---------------------------------------
+
 
 
 readOneAttributeRefWithReaderT :: Int32 -> String -> ExceptT  WorkflowError (ReaderT Connection IO) AttributeRef

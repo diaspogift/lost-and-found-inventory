@@ -3,6 +3,14 @@ module Capabilities where
 import CommonSimpleTypes
 import CommonCompoundTypes
 import Authentication
+import Authorization
+
+import DeclaredLostItemPublicTypes
+
+import EventStore
+
+
+
 
 
 
@@ -27,7 +35,7 @@ type WriteCategoryEventsCap = () -> IO ()
 type ReadAttributeStreamCap = () -> IO (Either WorkflowError AttributeRef)
 type WriteAttributeEventsCap = () -> IO ()
 
-type ReadDeclaredLostItemStreamCap = () -> IO (Either WorkflowError AttributeRef)
+type ReadDeclaredLostItemStreamCap = () -> IO (Either WorkflowError DeclaredLostItem)
 type WriteDeclaredLostItemEventsCap = () -> IO ()
 
 
@@ -56,3 +64,14 @@ data CapabilityProvider = CapabilityProvider {
             -- given a userId and IPrincipal, attempt to get the writeDeclaredLostItemEventsCap capability
     ,   writeDeclaredLostItemEventsCap :: UserId -> IPrincipal -> Maybe WriteDeclaredLostItemEventsCap
     }
+
+
+
+getLostItemOnlyForSameId :: LostItemId -> IPrincipal -> Maybe (() -> IO (Either WorkflowError DeclaredLostItem))
+getLostItemOnlyForSameId id principal  = onlyForSameId id principal readOneDeclaredLostItem
+
+getLostItemOnlyForAdmins :: LostItemId -> IPrincipal -> Maybe (() -> IO (Either WorkflowError DeclaredLostItem))
+getLostItemOnlyForAdmins id principal  = onlyForAdmins id principal readOneDeclaredLostItem
+
+
+

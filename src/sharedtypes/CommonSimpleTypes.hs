@@ -357,7 +357,7 @@ crtEmail fieldName  ctor  str
 
 crtLstItmId :: String -> Either ErrorMessage LostItemId
 crtLstItmId = 
-    crtBoundedString "Lost Item Identifier: " LostItemId 36 36 
+    crtBoundedString "Lost Item Identifier: " LostItemId 73 73 
 
 uwrpLstItmId :: LostItemId -> String
 uwrpLstItmId (LostItemId str) = str

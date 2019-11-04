@@ -245,7 +245,7 @@ declareLostItemHandler
                     referencedCatgr                     -- Input
                     unvalidatedLostItem                 -- Input
                     declarationTime                     -- Input
-                    lostItemUuid                        -- Input
+                    (lostItemUuid <> ":" <> userId)            -- Input
 
         ---------------------------------------- Core business logic end ----------------------------------------
 
@@ -261,7 +261,7 @@ declareLostItemHandler
             Right allEvents -> 
                 do
                     let declLostItemEvts = filter persistableEvts allEvents
-                    res <- liftIO $ writeDeclaredLostItemEvents lostItemUuid declLostItemEvts
+                    res <- liftIO $ writeDeclaredLostItemEvents (lostItemUuid <> ":" <> userId) declLostItemEvts
                     liftEither events
             Left errorMsg -> liftEither $ Left errorMsg
 

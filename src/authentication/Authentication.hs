@@ -9,13 +9,6 @@ import Data.List.Split
 
 
 
-
-
-type Name = String
-
-type Identity = String
-
-
 data Role =  
         Administrator 
     |   Anonymous
@@ -62,6 +55,9 @@ lostItemOwnedByPrincipal lostItemId (IPrincipal userId _) =
         Left errorMsg -> False
     where splitOnColumn = splitOn ":"
           toOwnerId = crtUsrId . last . splitOnColumn . uwrpLstItmId
+
+
+
 
 
 checkPrincipalIsInRole :: IPrincipal -> Role -> Bool

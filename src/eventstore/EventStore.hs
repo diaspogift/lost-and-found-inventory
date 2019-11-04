@@ -60,7 +60,7 @@ type ReadOneCategory  =
 
 
 type ReadOneDeclaredLostItem  = 
-    LostItemId -> IO (Either WorkflowError DeclaredLostItem)
+    Int32 -> LostItemId -> IO (Either WorkflowError DeclaredLostItem)
 
 
 type ReadOneAttributeRef  = 

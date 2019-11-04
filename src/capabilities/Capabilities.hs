@@ -9,6 +9,8 @@ import DeclaredLostItemPublicTypes
 
 import EventStore
 
+import Data.Int
+
 
 
 
@@ -67,11 +69,11 @@ data CapabilityProvider = CapabilityProvider {
 
 
 
-getLostItemOnlyForSameId :: LostItemId -> IPrincipal -> Maybe (() -> IO (Either WorkflowError DeclaredLostItem))
-getLostItemOnlyForSameId id principal  = onlyForSameId id principal readOneDeclaredLostItem
+getLostItemOnlyForSameId :: Int32 -> LostItemId -> IPrincipal -> Maybe (() -> IO (Either WorkflowError DeclaredLostItem))
+getLostItemOnlyForSameId numEvts id principal  = onlyForSameId id principal (readOneDeclaredLostItem numEvts)
 
-getLostItemOnlyForAdmins :: LostItemId -> IPrincipal -> Maybe (() -> IO (Either WorkflowError DeclaredLostItem))
-getLostItemOnlyForAdmins id principal  = onlyForAdmins id principal readOneDeclaredLostItem
+getLostItemOnlyForAdmins :: Int32 -> LostItemId -> IPrincipal -> Maybe (() -> IO (Either WorkflowError DeclaredLostItem))
+getLostItemOnlyForAdmins numEvts id principal  = onlyForAdmins id principal (readOneDeclaredLostItem numEvts)
 
 
 

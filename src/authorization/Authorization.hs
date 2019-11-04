@@ -3,7 +3,7 @@ module Authorization where
  
 
 
-
+import CommonSimpleTypes
 import Authentication
 
 
@@ -15,9 +15,9 @@ onlyForSameId lostItemId principal ƒ =
 
 
  
-onlyForAdmins :: LostItemId -> IPrincipal -> (LostItemId -> a) =  Maybe (() -> a)
+onlyForAdmins :: LostItemId -> IPrincipal -> (LostItemId -> a) ->  Maybe (() -> a)
 onlyForAdmins lostItemId principal ƒ =
-    if checkPrincipalIsInRole principal Administrator then
+    if checkPrincipalIsInRole principal Administrator
     then Just $ \() -> ƒ lostItemId 
     else Nothing
         

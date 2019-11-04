@@ -17,7 +17,7 @@ type Identity = String
 
 
 data Role =  
-        Admininstrator 
+        Administrator 
     |   Anonymous
     deriving (Eq, Show, Ord)
 
@@ -44,7 +44,7 @@ authenticate id = do
     where makePrincipal :: UserId -> UserId -> UserId -> Either DomainError IPrincipal
           makePrincipal userId user1 user2
             | userId == user1 = 
-                return $ IPrincipal user1 [Admininstrator, Anonymous] 
+                return $ IPrincipal user1 [Administrator, Anonymous] 
 
             | userId == user2 = 
                 return $ IPrincipal user2 [Anonymous] 

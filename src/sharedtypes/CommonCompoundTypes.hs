@@ -34,6 +34,7 @@ data Category =
     deriving (Eq, Ord, Show)
 
 
+
 data CategoryInfo = CategoryInfo {
         categoryId                  :: CategoryId
     ,   categoryCode                :: CategoryCode
@@ -41,6 +42,7 @@ data CategoryInfo = CategoryInfo {
     ,   categoryDescription         :: LongDescription
     ,   categoryRelatedSubCategories:: Set CategoryId
     } deriving (Eq, Ord, Show)
+
 
 
 data ParentInfo = ParentInfo {
@@ -56,28 +58,7 @@ data EnablementStatus =
     | Disabled Reason
     deriving (Eq, Ord, Show)
 
-{- 
--- helper functions
 
-fromRootStatus :: RootStatus -> (String, String, String)
-fromRootStatus Root = ("Root", "", "")
-fromRootStatus (Sub Nothing) = ("Sub", "", "")
-fromRootStatus (Sub (Just (ParentInfo prtCatId prtCatCode))) = ("Sub", uwrpCatgrId prtCatId, uwpCatgrCd prtCatCode)
-
-
-toRootStatus :: (String, String, String) -> Either ErrorMessage RootStatus
-toRootStatus (rtSttsType, subCatPrtId, subCatPrtCd)
-    | rtSttsType == "Root" && null subCatPrtId && null subCatPrtCd =
-        return Root
-    | rtSttsType == "Sub" && null subCatPrtId && null subCatPrtCd =
-        return . Sub $ Nothing
-    | rtSttsType == "Sub" && notNull subCatPrtId && notNull subCatPrtCd =
-        do pId <- crtCatgrId subCatPrtId
-           pCd <- crtCatgrCd subCatPrtCd
-           return . Sub . Just $ ParentInfo pId pCd
-    | otherwise = Left $ "inconsistent data format of " 
-                            <> "(" <> rtSttsType <> "," <> subCatPrtId <> "," <> subCatPrtCd <> ")"
- -}
 
 notNull = not . null
 
@@ -94,12 +75,10 @@ toEnablementStatus (enblmntType, reason)
 
 
 
-
-
-
 fromEnblmntStatus :: EnablementStatus -> (String, String)
 fromEnblmntStatus (Enabled reason) = ("Enabled", reason) 
 fromEnblmntStatus (Disabled reason) = ("Disabled", reason) 
+
 
 
 

@@ -176,7 +176,7 @@ createSubCategoryHandler
 
 
 
---- partially applied function for the API (Upper) layer - hinding depencies 
+--- partially applied function for the API (Upper) layer - hiding depencies 
 ---
 ---
 

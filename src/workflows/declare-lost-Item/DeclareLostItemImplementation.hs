@@ -90,6 +90,7 @@ data ValidatedLocation = ValidatedLocation {
     } deriving (Eq, Ord, Show)
     
 
+
 data ValidatedAttribute = ValidatedAttribute {
       vattributeCode             :: AttributeCode
     , vattributeName             :: AttributeName
@@ -99,6 +100,7 @@ data ValidatedAttribute = ValidatedAttribute {
     } deriving (Eq, Ord, Show)
 
 
+
 data ValidatedPerson = ValidatedPerson {
       vpersonId         :: UserId
     , vpersonContact    :: ValidatedContactInformation
@@ -106,10 +108,12 @@ data ValidatedPerson = ValidatedPerson {
     } deriving (Eq, Ord, Show)
 
 
+
 data ValidatedContactInformation = ValidatedContactInformation {
       vcontactInfoAddress       :: Maybe PostalAddress
     , vcontactInfoMethod    :: ContactMethod
     } deriving (Eq, Ord, Show)
+
 
 
 data ValidatedLostItem = ValidatedLostItem {
@@ -123,6 +127,8 @@ data ValidatedLostItem = ValidatedLostItem {
   ,   validatedLostItemAttributes       :: Set ValidatedAttribute
   ,   validatedLostItemOwner            :: ValidatedPerson
   }
+
+
 
 type ValidateUnvalidatedLostItem =
   CheckAdministrativeAreaInfoValid            -- Dependency
@@ -166,10 +172,12 @@ data DeclarationAcknowledgment = DeclarationAcknowledgment {
 type CreateDeclarationAcknowledgment = 
   DeclaredLostItem -> HtmlString
 
+
 -- Send a lost item declaration / registration acknoledgment to the declarant
 -- Note that this does not generate an Either type 
 -- because on faillure, we will continue anyway.
 -- On success, we will generate a DeclarationAcknowledgmentSent event
+
 
 data SendResult = 
     Sent
@@ -209,7 +217,7 @@ type AcknowledgemenDeclaredLostItem =
 -- Validation step
 -- ----------------------------------------------------------------------------
 
---- TODO: Check ref category not disable in validation
+
 
 validateUnvalidatedLostItem :: ValidateUnvalidatedLostItem
 validateUnvalidatedLostItem 
@@ -220,8 +228,6 @@ validateUnvalidatedLostItem
   decalrationTime
   unvalidatedAssignUuid = 
 
-  -- Check out record wild card extention
-  -- Use hlint
     ValidatedLostItem
       <$> id <*> name <*> catId <*> descpt <*> locts <*> regTime <*> dteTimeSpan <*> attrs <*> owner
     where id = toLostItemId unvalidatedAssignUuid
@@ -235,8 +241,8 @@ validateUnvalidatedLostItem
           owner = (toOwner checkContactInfoValid . uowner) unvalidatedLostItem
 
 
---- Helper functions for valodateUnvalidatedLostItem
 
+--- Helper functions for valodateUnvalidatedLostItem
 
 toDateTimeSpan :: (String, String) -> Either ValidationError DateTimeSpan
 toDateTimeSpan (startDate, endDate) = 
@@ -337,6 +343,7 @@ toContactInfo checkContactInfoValid uc
             givenSecTel = usecondaryTel uc
             givenAddress = uaddress uc
 
+
 toCheckedValidTelephone :: 
   CheckContactInfoValid 
   -> String 
@@ -345,22 +352,27 @@ toCheckedValidTelephone checkContactInfoValid str =
   do tel <- toTelephone str
      mapLeft ValidationError $ checkContactInfoValid tel
 
+
 toTelephone :: String -> Either ValidationError Telephone
 toTelephone str = 
   mapLeft ValidationError $ crtTel str
     
+
 toEmail :: String -> Either ValidationError EmailAddress
 toEmail str = 
   mapLeft ValidationError $ crtEmailAddress str
  
+
 toPostalAddress :: String -> Either ValidationError PostalAddress
 toPostalAddress str = 
   mapLeft ValidationError $ crtPstAddress str
     
+
 toFirst :: String -> Either ValidationError FirstName
 toFirst str = 
   mapLeft ValidationError $ crtFstNm str
 
+  
 toFullName :: UnvalidatedFullName -> Either ValidationError FullName
 toFullName uFullName =
   FullName 
@@ -373,9 +385,11 @@ toMiddle :: String -> Either ValidationError (Maybe Middle)
 toMiddle str = 
   mapLeft ValidationError $ crtMdleNm str
 
+
 toLast :: String -> Either ValidationError LastName
 toLast str = 
   mapLeft ValidationError $ crtLstNm str
+
 
 toValidatedAttribute :: 
   CheckAttributeInfoValid 
@@ -385,26 +399,32 @@ toValidatedAttribute ::
 toValidatedAttribute 
   checkAttributeInfoValid ulostitem uattr  =
   mapLeft ValidationError $ checkAttributeInfoValid uattr ulostitem 
-         
+    
+  
 toLostItemId :: String -> Either ValidationError LostItemId
 toLostItemId str = 
   mapLeft ValidationError $ crtLstItmId str     
+
 
 toLostItemName :: String -> Either ValidationError ItemName
 toLostItemName str = 
     mapLeft ValidationError $ crtItmNm str     
 
+
 toCategoryId :: String -> Either ValidationError CategoryId
 toCategoryId str = 
   mapLeft ValidationError $ crtCatgrId str    
+
 
 toUserId :: String -> Either ValidationError UserId
 toUserId str = 
   mapLeft ValidationError $ crtUsrId str    
 
+
 toLostItemDescription :: String -> Either ValidationError LongDescription
 toLostItemDescription str = 
   mapLeft ValidationError $ crtLgDescpt str     
+
 
 toCheckedValidAdminArea :: 
   (String, String, String)  
@@ -412,7 +432,8 @@ toCheckedValidAdminArea ::
     -> Either ValidationError (Maybe (Region, Division, SubDivision))
 toCheckedValidAdminArea (reg, div, sub) checkAdministrativeAreaInfoValid =
     mapLeft ValidationError $ checkAdministrativeAreaInfoValid (reg, div, sub)
-        
+     
+    
 toCityOrVillage :: 
     (String, String) 
     -> Either ValidationError (Maybe CityOrVillage)
@@ -430,37 +451,46 @@ toCityOrVillage (cityStr, villageStr)
     | otherwise = return Nothing
 
 
+
 toCity :: String -> Either ValidationError City
 toCity str = 
   mapLeft ValidationError $ crtCity str
+
 
 toVillage :: String -> Either ValidationError Village
 toVillage str = 
   mapLeft ValidationError $ crtVillage str
 
+
 toNeighborhood :: String -> Either ValidationError (Maybe Neighborhood)
 toNeighborhood str = 
   mapLeft ValidationError $ crtNghbrhd str
+
 
 toAddress :: String -> Either ValidationError Address
 toAddress str = 
   mapLeft ValidationError $ crtAddress str
 
+
 toAttributeName :: String -> Either ValidationError AttributeName
 toAttributeName str = 
   mapLeft ValidationError $ crtAttrNm str
+
 
 toAttributeDescpt :: String -> Either ValidationError ShortDescription
 toAttributeDescpt str = 
   mapLeft ValidationError $ crtShrtDescpt str
 
+
 toAttributeValue :: String -> Either ValidationError (Maybe AttributeValue)
 toAttributeValue str = 
   mapLeft ValidationError $ crtOptAttrVal str
 
+
 toAttributeUnit :: String -> Either ValidationError (Maybe AttributeUnit)
 toAttributeUnit str = 
   mapLeft ValidationError $ crtOptAttrUnt str
+
 
 toLostItemLocation ::  
   CheckAdministrativeAreaInfoValid 
@@ -563,10 +593,11 @@ toLocation vLoc =
 
 
 
-
 -- ----------------------------------------------------------------------------
 -- Check refered category enabled step
 -- ----------------------------------------------------------------------------
+
+
 
 
 
@@ -714,9 +745,9 @@ declareLostItem
   checkAdministrativeAreaInfoValid  -- Dependency
   checkAttributeInfoValid           -- Dependency
   checkContactInfoValid             -- Dependency
-  crtDeclarationAcknowledgment   -- Dependency
-  sendAcknowledgment  
-  referencedCategory              -- Dependency
+  crtDeclarationAcknowledgment      -- Dependency
+  sendAcknowledgment                -- Dependency
+  referencedCategory                -- Input
   unvalidatedLostItem               -- Input
   lostItemCreationTime              -- Input
   unValidatedlostItemUuid =         -- Input
@@ -760,10 +791,6 @@ declareLostItem
                 maybeAcknowledgment   
 
           
-
-
---- pramp.com 
-
 
 
 

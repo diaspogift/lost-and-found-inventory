@@ -171,21 +171,26 @@ toMaybePrntIdCd (prntId, prntCd)
                    prntCatCd <- mapLeft ValidationError $  crtCatgrCd prntCd
                    return . Just $ (prntCatId, prntCatCd)
 
+                   
 toCatId :: String -> Either ValidationError CategoryId
 toCatId = mapLeft ValidationError . crtCatgrId
-         
+        
+
 toCatCd :: String -> Either ValidationError CategoryCode
 toCatCd = mapLeft ValidationError . crtCatgrCd      
   
+
 toEnblmntStatus :: String -> Either ValidationError EnablementStatus
 toEnblmntStatus str 
     | str == "enabled" = Right . Enabled $ "Enabled at creation time"
     | str == "disabled" = Right . Disabled $ "Disabled at creation time"
     | otherwise = mapLeft ValidationError . Left $ "enablement status is either enabled or disabled"
 
+
 toDescpt :: String -> Either ValidationError LongDescription
 toDescpt = mapLeft ValidationError . crtLgDescpt  
   
+
 toValidatedSubCatgrs :: 
     [String] -> Either ValidationError (Set CategoryId)
 toValidatedSubCatgrs  = 

@@ -56,13 +56,7 @@ newtype CreateAttributeEvent =
 
 
 
-{--
-data WorkflowError
-      Validation ValidationError 
-    | Remote RemoteServiceError
-    | DataBase DataBaseError 
-    deriving (Eq, Ord, Show)
---}
+{-- See common errors --}
 
 
 

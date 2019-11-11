@@ -196,7 +196,7 @@ newtype DomainError =
 newtype DataBaseError = 
     DataBaseError String deriving (Eq, Ord, Show)
 
--- External systems errors
+-- External systems call errors
 data ServiceInfo = ServiceInfo {
         serviceName :: String
     ,   endpoint :: String
@@ -204,11 +204,11 @@ data ServiceInfo = ServiceInfo {
 
 data RemoteServiceError = RemoteServiceError {
         service :: ServiceInfo
-    ,   execption :: String -- SomeException
+    ,   execption :: String -- SomeException ???
     ,   errorCode :: Int
     } deriving (Eq, Ord, Show)
 
--- shared workflow error
+-- Shared workflow error
 data WorkflowError =
       Validation ValidationError 
     | Remote RemoteServiceError
@@ -219,6 +219,7 @@ data WorkflowError =
 
 
 
+    
 -- ===================================================================================
 -- helper functions for constructing constrained types
 -- ===================================================================================

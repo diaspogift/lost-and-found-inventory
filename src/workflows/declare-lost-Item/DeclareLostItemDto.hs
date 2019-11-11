@@ -100,6 +100,7 @@ toAdminAreaInfo (strReg, strDiv, strSub)
             sub <- Cct.toSubDivision strSub
             return $ Just (reg, div, sub)
 
+
 toCityOrVillage :: 
     (String, String) 
     -> Either ErrorMessage (Maybe CityOrVillage)
@@ -150,6 +151,8 @@ fromMaybeCityOrVillage Nothing = ("","")
 fromMaybeNeighborhood :: Maybe Neighborhood -> String
 fromMaybeNeighborhood (Just wNeighborhood) = uwrpNghbrhd wNeighborhood
 fromMaybeNeighborhood Nothing = ""
+
+
 
 -- ----------------------------------------------------------------------------
 -- DTO for Attribute
@@ -220,6 +223,8 @@ fromAttribute  =
 -- DTO for Person
 -- ----------------------------------------------------------------------------
 
+
+
 data PersonDto = PersonDto {
         userId :: String
     ,   contact :: ContactInformationDto
@@ -252,9 +257,11 @@ fromPerson =
     
 
 
+
 -- ----------------------------------------------------------------------------
 -- DTO for ContactInformation
 -- ----------------------------------------------------------------------------
+
 
 
 data ContactInformationDto = ContactInformationDto {
@@ -377,9 +384,11 @@ fromContactMethod (Cct.EmailAndPhone  both) =
 
 
 
+
 -- ----------------------------------------------------------------------------
 -- DTO for FullName
 -- ----------------------------------------------------------------------------
+
 
 
 data FullNameDto = FullNameDto {
@@ -428,6 +437,7 @@ fromFullName =
 
 
 
+
 data DeclareLostItemForm = DeclareLostItemForm {
         name :: String
     ,   categoryId :: String
@@ -458,9 +468,11 @@ toUnvalidatedLostItem =
 
 
 
+
 -------------------------------------------------------------------------------
 -- DTO for LostItemDeclared  and SearchableItemDeclared Events
 -- ----------------------------------------------------------------------------
+
 
 
 
@@ -501,9 +513,12 @@ fromDateTimeSpan = uwrpDtTmSpan
 
 
 
+
 -- ----------------------------------------------------------------------------
 -- DTO for AcknowledgmentSent Event
 -- ----------------------------------------------------------------------------
+
+
 
 data DeclarationAcknowledgmentSentDto = 
     DeclarationAcknowledgmentSentDto {
@@ -525,7 +540,6 @@ fromDeclarationAcknowledgmentSent  =
         <$> uwrpLstItmId . declaredLostItemId 
         <*> fromContactInformation . ownerContactInfo
     
-
 
 
 
@@ -602,37 +616,4 @@ fromDclLstItmEvtDomain evt =
                 val = fromDeclarationAcknowledgmentSent as
             in  singleton key (DA val)
         
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- =============================================================================
---  Playground area 
--- =============================================================================
-    
 

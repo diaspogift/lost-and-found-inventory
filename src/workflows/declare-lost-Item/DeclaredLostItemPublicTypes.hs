@@ -22,6 +22,7 @@ import Data.Dates
 -- --------------------------------------------------------------------------
 type UnvalidatedLostItemId = String
 
+
 type UnvalidatedAminitrativeArea = (String, String, String)
 
 
@@ -33,6 +34,7 @@ data UnvalidatedLocation = UnvalidatedLocation {
     ,   uloaddresses :: [String]
     } deriving (Eq, Ord, Show)
 
+
 data UnvalidatedAttribute = UnvalidatedAttribute {
       uattrCode :: String
     , uattrName :: String
@@ -41,11 +43,13 @@ data UnvalidatedAttribute = UnvalidatedAttribute {
     , uattrUnit ::   String
     } deriving (Eq, Ord, Show)
 
+
 data UnvalidatedPerson = UnvalidatedPerson {
         uuserId :: String
     ,   ucontact :: UnvalidatedContactInformation
     ,   ufullname :: UnvalidatedFullName
     } deriving (Eq, Ord, Show)
+
 
 data UnvalidatedContactInformation = UnvalidatedContactInformation {
         uemail :: String
@@ -53,6 +57,7 @@ data UnvalidatedContactInformation = UnvalidatedContactInformation {
     ,   uprimaryTel :: String
     ,   usecondaryTel :: String 
     } deriving (Eq, Ord, Show)
+
 
 data UnvalidatedFullName = UnvalidatedFullName {
         ufirst :: String
@@ -71,9 +76,11 @@ data UnvalidatedLostItem = UnvalidatedLostItem {
     } deriving (Eq, Ord, Show)
 
 
+
 -- --------------------------------------------------------------------------
 -- outputs from the workflow (success case)
 -- --------------------------------------------------------------------------
+
 
 
 -- Event will be created if the Acknowledgment was successfully posted
@@ -114,16 +121,19 @@ data DeclareLostItemEvent =
 
 
 
+
 -- --------------------------------------------------------------------------
 -- error outputs (in the common module)
 -- --------------------------------------------------------------------------
 
-
+{- See commor errors-}
 
 
 -- --------------------------------------------------------------------------
 -- the workflow itself
 -- --------------------------------------------------------------------------
+
+
 
 type DeclareLostItem = 
     UnvalidatedLostItem -> Either WorkflowError [DeclareLostItemEvent]

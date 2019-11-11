@@ -59,8 +59,11 @@ data CreateRootCategoryForm = CreateRootCategoryForm {
     ,   description             :: String
     ,   enablementStatus        :: String
     ,   relatedSubCategories    ::   [String]
-    } deriving (Generic, Show, ToJSON, FromJSON)
+    } deriving (Generic, Show)
 
+instance ToJSON CreateRootCategoryForm
+
+instance FromJSON CreateRootCategoryForm
 
 
 

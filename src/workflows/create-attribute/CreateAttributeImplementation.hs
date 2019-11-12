@@ -241,7 +241,7 @@ createAttributeReference
                         unvalidatedAttributeRef
                         unValidatedlostItemUuid
 
-        -- Verify that referred categories are enabled
+        -- Verify that referred categories are all enabled
         _   <-  mapLeft 
                     Domain $ 
                         traverse checkRefCatgrEnabled referencedCategories

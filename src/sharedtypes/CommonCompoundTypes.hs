@@ -28,13 +28,15 @@ import Data.Either
 -- Category-related types
 -- ===============================================================
 
+
+
 data Category = 
       RootCategory CategoryInfo 
     | SubCategory CategoryInfo (Maybe ParentInfo ) 
     deriving (Eq, Ord, Show)
 
 
-
+    
 data CategoryInfo = CategoryInfo {
         categoryId                  :: CategoryId
     ,   categoryCode                :: CategoryCode
@@ -1220,9 +1222,9 @@ data AttributeRef = AttributeRef {
 
 
 data Person = Person {
-      personId   :: UserId
-    , personContact  :: ContactInformation
-    , personFullName     :: FullName
+      personId          :: UserId
+    , personContact     :: ContactInformation
+    , personFullName    :: FullName
     } deriving (Eq, Ord, Show)
 
 
@@ -1377,7 +1379,8 @@ fromSubDivision subdivision =
 
 
 ---  Admin Map Data Structure
-data AdministrativeMap =
+
+newtype AdministrativeMap =
     AdministrativeMap [RegionItem]  deriving (Eq, Ord, Show)
 data RegionItem =
     RegionItem Region [DivisionItem] deriving (Eq, Ord, Show)

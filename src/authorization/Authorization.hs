@@ -1,28 +1,23 @@
-module Authorization where 
+module Authorization where
 
- 
-
-
-import CommonSimpleTypes
-import Authentication
-
-
-
-
-
+import Authentication (
+    IPrincipal, 
+    Role (..), 
+    lostItemOwnedByPrincipal, 
+    checkPrincipalIsInRole
+    )
+import CommonSimpleTypes (
+    LostItemId
+    )
 
 onlyForSameId :: LostItemId -> IPrincipal -> (LostItemId -> a) -> Maybe (() -> a)
-onlyForSameId lostItemId principal ƒ = 
-    if lostItemOwnedByPrincipal lostItemId principal 
+onlyForSameId lostItemId principal ƒ =
+  if lostItemOwnedByPrincipal lostItemId principal
     then Just (\() -> ƒ lostItemId)
     else Nothing
 
-
- 
-onlyForAdmins :: LostItemId -> IPrincipal -> (LostItemId -> a) ->  Maybe (() -> a)
+onlyForAdmins :: LostItemId -> IPrincipal -> (LostItemId -> a) -> Maybe (() -> a)
 onlyForAdmins lostItemId principal ƒ =
-    if checkPrincipalIsInRole principal Administrator
-    then Just ( \() -> ƒ lostItemId )
+  if checkPrincipalIsInRole principal Administrator
+    then Just (\() -> ƒ lostItemId)
     else Nothing
-        
-

@@ -676,7 +676,7 @@ acknowledgemenDeclaredLostItem
 createEvents :: DeclaredLostItem -> Maybe DeclarationAcknowledgmentSent -> [DeclareLostItemEvent]
 createEvents declaredLosItem optionDeclarationAcknowledgmentSent =
   let acknoledgmentEvents = 
-        maybeToList $ fmap AcknowledgmentSent optionDeclarationAcknowledgmentSent
+        maybeToList $ AcknowledgmentSent <$> optionDeclarationAcknowledgmentSent
 
       lostDeclrationCreatedEvents = 
         singleton $ LostItemDeclared $ crtLostItemDeclaredEvent declaredLosItem

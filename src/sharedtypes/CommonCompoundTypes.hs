@@ -1321,7 +1321,7 @@ toRegion str
     | "southwest" == lowerStr = Right SouthWest
     | "west" == lowerStr = Right West
     | otherwise  = Left $ str <> ": is an invalid region code"
-    where lowerStr = fmap toLower str
+    where lowerStr = toLower <$> str
 
 fromRegion :: Region -> String
 fromRegion region =
@@ -1347,7 +1347,7 @@ toDivision str
     | "vina" == lowerStr =      Right Vina
     | otherwise = Left $ str <> ": is an invalid division code"
     -- TODO FINISH  ALL CASES
-    where lowerStr = fmap toLower str
+    where lowerStr = toLower <$> str
 
 
 fromDivision :: Division -> String
@@ -1367,7 +1367,7 @@ toSubDivision str
     | "tibati" == lowerStr = Right Tibati
     | otherwise  = Left $ str <> ": is an invalid sub division code"
     -- TODO FINISH  ALL CASES
-    where lowerStr = fmap toLower str
+    where lowerStr = toLower <$> str
 
 
 fromSubDivision :: SubDivision -> String
@@ -1700,7 +1700,7 @@ wouriDivision = DivisionItem Wouri wouriSubDivisions
 
 {- categories = rights [kidsSubHumanCategory, humansCategory, documentsCategory, personalItemsCategory, electronicsCategory]
 allCategories = 
-    fmap toTuple categories
+    toTuple <$> categories
         where toTuple cat = (uwrpCatgrId $ categoryId cat, cat)  -}
 
 
@@ -1845,7 +1845,7 @@ weightAttributeRef =
 
 attributes = rights [colorAttributeRef, weightAttributeRef]
 allAttributes = 
-    fmap catToTuple attributes
+    catToTuple <$> attributes
         where catToTuple attr = (uwrpAttrCd $ attributeRefCode attr, attr) 
 
 

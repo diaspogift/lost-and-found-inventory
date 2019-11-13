@@ -153,7 +153,7 @@ handlerDeclareLostItem declareLostItemForm =
 
         case res of 
             Right (DclreLostItemEvt events) -> 
-                return $ DclLstItemResp $ fmap fromDclLstItmEvtDomain events
+                return $ DclLstItemResp $ fromDclLstItmEvtDomain <$> events
             Left (DclreLostItemErr error) -> 
                 let errorMsg = fromWorkflowError error
                     cd = worflowErrorCde errorMsg
@@ -189,7 +189,7 @@ handlerCreateAttributeRef attributeRefForm =
 
         case res of 
             Right (CrteAttribueEvt events) -> 
-                return $ CrtAttrRefResp $ fmap fromCrtAttrEvtDomain events 
+                return $ CrtAttrRefResp $ fromCrtAttrEvtDomain <$> events 
             Left (CrteAttribueErr error) -> 
                 let errorMsg = fromWorkflowError error
                     cd = worflowErrorCde errorMsg
@@ -226,7 +226,7 @@ handleCreateRootCategory rootCategoryForm =
 
         case res of 
             Right (CrteRootCatgrEvt events) -> 
-                return $ CrtRooCatgrResp $ fmap fromCrtCatgrEvtDomain events 
+                return $ CrtRooCatgrResp $ fromCrtCatgrEvtDomain <$> events 
             Left (CrteRootCatgrErr error) -> 
                 let errorMsg = fromWorkflowError error
                     cd = worflowErrorCde errorMsg
@@ -264,7 +264,7 @@ handleCreateSubCategory subCategoryForm =
 
         case res of 
             Right (CrteSubCatgrEvt events) -> 
-                return $ CrtSubCatgrResp $ fmap fromCrtCatgrEvtDomain events 
+                return $ CrtSubCatgrResp $ fromCrtCatgrEvtDomain <$> events 
             Left (CrteSubCatgrErr error) -> 
                 let errorMsg = fromWorkflowError error
                     cd = worflowErrorCde errorMsg

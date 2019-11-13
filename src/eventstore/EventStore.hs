@@ -14,8 +14,6 @@ import Data.Text.Internal (Text)
 import Data.ByteString.Internal (ByteString)
 
 import CreateCategoryCommonDto
-import CreateRootCategoryDto
-import CreateSubCategoryDto
 
 import CreateAttributeDto
 import CommonSimpleTypes
@@ -121,8 +119,8 @@ readOneCategoryWithReaderT eventNum streamId = do
         ReadSuccess sl@(Slice resolvedEvents mm) -> do
 
             let recordedEvts1 = mapMaybe resolvedEventRecord resolvedEvents
-            let pairs = fmap eventDataPair recordedEvts1
-            let events = fmap eventDataPairTypes pairs
+            let pairs = eventDataPair <$> recordedEvts1
+            let events = eventDataPairTypes <$> pairs
             let reducedEvent = rebuildCategoryDto events
             
             liftEither $ mapLeft DataBase $ toCategoryDomain reducedEvent
@@ -153,7 +151,7 @@ readOneCategoryWithReaderT eventNum streamId = do
         applyDtoEvent (CatgrCreated acc) (CatgrCreated elm) = CatgrCreated acc
         applyDtoEvent (CatgrCreated acc) (SubCatgrsAdded subs) = 
             let crtSubs = subCategrs acc
-                addedSubs = fmap sub subs
+                addedSubs = sub <$> subs
             in CatgrCreated $ acc { subCategrs = crtSubs ++ addedSubs }
 
         rebuildCategoryDto :: [CreateCategoryEventDto] -> CreateCategoryEventDto
@@ -199,8 +197,8 @@ readOneAttributeRefWithReaderT evtNum streamId = do
                 
 
                 let recordedEvts = mapMaybe resolvedEventRecord resolvedEvents
-                let pairs = fmap eventDataPair1 recordedEvts
-                let events = fmap eventDataPairTypes1 pairs
+                let pairs = eventDataPair1 <$> recordedEvts
+                let events = eventDataPairTypes1 <$> pairs
                 let reducedEvent = rebuildAttributeRefDtoDto1 events
                 
                 liftEither . mapLeft DataBase $ toAttributeRefDomain1 reducedEvent
@@ -268,7 +266,7 @@ writeDeclaredLostItemEventsWithReaderT :: LocalStreamId -> [DeclareLostItemEvent
 writeDeclaredLostItemEventsWithReaderT streamId evts = 
 
     do  connec <- ask
-        let persistableEvts = fmap toEvent evts
+        let persistableEvts = toEvent <$> evts
         as <- liftIO $ sendEvents connec (StreamName $ pack streamId) anyVersion persistableEvts Nothing
         _  <- liftIO $ wait as
         liftIO $ shutdown connec
@@ -311,7 +309,7 @@ writeDeclaredLostItemEvents id evts = do
 writeCreateRootCategoryEventsWithReaderT :: LocalStreamId -> [CreateCategoryEvent] -> ReaderT Connection IO ()
 writeCreateRootCategoryEventsWithReaderT streamId evts = 
     do  conn <- ask
-        let persistableEvtss = fmap toEvent evts
+        let persistableEvtss = toEvent <$> evts
         as <- liftIO $ sendEvents conn (StreamName $ pack streamId) anyVersion persistableEvtss Nothing
         _  <- liftIO $ wait as
         liftIO $ shutdown conn
@@ -347,7 +345,7 @@ writeCreateRootCategoryEvents id evts = do
 writeCreateSubCategoryEventsWithReaderT :: LocalStreamId -> [CreateCategoryEvent] -> ReaderT Connection IO ()
 writeCreateSubCategoryEventsWithReaderT streamId evts = 
     do  conn <- ask
-        let persistableEvts = fmap toEvent evts
+        let persistableEvts = toEvent <$> evts
         as <- liftIO $ sendEvents conn (StreamName $ pack streamId) anyVersion persistableEvts Nothing
         _  <- liftIO $ wait as
         liftIO $ shutdown conn

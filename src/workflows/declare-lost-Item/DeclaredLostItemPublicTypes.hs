@@ -186,7 +186,7 @@ data DeclareLostItemEvent
   deriving (Eq, Ord, Show)
 
 
-  
+
 
 -- --------------------------------------------------------------------------
 -- error outputs (in the common module)
@@ -198,6 +198,9 @@ data DeclareLostItemEvent
 -- --------------------------------------------------------------------------
 -- the workflow itself
 -- --------------------------------------------------------------------------
+
+
+
 
 type DeclareLostItem =
   UnvalidatedLostItem -> Either WorkflowError [DeclareLostItemEvent]

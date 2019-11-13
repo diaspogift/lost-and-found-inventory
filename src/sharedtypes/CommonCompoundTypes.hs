@@ -13,6 +13,8 @@ import Data.Set (
     toList)
 
 
+
+
 -- ==============================================================================================
 -- Common compound types used throughout the Inventory Management domain
 --
@@ -21,15 +23,22 @@ import Data.Set (
 -- ==============================================================================================
 
 
+
+
 -- ===============================================================
 -- Category-related types
 -- ===============================================================
+
+
 
 
 data Category
   = RootCategory CategoryInfo
   | SubCategory CategoryInfo (Maybe ParentInfo)
   deriving (Eq, Ord, Show)
+
+
+
 
 data CategoryInfo
   = CategoryInfo
@@ -41,12 +50,18 @@ data CategoryInfo
       }
   deriving (Eq, Ord, Show)
 
+
+
+
 data AddedSubCategory
   = AddedSubCategory
       { addedSubCategoryParent :: ParentCategoryId,
         addSubCategoryId :: SubCategoryId
       }
   deriving (Eq, Ord, Show)
+
+
+
 
 data ParentInfo
   = ParentInfo
@@ -55,10 +70,15 @@ data ParentInfo
       }
   deriving (Eq, Ord, Show)
 
+
+
+
 data EnablementStatus
   = Enabled Reason
   | Disabled Reason
   deriving (Eq, Ord, Show)
+
+
 
 
 toEnablementStatus :: (String, String) -> Either ErrorMessage EnablementStatus
@@ -76,13 +96,22 @@ toEnablementStatus (enblmntType, reason)
         <> reason
         <> ")"
 
+
+
+
 fromEnblmntStatus :: EnablementStatus -> (String, String)
 fromEnblmntStatus (Enabled reason) = ("Enabled", reason)
 fromEnblmntStatus (Disabled reason) = ("Disabled", reason)
 
+
+
+
 -- ===============================================================
 -- Location-related types
 -- ===============================================================
+
+
+
 
 data Location
   = Location
@@ -93,11 +122,20 @@ data Location
       }
   deriving (Eq, Ord, Show)
 
+
+
+
 type AdministrativeAreaInfo = (Region, Division, SubDivision)
+
+
+
 
 -- ===============================================================
 -- Region-related types
 -- ===============================================================
+
+
+
 
 data Region
   = Adamaoua
@@ -128,9 +166,11 @@ instance Show Region where
 
 
 
+
 -- ===============================================================
 -- Division-related types
 -- ===============================================================
+
 
 
 
@@ -272,9 +312,11 @@ instance Show Division where
 
 
 
+
 -- ===============================================================
 -- SubDivision-related types
 -- ===============================================================
+
 
 
 
@@ -1144,9 +1186,11 @@ instance Show SubDivision where
 
 
 
+
 -- ===============================================================
 -- Attribute-related types
 -- ===============================================================
+
 
 
 
@@ -1159,6 +1203,9 @@ data Attribute
         attributeUnit :: Maybe AttributeUnit
       }
   deriving (Eq, Ord, Show)
+
+
+
 
 data AttributeRef
   = AttributeRef
@@ -1173,9 +1220,11 @@ data AttributeRef
 
 
 
+
 -- ===============================================================
 -- Owner / ContactInformation - related types
 -- ===============================================================
+
 
 
 
@@ -1187,12 +1236,18 @@ data Person
       }
   deriving (Eq, Ord, Show)
 
+
+
+
 data ContactInformation
   = ContactInformation
       { conatInfoAddress :: Maybe PostalAddress,
         contactInfoMethod :: ContactMethod
       }
   deriving (Eq, Ord, Show)
+
+
+
 
 data BothContactInfo
   = BothContactInfo
@@ -1202,11 +1257,17 @@ data BothContactInfo
       }
   deriving (Eq, Ord, Show)
 
+
+
+
 data ContactMethod
   = EmailOnly EmailAddress
   | PhoneOnly Telephone (Maybe Telephone)
   | EmailAndPhone BothContactInfo
   deriving (Eq, Ord, Show)
+
+
+
 
 data FullName
   = FullName
@@ -1218,9 +1279,11 @@ data FullName
 
 
 
+
 -- ===============================================================
 -- Lost Item Keeper-related types
 -- ===============================================================
+
 
 
 
@@ -1235,9 +1298,12 @@ data Tenant
 
 
 
+
+
 -- ===============================================================
 -- Challenge-related types
 -- ===============================================================
+
 
 
 
@@ -1245,15 +1311,20 @@ data Challenge
   = Question
   deriving (Eq, Show, Ord)
 
+
+
+
 newtype ChallengeAnser
   = ChallengeAnser (Question, Answer)
   deriving (Eq, Show, Ord)
 
 
 
+
 -- ===============================================================
 -- Helper functions
 -- ===============================================================
+
 
 
 
@@ -1273,6 +1344,9 @@ toRegion str
   where
     lowerStr = toLower <$> str
 
+
+
+
 fromRegion :: Region -> String
 fromRegion region =
   case region of
@@ -1287,6 +1361,9 @@ fromRegion region =
     SouthWest -> show SouthWest
     West -> show West
 
+
+
+
 toDivision :: String -> Either ErrorMessage Division
 toDivision str
   | "djerem" == lowerStr = Right Djerem
@@ -1296,8 +1373,11 @@ toDivision str
   | "vina" == lowerStr = Right Vina
   | otherwise = Left $ str <> ": is an invalid division code"
   where
-    -- TODO FINISH  ALL CASES
+    -- TODO: FINISH  ALL CASES
     lowerStr = toLower <$> str
+
+
+
 
 fromDivision :: Division -> String
 fromDivision division =
@@ -1309,6 +1389,9 @@ fromDivision division =
     Vina -> show Vina
     _ -> error "NOT IMPLEMENTED YET"
 
+
+
+
 toSubDivision :: String -> Either ErrorMessage SubDivision
 toSubDivision str
   | "gouandal" == lowerStr = Right Gouandal
@@ -1317,6 +1400,9 @@ toSubDivision str
   where
     -- TODO FINISH  ALL CASES
     lowerStr = toLower <$> str
+
+
+
 
 fromSubDivision :: SubDivision -> String
 fromSubDivision subdivision =
@@ -1339,21 +1425,40 @@ newtype AdministrativeMap
   = AdministrativeMap [RegionItem]
   deriving (Eq, Ord, Show)
 
+
+
+
 data RegionItem
   = RegionItem Region [DivisionItem]
   deriving (Eq, Ord, Show)
+
+
+
 
 data DivisionItem
   = DivisionItem Division [SubDivision]
   deriving (Eq, Ord, Show)
 
+
+
+
 --- Helper functions
+---
+---
 
 isRegionItemRegion :: Region -> RegionItem -> Bool
 isRegionItemRegion reg (RegionItem regItem _) = reg == regItem
 
 isDivisionItemDivision :: Division -> DivisionItem -> Bool
 isDivisionItemDivision div (DivisionItem divItem _) = div == divItem
+
+
+
+
+--- Cameroon Administravive Map Data
+---
+---
+
 
 camerounAdministrativeMap :: AdministrativeMap
 camerounAdministrativeMap = AdministrativeMap allTenRegions
@@ -1363,6 +1468,8 @@ camerounAdministrativeMap = AdministrativeMap allTenRegions
         centreRegionItem,
         littoralRegion
       ]
+
+
 
 --- Adamaoua region
 ---
@@ -1428,6 +1535,8 @@ vinaDivision = DivisionItem Vina vinaSubDivisions
         Nyambaka,
         Martap
       ]
+
+
 
 --- Centre region
 ---
@@ -1576,6 +1685,9 @@ nyongEtSooDivision = DivisionItem NyongEtSoo nyongEtSooDivisionSubDivisions
         Nkolmetet
       ]
 
+
+
+
 --- Littoral Region
 ---
 ---
@@ -1651,9 +1763,11 @@ wouriDivision = DivisionItem Wouri wouriSubDivisions
 
 
 
+
 -- =============================================================================
 -- Generic helper functions
 -- =============================================================================
+
 
 
 notNull = not . null

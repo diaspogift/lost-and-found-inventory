@@ -122,15 +122,24 @@ import qualified Data.ByteString.Char8 as Char8
     (pack)
 
 
+
+
+
 -- ===================================================================================
 -- Simple types and constrained types related to the Lost |&| Found Inventory domain.
 --
 -- E.g. Single case discriminated unions (aka wrappers), enums, etc
 -- ===================================================================================
 
+
+
+
 -- =============================================================================
 -- Common shared simple domain types
 -- =============================================================================
+
+
+
 
 type Reason = String
 
@@ -273,6 +282,7 @@ newtype Answer
 
 
 
+
 -- =============================================================================
 -- Common shared error types
 -- =============================================================================
@@ -319,9 +329,11 @@ data WorkflowError
 
 
 
+
 -- ===================================================================================
 -- helper functions for constructing constrained types
 -- ===================================================================================
+
 
 
 
@@ -440,9 +452,15 @@ crtEmail fieldName ctor str
           Right emailAddress -> Right $ ctor str
           Left errorMsg -> Left errorMsg
 
+
+
+
 -- =============================================================================
 -- Common shared domain types constructors
 -- =============================================================================
+
+
+
 
 crtLstItmId :: String -> Either ErrorMessage LostItemId
 crtLstItmId =

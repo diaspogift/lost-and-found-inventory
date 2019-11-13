@@ -22,19 +22,31 @@ import GHC.Generics (
     Generic
     )   
 
+
+
+
 -- ==========================================================================================
 --
 -- This file contains the the logic for working with common data transfer objects (DTOs)
 --
 -- ==========================================================================================
 
+
+
+
 -- ==========================================================================================
 -- DTOs for common workflow types
 -- ==========================================================================================
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for worflow errors
 -- ----------------------------------------------------------------------------
+
+
+
 
 data WorkflowErrorDto
   = WorkflowErrorDto
@@ -44,10 +56,10 @@ data WorkflowErrorDto
   deriving (Generic, Show)
 
 instance ToJSON WorkflowErrorDto
-
 instance FromJSON WorkflowErrorDto
 
--- Helper functions for converting from / to domain as well as to other states
+
+
 
 fromWorkflowError :: WorkflowError -> WorkflowErrorDto
 fromWorkflowError domainError =
@@ -76,8 +88,10 @@ fromWorkflowError domainError =
           worflowErrorMsg = errorMessage
         }
 
---------
 
+
+
+        
 data AddedSubCategoryDto
   = AddedSubCategoryDto
       { parent :: String,

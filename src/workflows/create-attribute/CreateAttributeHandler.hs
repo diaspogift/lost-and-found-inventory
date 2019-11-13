@@ -42,17 +42,25 @@ type LookupOneCategory =
 
 type NextId = IO UnvalidatedAttributeCode
 
+
+
 -- =============================================================================
 -- Workflow dependencies dummy Implementations
 -- =============================================================================
+
+
 
 nextId :: NextId
 nextId =
   let id = nextRandom in fmap (fmap toUpper . toString) id
 
+
+
 -- =============================================================================
 -- Create Attribute Ref Command Handler Implementation
 -- =============================================================================
+
+
 
 createAttributeRefHandler ::
   WriteCreateAttributeRefEvents ->
@@ -105,11 +113,16 @@ createAttributeRefHandler
 
     ---------------------------------------- Side effects handling end ----------------------------------------
 
+
+
+
 --- partially applied function for the API (Upper) layer - hiding depencies
 ---
 ---
 
-publicCreateAttributeRefHandler :: CreateAttributeRefCmd -> ExceptT WorkflowError IO [CreateAttributeEvent]
+publicCreateAttributeRefHandler :: 
+    CreateAttributeRefCmd 
+    -> ExceptT WorkflowError IO [CreateAttributeEvent]
 publicCreateAttributeRefHandler =
   createAttributeRefHandler
     writeCreateAttributeRefEvents

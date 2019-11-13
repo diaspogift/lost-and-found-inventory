@@ -36,9 +36,13 @@ import GHC.Generics
 -- DTOs for DeclareLostItem workflow
 -- ==========================================================================================
 
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for CreateAttributeRefForm
 -- ----------------------------------------------------------------------------
+
+
 
 data CreateAttributeRefForm
   = CreateAttributeRefForm
@@ -51,10 +55,9 @@ data CreateAttributeRefForm
   deriving (Generic, Show)
 
 instance ToJSON CreateAttributeRefForm
-
 instance FromJSON CreateAttributeRefForm
 
--- Helper functions for converting from / to domain as well as to other states
+
 
 toUnvalidatedAttributeRef :: CreateAttributeRefForm -> UnvalidatedAttributeRef
 toUnvalidatedAttributeRef CreateAttributeRefForm {..} = UnvalidatedAttributeRef
@@ -65,9 +68,14 @@ toUnvalidatedAttributeRef CreateAttributeRefForm {..} = UnvalidatedAttributeRef
     urelatedCategories = attrRelatedCats
   }
 
+
+
 -------------------------------------------------------------------------------
 -- DTO for AttributeRefCreated Event
 -- ----------------------------------------------------------------------------
+
+
+
 
 data AttributeRefCreatedDto
   = AttributeRefCreatedDto
@@ -81,10 +89,9 @@ data AttributeRefCreatedDto
   deriving (Generic, Show)
 
 instance ToJSON AttributeRefCreatedDto
-
 instance FromJSON AttributeRefCreatedDto
 
--- Helper functions for converting from / to domain as well as to other states
+
 
 fromAttributeRefCreated :: AttributeRefCreated -> AttributeRefCreatedDto
 fromAttributeRefCreated =
@@ -105,7 +112,8 @@ fromAttributeRefCreated =
       fmap (\(catId, catType) -> (uwrpCatgrId catId, uwpCatgrCd catType))
         . attributeRefRelatedCategories
 
-----
+
+
 
 toDomain1 :: AttributeRefCreatedDto -> Either ErrorMessage AttributeRef
 toDomain1 dto = do
@@ -129,27 +137,36 @@ toDomain1 dto = do
       typ <- crtCatgrCd strType
       return (id, typ)
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for WorkflowError
 -- ----------------------------------------------------------------------------
 
----
+
+
 
 newtype CreateAttributeRefEventDto
   = CR AttributeRefCreatedDto
   deriving (Generic, Show)
 
 instance ToJSON CreateAttributeRefEventDto
+instance FromJSON CreateAttributeRefEventDto
 
----
+
 
 type CreateAttributeRefEventResponse = Map String CreateAttributeRefEventDto
 
 instance ToJSONKey CreateAttributeRefEventResponse
 
----
+
+
 
 type RespCrtAttrRefWorkflow = [CreateAttributeRefEventResponse]
+
+
+
 
 fromCrtAttrEvtDomain :: CreateAttributeEvent -> CreateAttributeRefEventResponse
 fromCrtAttrEvtDomain evt = case evt of

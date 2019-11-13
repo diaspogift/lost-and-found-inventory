@@ -33,22 +33,37 @@ import Data.Set
 import GHC.Generics 
     (Generic)
 
+
+
+
 -- ==========================================================================================
 -- This file contains the the logic for working with data transfer objects (DTOs)
 -- Each type of DTO is defined using primitive, serializable types
 -- ==========================================================================================
 
+
+
+
 -- ==========================================================================================
 -- DTOs for Create Root Category workflow
 -- ==========================================================================================
+
+
+
 
 -- ----------------------------------------------------------------------------
 -- DTO for CreateAttributeRefForm
 -- ----------------------------------------------------------------------------
 
+
+
+
 -------------------------------------------------------------------------------
 -- DTO for CategoryCreated Event
 -- ----------------------------------------------------------------------------
+
+
+
 
 data CategoryCreatedDto
   = CategoryCreatedDto
@@ -65,10 +80,17 @@ data CategoryCreatedDto
   deriving (Generic, Show)
 
 instance ToJSON CategoryCreatedDto
-
 instance FromJSON CategoryCreatedDto
 
--- Helper functions for converting from / to domain as well as to other states
+
+
+
+--- Helper functions for converting from / to domain as well as to other states
+---
+---
+
+
+
 catgrDtoToDomain :: CategoryCreatedDto -> Either ErrorMessage Category
 catgrDtoToDomain dto = do
   id <- crtCatgrId . catId $ dto
@@ -115,13 +137,27 @@ catgrDtoToDomain dto = do
                     categoryRelatedSubCategories = Data.Set.fromList subs
                   }
 
+
+
+
 -------------------------------------------------------------------------------
 -- DTO for SubCategory Added Event
 -- ----------------------------------------------------------------------------
 
+
+
+
 type SubCategoriesAddedDto = [AddedSubCategoryDto]
 
--- Helper functions for converting from / to domain as well as to other states
+
+
+
+--- Helper functions for converting from / to domain as well as to other states
+---
+---
+
+
+
 
 fromCategoryCreated :: CategoryCreated -> CategoryCreatedDto
 fromCategoryCreated (RootCategory catgrInfo) =
@@ -161,7 +197,7 @@ fromCategoryCreated (SubCategory catgrInfo (Just (ParentInfo id cd))) =
       subCategrs = toSubCatgrs catgrInfo
     }
 
--- helpers
+-- helpers funtions
 
 toId = uwrpCatgrId . categoryId
 
@@ -173,6 +209,9 @@ toDescpt = uwrpLgDescpt . categoryDescription
 
 toSubCatgrs = fmap uwrpCatgrId . toList . categoryRelatedSubCategories
 
+
+
+
 fromSubCategoriesAdded :: SubCategoriesAdded -> SubCategoriesAddedDto
 fromSubCategoriesAdded =
   fmap toSubCategoriesAddedDto
@@ -183,11 +222,15 @@ fromSubCategoriesAdded =
           sub = uwrpCatgrId addSubCategoryId
         }
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for WorkflowError
 -- ----------------------------------------------------------------------------
 
----
+
+
 
 data CreateCategoryEventDto
   = CatgrCreated CategoryCreatedDto
@@ -196,19 +239,23 @@ data CreateCategoryEventDto
 
 instance ToJSON CreateCategoryEventDto
 
----
+
+
 
 type CreateCategoryEventResponse = Map String CreateCategoryEventDto
 
 instance ToJSONKey CreateCategoryEventResponse
 
----
 
----
+
 
 type RespCrtCatgrWorkflow = [CreateCategoryEventResponse]
 
--- Helper function
+--- Helper function
+---
+---
+
+
 
 fromCrtCatgrEvtDomain :: CreateCategoryEvent -> CreateCategoryEventResponse
 fromCrtCatgrEvtDomain (CategoryCreated catgr) =

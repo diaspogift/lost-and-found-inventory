@@ -226,8 +226,8 @@ toContactInfo ::
 toContactInfo checkContactInfoValid uc
   -- no email but both prim and sec phone given
   | null givenEmail
-      && (not . null) givenPrimTel
-      && (not . null) givenSecTel =
+      && notNull givenPrimTel
+      && notNull givenSecTel =
     do
       adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
       primTel <- mapLeft ValidationError $ crtTel givenPrimTel
@@ -239,7 +239,7 @@ toContactInfo checkContactInfoValid uc
         }
   -- no email but only prim phone given
   | null givenEmail
-      && (not . null) givenPrimTel
+      && notNull givenPrimTel
       && null givenSecTel =
     do
       adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
@@ -250,7 +250,7 @@ toContactInfo checkContactInfoValid uc
           vcontactInfoMethod = contactMethod
         }
   -- just email given
-  | (not . null) givenEmail
+  | notNull givenEmail
       && null givenPrimTel
       && null givenSecTel =
     do
@@ -262,8 +262,8 @@ toContactInfo checkContactInfoValid uc
           vcontactInfoMethod = contactMethod
         }
   -- email and prim phone given
-  | (not . null) givenEmail
-      && (not . null) givenPrimTel
+  | notNull givenEmail
+      && notNull givenPrimTel
       && null givenSecTel =
     do
       adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
@@ -279,9 +279,9 @@ toContactInfo checkContactInfoValid uc
           vcontactInfoMethod = contactMethod
         }
   -- email, prim and sec phones given
-  | (not . null) givenEmail
-      && (not . null) givenPrimTel
-      && (not . null) givenSecTel =
+  | notNull givenEmail
+      && notNull givenPrimTel
+      && notNull givenSecTel =
     do
       adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
       primTel <- mapLeft ValidationError $ crtTel givenPrimTel
@@ -384,15 +384,15 @@ toCityOrVillage ::
 toCityOrVillage (cityStr, villageStr)
   | null cityStr && null villageStr =
     return Nothing
-  | null cityStr && (not . null) villageStr =
+  | null cityStr && notNull villageStr =
     do
       village <- mapLeft ValidationError $ crtVillage villageStr
       return $ Just $ Country village
-  | (not . null) cityStr && null villageStr =
+  | notNull cityStr && null villageStr =
     do
       city <- mapLeft ValidationError $ crtCity cityStr
       return $ Just $ Urban city
-  | (not . null) cityStr && (not . null) villageStr =
+  | notNull cityStr && notNull villageStr =
     Left $ ValidationError "provide either a city or a village not both"
   | otherwise = return Nothing
 

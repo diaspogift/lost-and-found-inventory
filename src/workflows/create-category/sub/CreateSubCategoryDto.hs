@@ -11,18 +11,30 @@ import Data.Aeson
 import GHC.Generics 
     (Generic)
 
+
+
+
 -- ==========================================================================================
 -- This file contains the the logic for working with data transfer objects (DTOs)
 -- Each type of DTO is defined using primitive, serializable types
 -- ==========================================================================================
 
+
+
+
 -- ==========================================================================================
 -- DTOs for Create Root Category workflow
 -- ==========================================================================================
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for CreateAttributeRefForm
 -- ----------------------------------------------------------------------------
+
+
+
 
 data CreateSubCategoryForm
   = CreateSubCategoryForm
@@ -36,8 +48,10 @@ data CreateSubCategoryForm
   deriving (Generic, Show)
 
 instance ToJSON CreateSubCategoryForm
-
 instance FromJSON CreateSubCategoryForm
+
+
+
 
 toUnvalidatedSubCategory :: CreateSubCategoryForm -> UnvalidatedSubCategory
 toUnvalidatedSubCategory CreateSubCategoryForm {..} =

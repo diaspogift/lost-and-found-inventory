@@ -19,6 +19,9 @@ import Data.Set
 import Util 
     (singleton)
 
+
+
+
 -- ==========================================================================================
 -- This file contains the initial implementation for the createRootCategory workflow
 --
@@ -31,30 +34,38 @@ import Util
 --   and then the implementation of the overall workflow
 -- ==========================================================================================
 
+
+
+
 -- ==========================================================================================
 -- Section 1 : Defining each step in the workflow using types
 -- ==========================================================================================
+
+
+
 
 -- ----------------------------------------------------------------------------
 -- Validation step
 -- ----------------------------------------------------------------------------
 
---- Dependencies types
----
----
+
+
 
 --- Referenced subcategories data validation (a referenced sub category must be both not Root and not Disabled)
 ---
 ---
----
+
 
 type RefSubCategoryValidationError = String
+
+
 
 type CheckRefSubCatgrValid =
   UnvalidatedCategoryId ->
   Either RefSubCategoryValidationError CategoryId
 
---- Validated Category
+
+
 
 data ValidatedRootCategory
   = ValidatedRootCategory
@@ -66,41 +77,73 @@ data ValidatedRootCategory
       }
   deriving (Eq, Ord, Show)
 
+
+
+
 type ValidateUnvalidatedRootCategory =
   UnvalidatedRootCategory ->
   UnvalidatedCategoryId ->
   Either ValidationError ValidatedRootCategory
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Verify referred sub categories are not either Root or already have a parent step
 -- ----------------------------------------------------------------------------
+
+
+
 
 type CheckRefSubCatgrsValid =
   [Category] ->
   ValidatedRootCategory ->
   Either DomainError [CategoryId]
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
 
+
+
+
 type CreateRootCategory =
   ValidatedRootCategory -> Category
+
+
+
 
 -- ----------------------------------------------------------------------------
 -- Create events step
 -- ----------------------------------------------------------------------------
 
+
+
+
 type CreateEvents =
   Category -> [CreateCategoryEvent]
+
+
+
+
 
 -- ==========================================================================================
 -- Section 2 : Implementation
 -- ==========================================================================================
 
+
+
+
+
 -- ----------------------------------------------------------------------------
 -- Validation step
 -- ----------------------------------------------------------------------------
+
+
+
 
 validateUnvalidatedCategory :: ValidateUnvalidatedRootCategory
 validateUnvalidatedCategory uCatgr uCatgrId =
@@ -112,7 +155,9 @@ validateUnvalidatedCategory uCatgr uCatgrId =
     descpt = (toDescpt . urootCategoryDescription) uCatgr
     subCatgrs = (toValidatedSubCatgrs . urootCatgrRelatedsubCatgrs) uCatgr
 
---- Helper functions for validateUnvalidatedCategory start
+
+
+
 
 toCatId :: String -> Either ValidationError CategoryId
 toCatId = mapLeft ValidationError . crtCatgrId
@@ -134,11 +179,17 @@ toValidatedSubCatgrs ::
 toValidatedSubCatgrs =
   fmap fromList . traverse (mapLeft ValidationError . crtCatgrId)
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Verify reffered sub categories are not either Root or already have a parent step
 -- ----------------------------------------------------------------------------
 
---- TODO: I should probably use a fold here
+
+
+
+--- TODO: I should probably use a foldr here ???
 
 checkRefSubCatgrsValid :: CheckRefSubCatgrsValid
 checkRefSubCatgrsValid catgrs =
@@ -156,6 +207,9 @@ checkRefSubCatgrsValid catgrs =
         toCatgrId (RootCategory catgrInfo) = categoryId catgrInfo
         toCatgrId (SubCategory catgrInfo _) = categoryId catgrInfo
 
+
+
+
 checkIsSubAndEnabled :: CategoryId -> Category -> Either DomainError CategoryId
 checkIsSubAndEnabled catId (RootCategory _) =
   Left $ DomainError "a root category cannot be sub category"
@@ -166,9 +220,15 @@ checkIsSubAndEnabled catId (SubCategory CategoryInfo {categoryEnablementStatus =
     Disabled reason -> Left . DomainError $ "the sub category is disabled for: " <> reason
     Enabled info -> return catId
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
+
+
+
 
 createRootCategory :: ValidatedRootCategory -> Category
 createRootCategory ValidatedRootCategory {..} =
@@ -182,9 +242,15 @@ createRootCategory ValidatedRootCategory {..} =
           }
    in RootCategory catgrInfo
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Create Events step
 -- ----------------------------------------------------------------------------
+
+
+
 
 createEvents :: Category -> [CreateCategoryEvent]
 createEvents cat =
@@ -193,6 +259,9 @@ createEvents cat =
    in case head subCatsAddedEvt of
         SubCategoriesAdded [] -> rtCatCrtedEvt
         _ -> mconcat [rtCatCrtedEvt, subCatsAddedEvt]
+
+
+
 
 --- Helper functions
 ---
@@ -206,11 +275,17 @@ createSubCategoryAddedEvt :: Category -> [AddedSubCategory]
 createSubCategoryAddedEvt (RootCategory CategoryInfo {categoryId = id, categoryRelatedSubCategories = subCatgrs}) =
   fmap (AddedSubCategory id) . toList $ subCatgrs
 
+
+
+
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
 -- Overall workflow --
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
+
+
+
 
 createRootCatgory ::
   [Category] ->

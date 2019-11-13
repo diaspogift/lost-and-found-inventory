@@ -32,33 +32,50 @@ import InventorySystemCommands
     (InventoryCommand (..), CreateSubCategoryCmd)
 
 
+
+
+
 -- ==========================================================================
 -- This file contains the definitions of PUBLIC types
 -- (exposed at the boundary of the bounded context )
 -- related to the Create Attribute Ref workflow
 -- ==========================================================================
 
+
+
+
 -- =============================================================================
 -- IO Dependencies types
 -- =============================================================================
 
+
+
+
 type NextId = IO UnvalidatedCategoryId
+
+
+
 
 -- =============================================================================
 -- Workflow dependencies dummy Implementations
 -- =============================================================================
 
----
+
+
 
 nextId :: NextId
-nextId =
-  let id = nextRandom in fmap (fmap toUpper . toString) id
+nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
+
+
+
 
 -- =============================================================================
 -- Create Attribute Ref Command Handler Implementation
 -- =============================================================================
 
---- TODO: Refactor duplicate code
+
+
+
 
 createSubCategoryHandler ::
   ReadOneCategory ->
@@ -71,8 +88,6 @@ createSubCategoryHandler
   writeEventToStore
   nextId
   (Command unvalidatedSubCategory curTime userId) =
-    ---------------------------------------- IO at the boundary start -----------------------------------------
-
     do
       -- get all referenced sub category / verified they exist and they do not have a parent yet
       refSubCatgrs 
@@ -81,7 +96,8 @@ createSubCategoryHandler
             $ fmap sequence 
             $ traverse (readOneCategory 10) 
             $ usubCatgrRelatedsubCatgrs unvalidatedSubCategory
-      -- get the eventual referred parent category (fail earlier rather than later :)
+
+      -- get the eventual referred parent category (fail earlier rather than later)
       let (strPrntCatId, strPrntCatCd) = usubCategoryParentIdandCd unvalidatedSubCategory
       if notNull strPrntCatId && notNull strPrntCatCd
         then do
@@ -115,11 +131,15 @@ createSubCategoryHandler
             Left errorMsg -> liftEither $ Left errorMsg
 
 
+
+            
 --- partially applied function for the API (Upper) layer - hiding depencies
 ---
 ---
 
-publicCreateSubCategoryHandler :: CreateSubCategoryCmd -> ExceptT WorkflowError IO [CreateCategoryEvent]
+publicCreateSubCategoryHandler :: 
+    CreateSubCategoryCmd -> 
+    ExceptT WorkflowError IO [CreateCategoryEvent]
 publicCreateSubCategoryHandler =
   createSubCategoryHandler
     readOneCategory

@@ -12,6 +12,9 @@ import Data.Aeson
 import GHC.Generics
     (Generic)
 
+
+
+
 -- ==========================================================================================
 -- This file contains the the logic for working with data transfer objects (DTOs)
 --
@@ -19,13 +22,22 @@ import GHC.Generics
 --
 -- ==========================================================================================
 
+
+
+
 -- ==========================================================================================
 -- DTOs for Create Root Category workflow
 -- ==========================================================================================
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for CreateAttributeRefForm
 -- ----------------------------------------------------------------------------
+
+
+
 
 data CreateRootCategoryForm
   = CreateRootCategoryForm
@@ -37,10 +49,10 @@ data CreateRootCategoryForm
   deriving (Generic, Show)
 
 instance ToJSON CreateRootCategoryForm
-
 instance FromJSON CreateRootCategoryForm
 
--- Helper functions for converting from / to domain as well as to other states
+
+
 
 toUnvalidatedRootCategory :: CreateRootCategoryForm -> UnvalidatedRootCategory
 toUnvalidatedRootCategory CreateRootCategoryForm {..} =
@@ -50,6 +62,9 @@ toUnvalidatedRootCategory CreateRootCategoryForm {..} =
       urootCategoryEnablement = enablementStatus,
       urootCatgrRelatedsubCatgrs = relatedSubCategories
     }
+
+
+    
 -------------------------------------------------------------------------------
--- DTO for CategoryCreated Event
+-- Common DTOs in CreateCategoryCommonDto module
 -- ----------------------------------------------------------------------------

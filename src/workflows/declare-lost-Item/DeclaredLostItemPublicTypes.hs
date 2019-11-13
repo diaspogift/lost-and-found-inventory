@@ -7,19 +7,34 @@ import Data.Set
 import Data.Time 
     (UTCTime,)
 
+
+
+
 -- ==========================================================================
 -- This file contains the definitions of PUBLIC types
 -- (exposed at the boundary of the bounded context)
 -- related to the DeclareLostItem workflow
 -- ==========================================================================
 
+
+
+
 -- --------------------------------------------------------------------------
 -- inputs to the workflow
 -- --------------------------------------------------------------------------
 
+
+
+
 type UnvalidatedLostItemId = String
 
+
+
+
 type UnvalidatedAminitrativeArea = (String, String, String)
+
+
+
 
 data UnvalidatedLocation
   = UnvalidatedLocation
@@ -31,6 +46,9 @@ data UnvalidatedLocation
       }
   deriving (Eq, Ord, Show)
 
+
+
+
 data UnvalidatedAttribute
   = UnvalidatedAttribute
       { uattrCode :: String,
@@ -41,6 +59,9 @@ data UnvalidatedAttribute
       }
   deriving (Eq, Ord, Show)
 
+
+
+
 data UnvalidatedPerson
   = UnvalidatedPerson
       { uuserId :: String,
@@ -48,6 +69,9 @@ data UnvalidatedPerson
         ufullname :: UnvalidatedFullName
       }
   deriving (Eq, Ord, Show)
+
+
+
 
 data UnvalidatedContactInformation
   = UnvalidatedContactInformation
@@ -58,6 +82,9 @@ data UnvalidatedContactInformation
       }
   deriving (Eq, Ord, Show)
 
+
+
+
 data UnvalidatedFullName
   = UnvalidatedFullName
       { ufirst :: String,
@@ -65,6 +92,9 @@ data UnvalidatedFullName
         ulast :: String
       }
   deriving (Eq, Ord, Show)
+
+
+
 
 data UnvalidatedLostItem
   = UnvalidatedLostItem
@@ -78,11 +108,21 @@ data UnvalidatedLostItem
       }
   deriving (Eq, Ord, Show)
 
+
+
+
 -- --------------------------------------------------------------------------
 -- outputs from the workflow (success case)
 -- --------------------------------------------------------------------------
 
--- Event will be created if the Acknowledgment was successfully posted
+
+
+
+--- Event will be created if the Acknowledgment was successfully posted
+---
+---
+
+
 data DeclarationAcknowledgmentSent
   = DeclarationAcknowledgmentSent
       { declaredLostItemId :: LostItemId,
@@ -90,14 +130,30 @@ data DeclarationAcknowledgmentSent
       }
   deriving (Eq, Ord, Show)
 
--- Events to send to search context / persit to the event store
+
+
+
+--- Events to send to search context / persit to the event store
+---
+---
+
+
+
 type LostItemDeclared = DeclaredLostItem
 
 type LocationAdded = Location
 
 type AttributeAdded = Attribute
 
--- Declare / Register Lost Item state
+
+
+
+--- Declare / Register Lost Item state
+---
+---
+
+
+
 data DeclaredLostItem
   = DeclaredLostItem
       { lostItemId :: LostItemId,
@@ -112,7 +168,15 @@ data DeclaredLostItem
       }
   deriving (Eq, Ord, Show)
 
--- The possible events resulting from the Declare/Register Lost Item workflow
+
+
+
+--- The possible events resulting from the Declare/Register Lost Item workflow
+---
+---
+
+
+
 data DeclareLostItemEvent
   = LostItemDeclared LostItemDeclared
   | LocationsAdded [Location]
@@ -121,11 +185,15 @@ data DeclareLostItemEvent
   | AcknowledgmentSent DeclarationAcknowledgmentSent
   deriving (Eq, Ord, Show)
 
+
+  
+
 -- --------------------------------------------------------------------------
 -- error outputs (in the common module)
 -- --------------------------------------------------------------------------
 
-{- See commor errors-}
+
+
 
 -- --------------------------------------------------------------------------
 -- the workflow itself

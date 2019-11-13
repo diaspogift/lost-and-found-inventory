@@ -30,34 +30,54 @@ import EventStore
 import InventorySystemCommands 
     (InventoryCommand (..), CreateRootCategoryCmd)
 
+
+
+
 -- ==========================================================================
 -- This file contains the definitions of PUBLIC types
 -- (exposed at the boundary of the bounded context )
 -- related to the Create Attribute Ref workflow
 -- ==========================================================================
 
+
+
+
 -- =============================================================================
 -- IO Dependencies types
 -- =============================================================================
 
+
+
+
 type LookupOneCategory =
   String -> ExceptT WorkflowError IO Category
 
+
+
 type NextId = IO UnvalidatedCategoryId
+
+
+
 
 -- =============================================================================
 -- Workflow dependencies dummy Implementations
 -- =============================================================================
 
----
+
+
 
 nextId :: NextId
-nextId =
-  let id = nextRandom in fmap (fmap toUpper . toString) id
+nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
+
+
+
 
 -- =============================================================================
 -- Create Attribute Ref Command Handler Implementation
 -- =============================================================================
+
+
+
 
 createRootCategoryHandler ::
   ReadOneCategory ->
@@ -71,7 +91,6 @@ createRootCategoryHandler
   nextId
   (Command unvalidatedRootCategory curTime userId) =
     ---------------------------------------- IO at the boundary start -----------------------------------------
-
     do
       -- get all referenced sub category / verified they exist and they do not have a parent yet
       refSubCatgrs 
@@ -85,7 +104,7 @@ createRootCategoryHandler
         <- liftIO nextId
       ---------------------------------------- IO at the boundary end -----------------------------------------
 
-      ---------------------------------------- Core business logic start ----------------------------------------
+      ---------------------------------------- Core business logic start --------------------------------------
 
       -- call workflow
       let events =
@@ -96,7 +115,7 @@ createRootCategoryHandler
 
       ---------------------------------------- Core business logic end ----------------------------------------
 
-      ---------------------------------------- Side effects handling start ----------------------------------------
+      ---------------------------------------- Side effects handling start ------------------------------------
 
       -- publish / persit event(s) into the event store and other interested third parties
       case events of
@@ -106,13 +125,19 @@ createRootCategoryHandler
             liftEither events
         Left errorMsg -> liftEither $ Left errorMsg
 
----------------------------------------- Side effects handling end ----------------------------------------
+---------------------------------------- Side effects handling end --------------------------------------------
+
+
+
+
 
 --- partially applied function for the API (Upper) layer - hiding depencies
 ---
 ---
 
-publicCreateRootCategoryHandler :: CreateRootCategoryCmd -> ExceptT WorkflowError IO [CreateCategoryEvent]
+publicCreateRootCategoryHandler :: 
+    CreateRootCategoryCmd -> 
+    ExceptT WorkflowError IO [CreateCategoryEvent]
 publicCreateRootCategoryHandler =
   createRootCategoryHandler
     readOneCategory

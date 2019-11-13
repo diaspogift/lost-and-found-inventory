@@ -19,6 +19,9 @@ import Data.Set
 import Util 
     (singleton)
 
+
+
+
 -- ==========================================================================================
 -- This file contains the initial implementation for the createSubCategory workflow
 --
@@ -31,30 +34,35 @@ import Util
 --   and then the implementation of the overall workflow
 -- ==========================================================================================
 
+
+
+
 -- ==========================================================================================
 -- Section 1 : Defining each step in the workflow using types
 -- ==========================================================================================
+
+
+
 
 -- ----------------------------------------------------------------------------
 -- Validation step
 -- ----------------------------------------------------------------------------
 
---- Dependencies types
----
----
 
---- Referenced subcategories data validation (a referenced sub category must be both not Sub and not Disabled)
----
----
----
+
 
 type RefSubCategoryValidationError = String
+
+
+
 
 type CheckRefSubCatgrValid =
   UnvalidatedCategoryId ->
   Either RefSubCategoryValidationError CategoryId
 
---- Validated Category
+
+
+
 
 data ValidatedSubCategory
   = ValidatedSubCategory
@@ -67,41 +75,71 @@ data ValidatedSubCategory
       }
   deriving (Eq, Ord, Show)
 
+
+
+
 type ValidateUnvalidatedSubCategory =
   UnvalidatedSubCategory ->
   UnvalidatedCategoryId ->
   Either ValidationError ValidatedSubCategory
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Verify reffered sub categories are not either Root or already have a parent step
 -- ----------------------------------------------------------------------------
+
+
+
 
 type CheckRefSubCatgrsValid =
   [Category] ->
   ValidatedSubCategory ->
   Either DomainError [CategoryId]
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
 
+
+
+
 type CreateSubCategory =
   ValidatedSubCategory -> Maybe Category -> Category
+
+
+
 
 -- ----------------------------------------------------------------------------
 -- Create events step
 -- ----------------------------------------------------------------------------
 
+
+
+
 type CreateEvents =
   Category -> [CreateCategoryEvent]
+
+
+
 
 -- ==========================================================================================
 -- Section 2 : Implementation
 -- ==========================================================================================
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Validation step
 -- ----------------------------------------------------------------------------
+
+
+
 
 validateUnvalidatedCategory :: ValidateUnvalidatedSubCategory
 validateUnvalidatedCategory uCatgr uCatgrId =
@@ -122,7 +160,9 @@ validateUnvalidatedCategory uCatgr uCatgrId =
           vsubCatgrRelatedSubCatgrs = subCatgrs
         }
 
---- Helper functions for validateUnvalidatedCategory start
+
+
+
 
 toMaybePrntIdCd :: (String, String) -> Either ValidationError (Maybe (CategoryId, CategoryCode))
 toMaybePrntIdCd (prntId, prntCd)
@@ -154,12 +194,16 @@ toValidatedSubCatgrs ::
 toValidatedSubCatgrs =
   fmap fromList . traverse (mapLeft ValidationError . crtCatgrId)
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Verify reffered sub categories are not either Root or already have a parent step
 -- ----------------------------------------------------------------------------
 
---- TODO: I should probably use a fold here
---- TODO: I should probably use a fold here
+
+
+
 --- TODO: I should probably use a fold here
 
 checkRefSubCatgrsValid :: CheckRefSubCatgrsValid
@@ -178,6 +222,9 @@ checkRefSubCatgrsValid catgrs =
         toCatgrId (RootCategory catgrInfo) = categoryId catgrInfo
         toCatgrId (SubCategory catgrInfo _) = categoryId catgrInfo
 
+
+
+
 checkIsSubAndEnabled :: CategoryId -> Category -> Either DomainError CategoryId
 checkIsSubAndEnabled catId (RootCategory _) =
   Left $ DomainError "a root category cannot be sub category"
@@ -187,6 +234,9 @@ checkIsSubAndEnabled catId (SubCategory CategoryInfo {categoryEnablementStatus =
   case enblmnt of
     Disabled reason -> Left . DomainError $ "the sub category is disabled for: " <> reason
     Enabled _ -> return catId
+
+
+
 
 checkRefPrntCatgrEnabled :: Maybe Category -> Either DomainError (Maybe Bool)
 checkRefPrntCatgrEnabled (Just (RootCategory CategoryInfo {categoryEnablementStatus = enblmnt})) =
@@ -199,11 +249,17 @@ checkRefPrntCatgrEnabled (Just (SubCategory CategoryInfo {categoryEnablementStat
     Enabled _ -> return $ Just True
 checkRefPrntCatgrEnabled Nothing = return Nothing
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Vefify (if present) that referred parent category **exists** and is not part of
 -- the subs categories specified.
 -- Its existence will be determined by a database lookup result
 -- ----------------------------------------------------------------------------
+
+
+
 
 checkRefPrntCatgrNotInSubs :: Maybe Category -> ValidatedSubCategory -> Either DomainError Bool
 checkRefPrntCatgrNotInSubs Nothing vSubCatgr =
@@ -225,9 +281,15 @@ checkRefPrntCatgrNotInSubs (Just (SubCategory prntCatgr _)) vSubCatgr =
     subCatgrIds = toList . vsubCatgrRelatedSubCatgrs $ vSubCatgr
     prntCatgrId = categoryId prntCatgr
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
+
+
+
 
 createSubCategory :: ValidatedSubCategory -> Category
 createSubCategory vSubCatgr =
@@ -244,9 +306,15 @@ createSubCategory vSubCatgr =
         categoryRelatedSubCategories = vsubCatgrRelatedSubCatgrs vSubCatgr
       }
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Create Events step
 -- ----------------------------------------------------------------------------
+
+
+
 
 createEvents :: Category -> [CreateCategoryEvent]
 createEvents cat =
@@ -255,6 +323,9 @@ createEvents cat =
    in case head subCatsAddedEvt of
         SubCategoriesAdded [] -> rtCatCrtedEvt
         _ -> concat [rtCatCrtedEvt, subCatsAddedEvt]
+
+
+
 
 --- Helper functions
 ---
@@ -268,11 +339,17 @@ createSubCategoryAddedEvt :: Category -> [AddedSubCategory]
 createSubCategoryAddedEvt (SubCategory CategoryInfo {categoryId = id, categoryRelatedSubCategories = subCatgrs} _) =
   fmap (AddedSubCategory id) . toList $ subCatgrs
 
+
+
+
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
 -- Overall workflow --
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
+
+
+
 
 createSubCatgory ::
   [Category] ->

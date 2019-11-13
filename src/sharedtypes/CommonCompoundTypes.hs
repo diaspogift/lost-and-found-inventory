@@ -12,6 +12,7 @@ import Data.Set (
     fromList, 
     toList)
 
+
 -- ==============================================================================================
 -- Common compound types used throughout the Inventory Management domain
 --
@@ -19,9 +20,11 @@ import Data.Set (
 --
 -- ==============================================================================================
 
+
 -- ===============================================================
 -- Category-related types
 -- ===============================================================
+
 
 data Category
   = RootCategory CategoryInfo
@@ -123,11 +126,14 @@ instance Show Region where
       SouthWest -> "South West"
       West -> "West"
 
+
+
 -- ===============================================================
 -- Division-related types
 -- ===============================================================
 
--- Check out the newtype lib
+
+
 data Division
   = --    Adamaoua
     -- Consider a show instance
@@ -264,9 +270,13 @@ instance Show Division where
       Nde -> show "Nde"
       Noun -> show "Noun"
 
+
+
 -- ===============================================================
 -- SubDivision-related types
 -- ===============================================================
+
+
 
 data SubDivision
   = -- ADAMAOUA --
@@ -1132,9 +1142,13 @@ instance Show SubDivision where
       Massangam -> "Massangam"
       Njimom -> "Njimom"
 
+
+
 -- ===============================================================
 -- Attribute-related types
 -- ===============================================================
+
+
 
 data Attribute
   = Attribute
@@ -1157,9 +1171,13 @@ data AttributeRef
       }
   deriving (Eq, Ord, Show)
 
+
+
 -- ===============================================================
--- Owner / Contact-related types
+-- Owner / ContactInformation - related types
 -- ===============================================================
+
+
 
 data Person
   = Person
@@ -1198,9 +1216,13 @@ data FullName
       }
   deriving (Eq, Ord, Show)
 
+
+
 -- ===============================================================
 -- Lost Item Keeper-related types
 -- ===============================================================
+
+
 
 data Tenant
   = Tenant
@@ -1211,23 +1233,30 @@ data Tenant
       }
   deriving (Eq, Show, Ord)
 
+
+
 -- ===============================================================
 -- Challenge-related types
 -- ===============================================================
+
+
 
 data Challenge
   = Question
   deriving (Eq, Show, Ord)
 
-data ChallengeAnser
+newtype ChallengeAnser
   = ChallengeAnser (Question, Answer)
   deriving (Eq, Show, Ord)
+
+
 
 -- ===============================================================
 -- Helper functions
 -- ===============================================================
 
---- Location helper functions
+
+
 toRegion :: String -> Either ErrorMessage Region
 toRegion str
   | "adamaoua" == lowerStr = Right Adamaoua
@@ -1296,7 +1325,15 @@ fromSubDivision subdivision =
     Tibati -> show Tibati
     _ -> error "NOT IMPLEMENTED YET"
 
----  Admin Map Data Structure
+
+
+
+-- ===============================================================
+-- Admin Map Data Structure
+-- ===============================================================
+
+
+
 
 newtype AdministrativeMap
   = AdministrativeMap [RegionItem]

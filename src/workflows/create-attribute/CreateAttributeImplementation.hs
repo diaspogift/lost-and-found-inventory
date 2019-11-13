@@ -13,6 +13,9 @@ import Data.Either.Combinators
 import Util 
     (singleton)
 
+
+
+
 -- ==========================================================================================
 -- This file contains the initial implementation for the createAttrinuteRef workflow
 -- There are two parts:
@@ -21,23 +24,24 @@ import Util
 --   and then the implementation of the overall workflow
 -- ==========================================================================================
 
+
+
+
 -- ==========================================================================================
 -- Section 1 : Defining each step in the workflow using types
 -- ==========================================================================================
+
+
+
 
 -- ----------------------------------------------------------------------------
 -- Validation step
 -- ----------------------------------------------------------------------------
 
---- Dependencies types
----
----
 
---- Adminitrative data (Region, Division and Subdivison) validation
 
 type RefCategoryValidationError = String
 
---- Validated AttributeRef
 
 data ValidatedAttributeRef
   = ValidatedAttributeRef
@@ -50,26 +54,46 @@ data ValidatedAttributeRef
       }
   deriving (Eq, Ord, Show)
 
+
+
 type ValidateUnvalidatedAttributeRef =
   UnvalidatedAttributeRef -> UnvalidatedAttributeCode -> Either ValidationError ValidatedAttributeRef
+
+
+
 
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
 
+
+
+
 type CreateAttributeRef =
   ValidatedAttributeRef -> AttributeRef
+
+
+
 
 -- ----------------------------------------------------------------------------
 -- Create events step
 -- ----------------------------------------------------------------------------
 
+
+
+
 type CreateEvents =
   AttributeRef -> [CreateAttributeEvent]
+
+
+
 
 -- ==========================================================================================
 -- Section 2 : Implementation
 -- ==========================================================================================
+
+
+
 
 checkRefCatgrEnabled :: Category -> Either DomainError Bool
 checkRefCatgrEnabled (RootCategory CategoryInfo {categoryEnablementStatus = enblmnt}) =
@@ -81,9 +105,15 @@ checkRefCatgrEnabled (SubCategory CategoryInfo {categoryEnablementStatus = enblm
     Disabled reason -> Left . DomainError $ "the referred category is disabled for this reason: " <> reason
     Enabled _ -> return True
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Validation step
 -- ----------------------------------------------------------------------------
+
+
+
 
 validateUnvalidatedAttributeRef :: ValidateUnvalidatedAttributeRef
 validateUnvalidatedAttributeRef uAttrRef uUuidCd =
@@ -96,7 +126,6 @@ validateUnvalidatedAttributeRef uAttrRef uUuidCd =
     units = traverse toAttrUnt $ uattributeUnits uAttrRef
     refCats = traverse toAttrRefCatgrs $ urelatedCategories uAttrRef
 
---- Helper functions for validateUnvalidatedAttributeRef
 
 toAttrCdRef :: String -> Either ValidationError AttributeCode
 toAttrCdRef str =
@@ -125,9 +154,15 @@ toAttrRefCatgrs (catId, catType) =
     typ <- mapLeft ValidationError $ crtCatgrCd catType
     return (id, typ)
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
+
+
+
 
 createAttrinuteRef :: ValidatedAttributeRef -> AttributeRef
 createAttrinuteRef =
@@ -139,13 +174,22 @@ createAttrinuteRef =
     <*> vattrUnitRefss
     <*> vrelatedCategoriesRefs
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Create Events step
 -- ----------------------------------------------------------------------------
 
+
+
+
 createEvents :: AttributeRef -> [CreateAttributeEvent]
 createEvents =
   singleton . AttributeRefCreated . createAttrRefCreatedEvt
+
+
+
 
 --- Helper functions
 ---
@@ -154,11 +198,17 @@ createEvents =
 createAttrRefCreatedEvt :: AttributeRef -> AttributeRef
 createAttrRefCreatedEvt declaredLostItem = declaredLostItem
 
+
+
+
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
 -- Overall workflow --
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
+
+
+
 
 createAttributeReference ::
   UnvalidatedAttributeRef ->

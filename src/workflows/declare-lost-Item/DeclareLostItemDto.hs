@@ -93,20 +93,19 @@ toCityOrVillage ::
   (String, String) ->
   Either ErrorMessage (Maybe CityOrVillage)
 toCityOrVillage (strCity, strVillage)
-  | isStringNull strCity && isStringNull strVillage =
+  | null strCity && null strVillage =
     return Nothing
-  | isStringNull strCity && isStringNotNull strVillage =
+  | null strCity && Cct.notNull strVillage =
     do
       village <- crtVillage strVillage
       return $ Just $ Country village
-  | isStringNotNull strCity && isStringNull strVillage =
+  | Cct.notNull strCity && null strVillage =
     do
       city <- crtCity strCity
       return $ Just $ Urban city
   | otherwise = return Nothing
-  where
-    isStringNotNull = (not . null)
-    isStringNull = null
+  
+
 
 toAddress :: String -> Either ErrorMessage Address
 toAddress = crtAddress
@@ -275,29 +274,29 @@ toContactMethod :: (String, String, String) -> Either ErrorMessage Cct.ContactMe
 toContactMethod (givenEmail, givenPrimTel, givenSecTel)
   -- no email but both prim and sec phone given
   | null givenEmail
-      && (not . null) givenPrimTel
-      && (not . null) givenSecTel =
+      && Cct.notNull givenPrimTel
+      && Cct.notNull givenSecTel =
     do
       primTel <- crtTel givenPrimTel
       secTel <- crtOptTel givenSecTel
       return $ Cct.PhoneOnly primTel secTel
   -- no email but only prim phone given
   | null givenEmail
-      && (not . null) givenPrimTel
+      && Cct.notNull givenPrimTel
       && null givenSecTel =
     do
       primTel <- crtTel givenPrimTel
       return $ Cct.PhoneOnly primTel Nothing
   -- just email given
-  | (not . null) givenEmail
+  | Cct.notNull givenEmail
       && null givenPrimTel
       && null givenSecTel =
     do
       email <- crtEmailAddress givenEmail
       return $ Cct.EmailOnly email
   -- email and prim phone given
-  | (not . null) givenEmail
-      && (not . null) givenPrimTel
+  | Cct.notNull givenEmail
+      && Cct.notNull givenPrimTel
       && null givenSecTel =
     do
       primTel <- crtTel givenPrimTel
@@ -309,9 +308,9 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
             Cct.bothContactInfoSndTel = Nothing
           }
   -- email, prim and sec phones given
-  | (not . null) givenEmail
-      && (not . null) givenPrimTel
-      && (not . null) givenSecTel =
+  | Cct.notNull givenEmail
+      && Cct.notNull givenPrimTel
+      && Cct.notNull givenSecTel =
     do
       primTel <- crtTel givenPrimTel
       email <- crtEmailAddress givenEmail

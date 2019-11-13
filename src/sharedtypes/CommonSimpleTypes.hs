@@ -108,12 +108,18 @@ module CommonSimpleTypes
   )
 where
 
-import Data.Dates (DateTime (..))
-import Data.List.Split (splitOn)
-import Data.Maybe (catMaybes)
-import Text.Read (readMaybe)
-import qualified Text.Email.Validate as EmailVal (validate)
-import qualified Data.ByteString.Char8 as Char8 (pack)
+import Data.Dates 
+    (DateTime (..))
+import Data.List.Split 
+    (splitOn)
+import Data.Maybe 
+    (catMaybes)
+import Text.Read 
+    (readMaybe)
+import qualified Text.Email.Validate as EmailVal 
+    (validate)
+import qualified Data.ByteString.Char8 as Char8 
+    (pack)
 
 
 -- ===================================================================================
@@ -123,7 +129,7 @@ import qualified Data.ByteString.Char8 as Char8 (pack)
 -- ===================================================================================
 
 -- =============================================================================
--- Common shared domain types
+-- Common shared simple domain types
 -- =============================================================================
 
 type Reason = String
@@ -265,29 +271,30 @@ newtype Answer
   = Answer String
   deriving (Eq, Ord, Show)
 
+
+
 -- =============================================================================
 -- Common shared error types
 -- =============================================================================
 
+
+
+
 type ErrorMessage =
   String
 
--- All the things that can go wrong
 newtype ValidationError
   = ValidationError String
   deriving (Eq, Ord, Show)
 
--- Real business logic related errors
 newtype DomainError
   = DomainError String
   deriving (Eq, Ord, Show)
 
--- Database related errors
 newtype DataBaseError
   = DataBaseError String
   deriving (Eq, Ord, Show)
 
--- External systems call errors
 data ServiceInfo
   = ServiceInfo
       { serviceName :: String,
@@ -303,7 +310,6 @@ data RemoteServiceError
       }
   deriving (Eq, Ord, Show)
 
--- Shared workflow error
 data WorkflowError
   = Validation ValidationError
   | Remote RemoteServiceError
@@ -311,9 +317,13 @@ data WorkflowError
   | DataBase DataBaseError
   deriving (Eq, Ord, Show)
 
+
+
 -- ===================================================================================
 -- helper functions for constructing constrained types
 -- ===================================================================================
+
+
 
 crtString ::
   String ->
@@ -706,7 +716,6 @@ crtDtTmSpan strdtStart strdtEnd separator =
 uwrpDtTmSpan :: DateTimeSpan -> (String, String)
 uwrpDtTmSpan (DateTimeSpan (start, end)) =
   (show start, show end)
--- Check Interval library
 
 
 

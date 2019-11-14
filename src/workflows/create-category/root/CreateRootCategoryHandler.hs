@@ -90,43 +90,39 @@ createRootCategoryHandler
   writeCreateRootCategoryEvents
   nextId
   (Command unvalidatedRootCategory curTime userId) =
-    ---------------------------------------- IO at the boundary start -----------------------------------------
-    do
-      -- get all referenced sub category / verified they exist and they do not have a parent yet
+
+  do
+      -- get all referenced sub category 
+      -- then verify they exist and they do not have a parent yet
+
       refSubCatgrs 
         <- ExceptT 
             $ liftIO 
             $ fmap sequence 
             $ traverse (readOneCategory 10) 
             $ urootCatgrRelatedsubCatgrs unvalidatedRootCategory
+
       -- get randon uuid for the attribute code
+
       unvalidatedCategoryId 
         <- liftIO nextId
-      ---------------------------------------- IO at the boundary end -----------------------------------------
-
-      ---------------------------------------- Core business logic start --------------------------------------
 
       -- call workflow
+
       let events =
             createRootCatgory
               refSubCatgrs
               unvalidatedRootCategory -- Input
               unvalidatedCategoryId -- Input
 
-      ---------------------------------------- Core business logic end ----------------------------------------
-
-      ---------------------------------------- Side effects handling start ------------------------------------
-
       -- publish / persit event(s) into the event store and other interested third parties
+
       case events of
         Right allEvents ->
           do
             _ <- liftIO $ writeCreateRootCategoryEvents unvalidatedCategoryId allEvents
             liftEither events
         Left errorMsg -> liftEither $ Left errorMsg
-
-      ---------------------------------- Side effects handling end --------------------------------------------
-
 
 
 

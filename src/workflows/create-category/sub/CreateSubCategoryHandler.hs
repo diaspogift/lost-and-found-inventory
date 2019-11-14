@@ -89,7 +89,9 @@ createSubCategoryHandler
   nextId
   (Command unvalidatedSubCategory curTime userId) =
     do
-      -- get all referenced sub category / verified they exist and they do not have a parent yet
+      -- get all referenced sub category 
+      -- then verify they exist and they do not have a parent yet
+
       refSubCatgrs 
         <- ExceptT 
             $ liftIO 
@@ -98,6 +100,7 @@ createSubCategoryHandler
             $ usubCatgrRelatedsubCatgrs unvalidatedSubCategory
 
       -- get the eventual referred parent category (fail earlier rather than later)
+
       let (strPrntCatId, strPrntCatCd) = usubCategoryParentIdandCd unvalidatedSubCategory
       if notNull strPrntCatId && notNull strPrntCatCd
         then do

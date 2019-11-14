@@ -212,36 +212,47 @@ declareLostItemHandler
     ---------------------------------------- IO at the boundary start -----------------------------------------
     do
       -- retrieve the referenced categoryId
+
       let strCatgryId = uliCategoryId unvalidatedLostItem
+
       -- retrieve adminitrative area map
+
       adminAreaMap 
         <- loadAdministrativeAreaMap "Cameroun"
+
       -- retrieve referenced category from event store
+
       referencedCatgr 
         <- ExceptT $ liftIO $ readOneCategory 10 strCatgryId
+
       -- retrieve referenced attributes
+
       refAttributes 
         <- ExceptT 
             $ liftIO 
             $ fmap sequence 
             $ traverse (readOneAttributeRef 10) 
             $ uattrCode <$> uliattributes unvalidatedLostItem
+
       -- get creation time
+
       declarationTime 
         <- liftIO getCurrentTime
-      -- get randon uuid
+
+      -- get a random uuid
+
       lostItemUuid 
         <- liftIO nextId
+
       -- Arranging final dependencies
+
       let checkAdministrativeArea =
             checkAdministrativeAreaInfoValid adminAreaMap
       let checkAttributeInfo =
             checkAttributeInfoValid refAttributes
-      ---------------------------------------- IO at the boundary end -----------------------------------------
-
-      ---------------------------------------- Core business logic start --------------------------------------
 
       -- call workflow
+
       let events =
             declareLostItem
               checkAdministrativeArea -- Dependency
@@ -254,16 +265,17 @@ declareLostItemHandler
               declarationTime -- Input
               (lostItemUuid <> ":" <> userId) -- Input
 
-      ---------------------------------------- Core business logic end ----------------------------------------
-
-      ---------------------------------------- Side effects handling start ------------------------------------
-
       -- publish / persit event(s) into the event store and other interested third parties
+
       case events of
         Right allEvents ->
           do
             let declLostItemEvts = filter persistableEvts allEvents
-            res <- liftIO $ writeDeclaredLostItemEvents (lostItemUuid <> ":" <> userId) declLostItemEvts
+            res <- 
+                liftIO 
+                    $ writeDeclaredLostItemEvents 
+                        (lostItemUuid <> ":" <> userId) 
+                        declLostItemEvts
             liftEither events
         Left errorMsg -> liftEither $ Left errorMsg
     where

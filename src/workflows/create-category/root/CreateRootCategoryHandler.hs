@@ -102,7 +102,7 @@ createRootCategoryHandler
             $ traverse (readOneCategory 10) 
             $ urootCatgrRelatedsubCatgrs unvalidatedRootCategory
 
-      -- get randon uuid for the attribute code
+      -- get a random uuid for the attribute code
 
       unvalidatedCategoryId 
         <- liftIO nextId

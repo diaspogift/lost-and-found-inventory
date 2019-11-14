@@ -96,7 +96,7 @@ createAttributeRefHandler
             $ traverse (readOneCategory 10) 
             $ fst <$> urelatedCategories unvalidatedAttributeRef
 
-      -- get randon uuid for the attribute code
+      -- get a random uuid for the attribute code
 
       attributeRefCode 
         <- liftIO nextId

@@ -40,7 +40,10 @@ import Util
 
 
 
+
 type RefCategoryValidationError = String
+
+
 
 
 data ValidatedAttributeRef
@@ -56,15 +59,13 @@ data ValidatedAttributeRef
 
 
 
-type ValidateUnvalidatedAttributeRef =
-  UnvalidatedAttributeRef -> UnvalidatedAttributeCode -> Either ValidationError ValidatedAttributeRef
-
 
 
 
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
+
 
 
 
@@ -108,6 +109,7 @@ checkRefCatgrEnabled (SubCategory CategoryInfo {categoryEnablementStatus = enblm
 
 
 
+
 -- ----------------------------------------------------------------------------
 -- Validation step
 -- ----------------------------------------------------------------------------
@@ -115,44 +117,27 @@ checkRefCatgrEnabled (SubCategory CategoryInfo {categoryEnablementStatus = enblm
 
 
 
-validateUnvalidatedAttributeRef :: ValidateUnvalidatedAttributeRef
-validateUnvalidatedAttributeRef uAttrRef uUuidCd =
-  ValidatedAttributeRef <$> code <*> name <*> desc <*> values <*> units <*> refCats
+
+validateUnvalidatedAttributeRef :: 
+    UnvalidatedAttributeRef 
+    -> UnvalidatedAttributeCode 
+    -> Either ValidationError ValidatedAttributeRef
+validateUnvalidatedAttributeRef uattrRef uattrCd =
+  ValidatedAttributeRef 
+    <$> code 
+    <*> name 
+    <*> desc 
+    <*> values 
+    <*> units 
+    <*> refCatgrs
   where
-    code = toAttrCdRef uUuidCd
-    name = (toAttrNm . uattributeName) uAttrRef
-    desc = (toAttrDescpt . uattributeDescription) uAttrRef
-    values = traverse toAttrVal $ uattributesValues uAttrRef
-    units = traverse toAttrUnt $ uattributeUnits uAttrRef
-    refCats = traverse toAttrRefCatgrs $ urelatedCategories uAttrRef
+    code = toAttributeCodeRef uattrCd
+    name = toAttributeName . uattributeName $ uattrRef
+    desc = toShortDescpt . uattributeDescription $ uattrRef
+    values = traverse toAttributeValue . uattributesValues $ uattrRef
+    units = traverse toAttributeUnit . uattributeUnits $ uattrRef
+    refCatgrs = traverse toAttributeRefCatgrs . urelatedCategories $ uattrRef
 
-
-toAttrCdRef :: String -> Either ValidationError AttributeCode
-toAttrCdRef str =
-  mapLeft ValidationError $ crtAttrCd str
-
-toAttrNm :: String -> Either ValidationError AttributeName
-toAttrNm str =
-  mapLeft ValidationError $ crtAttrNm str
-
-toAttrDescpt :: String -> Either ValidationError ShortDescription
-toAttrDescpt str =
-  mapLeft ValidationError $ crtShrtDescpt str
-
-toAttrVal :: String -> Either ValidationError AttributeValue
-toAttrVal str =
-  mapLeft ValidationError $ crtAttrVal str
-
-toAttrUnt :: String -> Either ValidationError AttributeUnit
-toAttrUnt str =
-  mapLeft ValidationError $ crtAttrUnt str
-
-toAttrRefCatgrs :: (String, String) -> Either ValidationError (CategoryId, CategoryCode)
-toAttrRefCatgrs (catId, catType) =
-  do
-    id <- mapLeft ValidationError $ crtCatgrId catId
-    typ <- mapLeft ValidationError $ crtCatgrCd catType
-    return (id, typ)
 
 
 
@@ -160,6 +145,7 @@ toAttrRefCatgrs (catId, catType) =
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
+
 
 
 
@@ -177,9 +163,11 @@ createAttrinuteRef =
 
 
 
+
 -- ----------------------------------------------------------------------------
 -- Create Events step
 -- ----------------------------------------------------------------------------
+
 
 
 
@@ -191,12 +179,18 @@ createEvents =
 
 
 
+
 --- Helper functions
 ---
 ---
 
+
+
+
 createAttrRefCreatedEvt :: AttributeRef -> AttributeRef
 createAttrRefCreatedEvt declaredLostItem = declaredLostItem
+
+
 
 
 
@@ -206,6 +200,7 @@ createAttrRefCreatedEvt declaredLostItem = declaredLostItem
 -- Overall workflow --
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
+
 
 
 

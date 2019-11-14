@@ -187,9 +187,11 @@ nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
 
 
 
+
 -- =============================================================================
 -- Declare / Register Lost Item Command Handler Implementation
 -- =============================================================================
+
 
 
 
@@ -209,6 +211,7 @@ declareLostItemHandler
   writeDeclaredLostItemEvents
   nextId
   (Command unvalidatedLostItem curTime userId) =
+  
     do
       -- retrieve the referenced categoryId
 

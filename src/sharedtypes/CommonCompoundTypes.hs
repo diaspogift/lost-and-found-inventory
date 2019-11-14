@@ -1764,6 +1764,65 @@ wouriDivision = DivisionItem Wouri wouriSubDivisions
 
 
 
+
+
+
+
+-- =============================================================================
+-- Category types shared functions
+-- =============================================================================
+
+
+
+
+toEnblmntStatus :: String -> Either ValidationError EnablementStatus
+toEnblmntStatus str
+ | str == "enabled" = Right $ Enabled "Enabled at creation time"
+ | str == "disabled" = Right . Disabled $ "Disabled at creation time"
+ | otherwise = mapValidationError . Left $ "enablement status is either enabled or disabled" 
+
+
+
+
+toValidatedSubCatgrs :: [String] -> Either ValidationError (Set CategoryId)
+toValidatedSubCatgrs = fmap fromList . traverse (mapValidationError . crtCatgrId)
+
+
+
+
+checkIsSubAndEnabled :: CategoryId -> Category -> Either DomainError CategoryId
+checkIsSubAndEnabled catId (RootCategory _) =
+  Left $ DomainError "a root category cannot be sub category"
+checkIsSubAndEnabled catId (SubCategory _ (Just _)) =
+  Left $ DomainError "the sub category is already sub for: TODO "
+checkIsSubAndEnabled catId (SubCategory CategoryInfo {categoryEnablementStatus = enblmnt} Nothing) =
+  case enblmnt of
+    Disabled reason -> Left . DomainError $ "the sub category is disabled for: " <> reason
+    Enabled info -> return catId
+
+
+   
+
+
+createCategoryCreatedEvt :: Category -> Category
+createCategoryCreatedEvt (SubCategory createdCategory prntInfo) =
+  SubCategory (createdCategory {categoryRelatedSubCategories = fromList []}) prntInfo
+createCategoryCreatedEvt (RootCategory catgrInfo) =
+  RootCategory $ catgrInfo {categoryRelatedSubCategories = fromList []}
+
+
+
+
+createSubCategoryAddedEvt :: Category -> [AddedSubCategory]
+createSubCategoryAddedEvt (SubCategory CategoryInfo {categoryId = id, categoryRelatedSubCategories = subCatgrs} _) =
+  fmap (AddedSubCategory id) . toList $ subCatgrs
+createSubCategoryAddedEvt (RootCategory CategoryInfo {categoryId = id, categoryRelatedSubCategories = subCatgrs}) =
+  fmap (AddedSubCategory id) . toList $ subCatgrs
+
+
+
+
+
 -- =============================================================================
 -- Generic helper functions
 -- =============================================================================

@@ -6,6 +6,7 @@ import CommonSimpleTypes
     UserId,
     crtUsrId,
     uwrpLstItmId,
+    mapDomainError
   )
 import Data.Either.Combinators
 import Data.List.Split
@@ -32,8 +33,8 @@ data IPrincipal
 
 authenticate :: UserId -> Either DomainError IPrincipal
 authenticate id = do
-  felixId <- mapLeft DomainError $ crtUsrId "111111111111111111111111111111111111"
-  meganId <- mapLeft DomainError $ crtUsrId "222222222222222222222222222222222222"
+  felixId <- mapDomainError $ crtUsrId "111111111111111111111111111111111111"
+  meganId <- mapDomainError $ crtUsrId "222222222222222222222222222222222222"
   makePrincipal id felixId meganId
   where
     makePrincipal :: UserId -> UserId -> UserId -> Either DomainError IPrincipal

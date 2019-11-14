@@ -7,7 +7,12 @@ import CommonCompoundTypes
     CategoryInfo (..),
     ParentInfo (..),
     EnablementStatus (..),
-    AddedSubCategory (..)
+    AddedSubCategory (..),
+    toEnblmntStatus,
+    toValidatedSubCatgrs,
+    checkIsSubAndEnabled,
+    createCategoryCreatedEvt,
+    createSubCategoryAddedEvt
     )
 import CommonSimpleTypes
 import CreateCategoryCommonPublicTypes
@@ -22,9 +27,9 @@ import Util
 
 
 
+
 -- ==========================================================================================
 -- This file contains the initial implementation for the createSubCategory workflow
---
 --
 -- There are two parts:
 
@@ -78,25 +83,11 @@ data ValidatedSubCategory
 
 
 
-type ValidateUnvalidatedSubCategory =
-  UnvalidatedSubCategory ->
-  UnvalidatedCategoryId ->
-  Either ValidationError ValidatedSubCategory
-
-
-
 
 -- ----------------------------------------------------------------------------
 -- Verify reffered sub categories are not either Root or already have a parent step
 -- ----------------------------------------------------------------------------
-
-
-
-
-type CheckRefSubCatgrsValid =
-  [Category] ->
-  ValidatedSubCategory ->
-  Either DomainError [CategoryId]
+  
 
 
 
@@ -141,58 +132,38 @@ type CreateEvents =
 
 
 
-validateUnvalidatedCategory :: ValidateUnvalidatedSubCategory
-validateUnvalidatedCategory uCatgr uCatgrId =
+validateUnvalidatedCategory :: 
+    UnvalidatedSubCategory
+    -> UnvalidatedCategoryId
+    -> Either ValidationError ValidatedSubCategory
+validateUnvalidatedCategory ucatgr ucatgrId =
   do
-    id <- toCatId uCatgrId
-    code <- toCatCd . usubCategoryCode $ uCatgr
-    parntIdCd <- toMaybePrntIdCd . usubCategoryParentIdandCd $ uCatgr
-    enblmntStatus <- (toEnblmntStatus . usubCatgrEnablementStatus) uCatgr
-    descpt <- toDescpt . usubCategoryDescription $ uCatgr
-    subCatgrs <- toValidatedSubCatgrs . usubCatgrRelatedsubCatgrs $ uCatgr
+    catgrId <- toCategoryId ucatgrId
+    catgrCd <- toCategoryCode . usubCategoryCode $ ucatgr
+    parntIdCd <- toMaybePrntIdCd . usubCategoryParentIdandCd $ ucatgr
+    enblmntStatus <- toEnblmntStatus . usubCatgrEnablementStatus $ ucatgr
+    descpt <- toLongDescpt . usubCategoryDescription $ ucatgr
+    subCatgrs <- toValidatedSubCatgrs . usubCatgrRelatedsubCatgrs $ ucatgr
     return $
       ValidatedSubCategory
-        { vsubCategoryId = id,
-          vsubCategoryCode = code,
+        { vsubCategoryId = catgrId,
+          vsubCategoryCode = catgrCd,
           vsubCategoryParentIdCd = parntIdCd,
           vsubCategoryEnablementStatus = enblmntStatus,
           vsubCategoryDescription = descpt,
           vsubCatgrRelatedSubCatgrs = subCatgrs
         }
-
-
-
-
-
-toMaybePrntIdCd :: (String, String) -> Either ValidationError (Maybe (CategoryId, CategoryCode))
-toMaybePrntIdCd (prntId, prntCd)
-  | null prntId && null prntCd =
-    return Nothing
-  | otherwise =
-    do
-      prntCatId <- mapLeft ValidationError $ crtCatgrId prntId
-      prntCatCd <- mapLeft ValidationError $ crtCatgrCd prntCd
-      return . Just $ (prntCatId, prntCatCd)
-
-toCatId :: String -> Either ValidationError CategoryId
-toCatId = mapLeft ValidationError . crtCatgrId
-
-toCatCd :: String -> Either ValidationError CategoryCode
-toCatCd = mapLeft ValidationError . crtCatgrCd
-
-toEnblmntStatus :: String -> Either ValidationError EnablementStatus
-toEnblmntStatus str
-  | str == "enabled" = Right . Enabled $ "Enabled at creation time"
-  | str == "disabled" = Right . Disabled $ "Disabled at creation time"
-  | otherwise = mapLeft ValidationError . Left $ "enablement status is either enabled or disabled"
-
-toDescpt :: String -> Either ValidationError LongDescription
-toDescpt = mapLeft ValidationError . crtLgDescpt
-
-toValidatedSubCatgrs ::
-  [String] -> Either ValidationError (Set CategoryId)
-toValidatedSubCatgrs =
-  fmap fromList . traverse (mapLeft ValidationError . crtCatgrId)
+    where toMaybePrntIdCd :: 
+            (String, String) 
+            -> Either ValidationError (Maybe (CategoryId, CategoryCode))
+          toMaybePrntIdCd (prntId, prntCd)
+            | null prntId && null prntCd =
+                return Nothing
+            | otherwise =
+                do
+                prntCatId <- mapValidationError . crtCatgrId $ prntId
+                prntCatCd <- mapValidationError . crtCatgrCd $ prntCd
+                return . Just $ (prntCatId, prntCatCd)
 
 
 
@@ -206,7 +177,10 @@ toValidatedSubCatgrs =
 
 --- TODO: I should probably use a fold here
 
-checkRefSubCatgrsValid :: CheckRefSubCatgrsValid
+checkRefSubCatgrsValid :: 
+    [Category]
+    -> ValidatedSubCategory
+    -> Either DomainError [CategoryId]
 checkRefSubCatgrsValid catgrs =
   traverse (checkRefSubCatgrValid catgrs) . toList . vsubCatgrRelatedSubCatgrs
   where
@@ -221,19 +195,6 @@ checkRefSubCatgrsValid catgrs =
       where
         toCatgrId (RootCategory catgrInfo) = categoryId catgrInfo
         toCatgrId (SubCategory catgrInfo _) = categoryId catgrInfo
-
-
-
-
-checkIsSubAndEnabled :: CategoryId -> Category -> Either DomainError CategoryId
-checkIsSubAndEnabled catId (RootCategory _) =
-  Left $ DomainError "a root category cannot be sub category"
-checkIsSubAndEnabled catId (SubCategory _ (Just _)) =
-  Left $ DomainError "the sub category is already sub for: TODO "
-checkIsSubAndEnabled catId (SubCategory CategoryInfo {categoryEnablementStatus = enblmnt} Nothing) =
-  case enblmnt of
-    Disabled reason -> Left . DomainError $ "the sub category is disabled for: " <> reason
-    Enabled _ -> return catId
 
 
 
@@ -322,22 +283,8 @@ createEvents cat =
       subCatsAddedEvt = singleton . SubCategoriesAdded . createSubCategoryAddedEvt $ cat
    in case head subCatsAddedEvt of
         SubCategoriesAdded [] -> rtCatCrtedEvt
-        _ -> concat [rtCatCrtedEvt, subCatsAddedEvt]
+        _ -> mconcat [rtCatCrtedEvt, subCatsAddedEvt]
 
-
-
-
---- Helper functions
----
----
-
-createCategoryCreatedEvt :: Category -> CategoryCreated
-createCategoryCreatedEvt (SubCategory createdCategory prntInfo) =
-  SubCategory (createdCategory {categoryRelatedSubCategories = fromList []}) prntInfo
-
-createSubCategoryAddedEvt :: Category -> [AddedSubCategory]
-createSubCategoryAddedEvt (SubCategory CategoryInfo {categoryId = id, categoryRelatedSubCategories = subCatgrs} _) =
-  fmap (AddedSubCategory id) . toList $ subCatgrs
 
 
 
@@ -347,6 +294,7 @@ createSubCategoryAddedEvt (SubCategory CategoryInfo {categoryId = id, categoryRe
 -- Overall workflow --
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
+
 
 
 

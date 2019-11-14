@@ -7,7 +7,12 @@ import CommonCompoundTypes
     Category (..),
     CategoryInfo (..),
     EnablementStatus (..),
-    AddedSubCategory (..)
+    AddedSubCategory (..),
+    toEnblmntStatus,
+    toValidatedSubCatgrs,
+    checkIsSubAndEnabled,
+    createCategoryCreatedEvt,
+    createSubCategoryAddedEvt
     )
 import CommonSimpleTypes
 import CreateCategoryCommonPublicTypes
@@ -22,9 +27,9 @@ import Util
 
 
 
+
 -- ==========================================================================================
 -- This file contains the initial implementation for the createRootCategory workflow
---
 --
 -- There are two parts:
 
@@ -80,25 +85,11 @@ data ValidatedRootCategory
 
 
 
-type ValidateUnvalidatedRootCategory =
-  UnvalidatedRootCategory ->
-  UnvalidatedCategoryId ->
-  Either ValidationError ValidatedRootCategory
-
-
-
 
 -- ----------------------------------------------------------------------------
 -- Verify referred sub categories are not either Root or already have a parent step
 -- ----------------------------------------------------------------------------
 
-
-
-
-type CheckRefSubCatgrsValid =
-  [Category] ->
-  ValidatedRootCategory ->
-  Either DomainError [CategoryId]
 
 
 
@@ -145,39 +136,23 @@ type CreateEvents =
 
 
 
-validateUnvalidatedCategory :: ValidateUnvalidatedRootCategory
-validateUnvalidatedCategory uCatgr uCatgrId =
-  ValidatedRootCategory <$> id <*> code <*> enblmntStatus <*> descpt <*> subCatgrs
+validateUnvalidatedCategory :: 
+    UnvalidatedRootCategory
+    -> UnvalidatedCategoryId
+    -> Either ValidationError ValidatedRootCategory
+validateUnvalidatedCategory ucatgr ucatgrId =
+  ValidatedRootCategory 
+    <$> catgrId 
+    <*> catgrCd 
+    <*> enblmntStatus 
+    <*> descpt
+    <*> subCatgrs
   where
-    id = toCatId uCatgrId
-    code = (toCatCd . urootCategoryCode) uCatgr
-    enblmntStatus = (toEnblmntStatus . urootCategoryEnablement) uCatgr
-    descpt = (toDescpt . urootCategoryDescription) uCatgr
-    subCatgrs = (toValidatedSubCatgrs . urootCatgrRelatedsubCatgrs) uCatgr
-
-
-
-
-
-toCatId :: String -> Either ValidationError CategoryId
-toCatId = mapLeft ValidationError . crtCatgrId
-
-toCatCd :: String -> Either ValidationError CategoryCode
-toCatCd = mapLeft ValidationError . crtCatgrCd
-
-toEnblmntStatus :: String -> Either ValidationError EnablementStatus
-toEnblmntStatus str
-  | str == "enabled" = Right $ Enabled "Enabled at creation time"
-  | str == "disabled" = Right . Disabled $ "Disabled at creation time"
-  | otherwise = mapLeft ValidationError . Left $ "enablement status is either enabled or disabled"
-
-toDescpt :: String -> Either ValidationError LongDescription
-toDescpt = mapLeft ValidationError . crtLgDescpt
-
-toValidatedSubCatgrs ::
-  [String] -> Either ValidationError (Set CategoryId)
-toValidatedSubCatgrs =
-  fmap fromList . traverse (mapLeft ValidationError . crtCatgrId)
+    catgrId = toCategoryId ucatgrId
+    catgrCd = toCategoryCode . urootCategoryCode $ ucatgr
+    enblmntStatus = toEnblmntStatus . urootCategoryEnablement $ ucatgr
+    descpt = toLongDescpt . urootCategoryDescription $ ucatgr
+    subCatgrs = toValidatedSubCatgrs . urootCatgrRelatedsubCatgrs $ ucatgr
 
 
 
@@ -191,7 +166,10 @@ toValidatedSubCatgrs =
 
 --- TODO: I should probably use a foldr here ???
 
-checkRefSubCatgrsValid :: CheckRefSubCatgrsValid
+checkRefSubCatgrsValid :: 
+    [Category] 
+    -> ValidatedRootCategory 
+    -> Either DomainError [CategoryId]
 checkRefSubCatgrsValid catgrs =
   traverse (checkRefSubCatgrValid catgrs) . toList . vrootCatgrRelatedSubCatgrs
   where
@@ -206,19 +184,6 @@ checkRefSubCatgrsValid catgrs =
       where
         toCatgrId (RootCategory catgrInfo) = categoryId catgrInfo
         toCatgrId (SubCategory catgrInfo _) = categoryId catgrInfo
-
-
-
-
-checkIsSubAndEnabled :: CategoryId -> Category -> Either DomainError CategoryId
-checkIsSubAndEnabled catId (RootCategory _) =
-  Left $ DomainError "a root category cannot be sub category"
-checkIsSubAndEnabled catId (SubCategory _ (Just _)) =
-  Left $ DomainError "the sub category is already sub for: TODO "
-checkIsSubAndEnabled catId (SubCategory CategoryInfo {categoryEnablementStatus = enblmnt} Nothing) =
-  case enblmnt of
-    Disabled reason -> Left . DomainError $ "the sub category is disabled for: " <> reason
-    Enabled info -> return catId
 
 
 
@@ -263,26 +228,13 @@ createEvents cat =
 
 
 
---- Helper functions
----
----
-
-createCategoryCreatedEvt :: Category -> CategoryCreated
-createCategoryCreatedEvt (RootCategory catgrInfo) =
-  RootCategory $ catgrInfo {categoryRelatedSubCategories = fromList []}
-
-createSubCategoryAddedEvt :: Category -> [AddedSubCategory]
-createSubCategoryAddedEvt (RootCategory CategoryInfo {categoryId = id, categoryRelatedSubCategories = subCatgrs}) =
-  fmap (AddedSubCategory id) . toList $ subCatgrs
-
-
-
 
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
 -- Overall workflow --
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
+
 
 
 

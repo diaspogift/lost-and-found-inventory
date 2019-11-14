@@ -105,9 +105,26 @@ module CommonSimpleTypes
     uwrpQuest,
     uwrpAns,
     uwrpOptPstAddress,
+    mapValidationError,
+    mapDomainError,
+    mapDataBaseError,
+
+    toAttributeCodeRef,
+    toAttributeName,
+    toShortDescpt,
+    toAttributeValue,
+    toAttributeUnit,
+    toAttributeRefCatgrs,
+
+
+    toCategoryId,
+    toCategoryCode,
+    toLongDescpt
   )
 where
 
+import Data.Either.Combinators
+    (mapLeft)
 import Data.Dates 
     (DateTime (..))
 import Data.List.Split 
@@ -736,5 +753,100 @@ uwrpDtTmSpan (DateTimeSpan (start, end)) =
   (show start, show end)
 
 
+
+
+
+-- ===========================================================================
+-- Common helpers
+-- ===========================================================================
+
+
+
+toCategoryId :: String -> Either ValidationError CategoryId
+toCategoryId = mapValidationError . crtCatgrId
+
+
+
+toCategoryCode :: String -> Either ValidationError CategoryCode
+toCategoryCode = mapValidationError . crtCatgrCd
+
+
+
+toLongDescpt :: String -> Either ValidationError LongDescription
+toLongDescpt = mapValidationError . crtLgDescpt
+
+
+
+toShortDescpt :: String -> Either ValidationError ShortDescription
+toShortDescpt =
+  mapValidationError . crtShrtDescpt 
+
+
+
+-- =============================================================================
+-- Attribute ref helpers
+-- =============================================================================
+
+
+
+
+
+toAttributeCodeRef :: String -> Either ValidationError AttributeCode
+toAttributeCodeRef = mapValidationError . crtAttrCd 
+
+
+
+toAttributeName :: String -> Either ValidationError AttributeName
+toAttributeName =
+  mapValidationError . crtAttrNm 
+
+
+
+
+toAttributeValue :: String -> Either ValidationError AttributeValue
+toAttributeValue =
+  mapValidationError . crtAttrVal 
+
+
+
+
+toAttributeUnit :: String -> Either ValidationError AttributeUnit
+toAttributeUnit =
+  mapValidationError . crtAttrUnt
+
+
+
+
+toAttributeRefCatgrs :: (String, String) -> Either ValidationError (CategoryId, CategoryCode)
+toAttributeRefCatgrs (strCatId, strCatType) =
+  do
+    catgrId <- mapValidationError $ crtCatgrId strCatId
+    catgrType <- mapValidationError $ crtCatgrCd strCatType
+    return (catgrId, catgrType)
+
+
+
+
+
+
+
+  -- ===========================================================================
+  -- Common error transformer / mapping helper functions
+  -- ===========================================================================
+
+
+
+mapValidationError :: Either String b -> Either ValidationError b
+mapValidationError = mapLeft ValidationError
+
+
+
+mapDomainError :: Either String b -> Either DomainError b
+mapDomainError = mapLeft DomainError
+
+
+
+mapDataBaseError :: Either String b -> Either DataBaseError b
+mapDataBaseError = mapLeft DataBaseError
 
 

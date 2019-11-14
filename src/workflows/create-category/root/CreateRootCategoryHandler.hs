@@ -122,7 +122,8 @@ createRootCategoryHandler
           do
             _ <- liftIO $ writeCreateRootCategoryEvents unvalidatedCategoryId allEvents
             liftEither events
-        Left errorMsg -> liftEither $ Left errorMsg
+        Left errorMsg -> 
+            liftEither $ Left errorMsg
 
 
 

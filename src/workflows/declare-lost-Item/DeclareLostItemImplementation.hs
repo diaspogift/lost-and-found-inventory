@@ -144,28 +144,12 @@ data ValidatedLostItem
 
 
 
-type ValidateUnvalidatedLostItem =
-  CheckAdministrativeAreaInfoValid -- Dependency
-  -> CheckContactInfoValid -- Dependency
-  -> CheckAttributeInfoValid -- Dependancy
-  -> UnvalidatedLostItem -- Input
-  -> UTCTime -- Input
-  -> UnvalidatedLostItemId -- Input
-  -> Either ValidationError ValidatedLostItem -- Output
-
-
 
 
 -- ----------------------------------------------------------------------------
--- Creation step
+-- Creation step (see DeclareLostItem type in common modules)
 -- ----------------------------------------------------------------------------
 
-
-
-
--- ----------------------------------------------------------------------------
--- Check refered Category enablement status is enabled
--- ----------------------------------------------------------------------------
 
 
 
@@ -219,16 +203,8 @@ type SendAcknowledgment =
 type AcknowledgemenDeclaredLostItem =
   CreateDeclarationAcknowledgment -> -- Dependency
   SendAcknowledgment -> -- Dependency
-  DeclaredLostItem ->
+  DeclaredLostItem -> -- Input
   Maybe DeclarationAcknowledgmentSent
-
-
-
-
--- ----------------------------------------------------------------------------
--- Create events step
--- ----------------------------------------------------------------------------
-
 
 
 
@@ -248,7 +224,14 @@ type AcknowledgemenDeclaredLostItem =
 
 
 
-validateUnvalidatedLostItem :: ValidateUnvalidatedLostItem
+validateUnvalidatedLostItem :: 
+    CheckAdministrativeAreaInfoValid -- Dependency
+    -> CheckContactInfoValid -- Dependency
+    -> CheckAttributeInfoValid -- Dependancy
+    -> UnvalidatedLostItem -- Input
+    -> UTCTime -- Input
+    -> UnvalidatedLostItemId -- Input
+    -> Either ValidationError ValidatedLostItem -- Output
 validateUnvalidatedLostItem
   checkAdministrativeAreaInfoValid
   checkContactInfoValid
@@ -257,24 +240,24 @@ validateUnvalidatedLostItem
   decalrationTime
   unvalidatedAssignUuid =
     ValidatedLostItem
-      <$> liid 
+      <$> itemId 
       <*> name 
-      <*> catId 
+      <*> catgrId 
       <*> descpt 
       <*> locts 
-      <*> regTime 
-      <*> dteTimeSpan 
+      <*> registTime 
+      <*> dateTimeSpan 
       <*> attrs 
       <*> owner
     where
-      liid = toLostItemId unvalidatedAssignUuid
+      itemId = toLostItemId unvalidatedAssignUuid
       name = (toLostItemName . uliName) unvalidatedLostItem
-      catId = (toCategoryId . uliCategoryId) unvalidatedLostItem
+      catgrId = (toCategoryId . uliCategoryId) unvalidatedLostItem
       descpt = (toLostItemDescription . uliDescription) unvalidatedLostItem
       locts = (fmap fromList . traverse (toLostItemLocation checkAdministrativeAreaInfoValid) . ulocations) 
                 unvalidatedLostItem
-      regTime = pure decalrationTime
-      dteTimeSpan = (toDateTimeSpan . uliDateAndTimeSpan) unvalidatedLostItem
+      registTime = pure decalrationTime
+      dateTimeSpan = (toDateTimeSpan . uliDateAndTimeSpan) unvalidatedLostItem
       attrs = (fmap fromList . traverse (toValidatedAttribute checkAttributeInfoValid unvalidatedLostItem) . uliattributes) 
                 unvalidatedLostItem
       owner = (toOwner checkContactInfoValid . uowner) unvalidatedLostItem
@@ -290,7 +273,7 @@ validateUnvalidatedLostItem
 
 toDateTimeSpan :: (String, String) -> Either ValidationError DateTimeSpan
 toDateTimeSpan (startDate, endDate) =
-  mapLeft ValidationError $ crtDtTmSpan startDate endDate " "
+    mapValidationError $ crtDtTmSpan startDate endDate " "
 
 
 
@@ -315,9 +298,9 @@ toContactInfo checkContactInfoValid uc
       && notNull givenPrimTel
       && notNull givenSecTel =
     do
-      adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
-      primTel <- mapLeft ValidationError $ crtTel givenPrimTel
-      secTel <- mapLeft ValidationError $ crtOptTel givenSecTel
+      adress <- mapValidationError $ crtOptPstAddrss givenAddress
+      primTel <- mapValidationError $ crtTel givenPrimTel
+      secTel <- mapValidationError $ crtOptTel givenSecTel
       let contactMethod = PhoneOnly primTel secTel
       return ValidatedContactInformation
         { vcontactInfoAddress = adress,
@@ -328,8 +311,8 @@ toContactInfo checkContactInfoValid uc
       && notNull givenPrimTel
       && null givenSecTel =
     do
-      adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
-      primTel <- mapLeft ValidationError $ crtTel givenPrimTel
+      adress <- mapValidationError $ crtOptPstAddrss givenAddress
+      primTel <- mapValidationError $ crtTel givenPrimTel
       let contactMethod = PhoneOnly primTel Nothing
       return ValidatedContactInformation
         { vcontactInfoAddress = adress,
@@ -340,8 +323,8 @@ toContactInfo checkContactInfoValid uc
       && null givenPrimTel
       && null givenSecTel =
     do
-      adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
-      email <- mapLeft ValidationError $ crtEmailAddress givenEmail
+      adress <- mapValidationError $ crtOptPstAddrss givenAddress
+      email <- mapValidationError $ crtEmailAddress givenEmail
       let contactMethod = EmailOnly email
       return ValidatedContactInformation
         { vcontactInfoAddress = adress,
@@ -352,9 +335,9 @@ toContactInfo checkContactInfoValid uc
       && notNull givenPrimTel
       && null givenSecTel =
     do
-      adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
-      primTel <- mapLeft ValidationError $ crtTel givenPrimTel
-      email <- mapLeft ValidationError $ crtEmailAddress givenEmail
+      adress <- mapValidationError $ crtOptPstAddrss givenAddress
+      primTel <- mapValidationError $ crtTel givenPrimTel
+      email <- mapValidationError $ crtEmailAddress givenEmail
       let contactMethod = EmailAndPhone BothContactInfo
             { bothContactInfoEmail = email,
               bothContactInfoPrimTel = primTel,
@@ -369,10 +352,10 @@ toContactInfo checkContactInfoValid uc
       && notNull givenPrimTel
       && notNull givenSecTel =
     do
-      adress <- mapLeft ValidationError $ crtOptPstAddrss givenAddress
-      primTel <- mapLeft ValidationError $ crtTel givenPrimTel
-      email <- mapLeft ValidationError $ crtEmailAddress givenEmail
-      secTel <- mapLeft ValidationError $ crtOptTel givenSecTel
+      adress <- mapValidationError $ crtOptPstAddrss givenAddress
+      primTel <- mapValidationError $ crtTel givenPrimTel
+      email <- mapValidationError $ crtEmailAddress givenEmail
+      secTel <- mapValidationError $ crtOptTel givenSecTel
       let contactMethod = EmailAndPhone BothContactInfo
             { bothContactInfoEmail = email,
               bothContactInfoPrimTel = primTel,
@@ -399,7 +382,7 @@ toCheckedValidTelephone ::
 toCheckedValidTelephone checkContactInfoValid str =
   do
     tel <- toTelephone str
-    mapLeft ValidationError $ checkContactInfoValid tel
+    mapValidationError $ checkContactInfoValid tel
 
 
 
@@ -407,28 +390,28 @@ toCheckedValidTelephone checkContactInfoValid str =
 
 toTelephone :: String -> Either ValidationError Telephone
 toTelephone str =
-  mapLeft ValidationError $ crtTel str
+  mapValidationError $ crtTel str
 
 
 
 
 toEmail :: String -> Either ValidationError EmailAddress
 toEmail str =
-  mapLeft ValidationError $ crtEmailAddress str
+  mapValidationError $ crtEmailAddress str
 
 
 
 
 toPostalAddress :: String -> Either ValidationError PostalAddress
 toPostalAddress str =
-  mapLeft ValidationError $ crtPstAddress str
+  mapValidationError $ crtPstAddress str
 
 
 
 
 toFirst :: String -> Either ValidationError FirstName
 toFirst str =
-  mapLeft ValidationError $ crtFstNm str
+  mapValidationError $ crtFstNm str
 
 
 
@@ -445,14 +428,14 @@ toFullName uFullName =
 
 toMiddle :: String -> Either ValidationError (Maybe Middle)
 toMiddle str =
-  mapLeft ValidationError $ crtMdleNm str
+  mapValidationError $ crtMdleNm str
 
 
 
 
 toLast :: String -> Either ValidationError LastName
 toLast str =
-  mapLeft ValidationError $ crtLstNm str
+  mapValidationError $ crtLstNm str
 
 
 
@@ -463,42 +446,35 @@ toValidatedAttribute ::
   UnvalidatedAttribute ->
   Either ValidationError ValidatedAttribute
 toValidatedAttribute checkAttributeInfoValid ulostitem uattr =
-  mapLeft ValidationError $ checkAttributeInfoValid uattr ulostitem
+  mapValidationError $ checkAttributeInfoValid uattr ulostitem
 
 
 
 
 toLostItemId :: String -> Either ValidationError LostItemId
 toLostItemId str =
-  mapLeft ValidationError $ crtLstItmId str
+  mapValidationError $ crtLstItmId str
 
 
 
 
 toLostItemName :: String -> Either ValidationError ItemName
 toLostItemName str =
-  mapLeft ValidationError $ crtItmNm str
-
-
-
-
-toCategoryId :: String -> Either ValidationError CategoryId
-toCategoryId str =
-  mapLeft ValidationError $ crtCatgrId str
+  mapValidationError $ crtItmNm str
 
 
 
 
 toUserId :: String -> Either ValidationError UserId
 toUserId str =
-  mapLeft ValidationError $ crtUsrId str
+  mapValidationError $ crtUsrId str
 
 
 
 
 toLostItemDescription :: String -> Either ValidationError LongDescription
 toLostItemDescription str =
-  mapLeft ValidationError $ crtLgDescpt str
+  mapValidationError $ crtLgDescpt str
 
 
 
@@ -508,7 +484,7 @@ toCheckedValidAdminArea ::
   CheckAdministrativeAreaInfoValid ->
   Either ValidationError (Maybe (Region, Division, SubDivision))
 toCheckedValidAdminArea (reg, divs, sub) checkAdministrativeAreaInfoValid =
-  mapLeft ValidationError $ checkAdministrativeAreaInfoValid (reg, divs, sub)
+  mapValidationError $ checkAdministrativeAreaInfoValid (reg, divs, sub)
 
 
 
@@ -521,11 +497,11 @@ toCityOrVillage (cityStr, villageStr)
     return Nothing
   | null cityStr && notNull villageStr =
     do
-      village <- mapLeft ValidationError $ crtVillage villageStr
+      village <- mapValidationError $ crtVillage villageStr
       return $ Just $ Country village
   | notNull cityStr && null villageStr =
     do
-      city <- mapLeft ValidationError $ crtCity cityStr
+      city <- mapValidationError $ crtCity cityStr
       return $ Just $ Urban city
   | notNull cityStr && notNull villageStr =
     Left $ ValidationError "provide either a city or a village not both"
@@ -536,56 +512,56 @@ toCityOrVillage (cityStr, villageStr)
 
 toCity :: String -> Either ValidationError City
 toCity str =
-  mapLeft ValidationError $ crtCity str
+  mapValidationError $ crtCity str
 
 
 
 
 toVillage :: String -> Either ValidationError Village
 toVillage str =
-  mapLeft ValidationError $ crtVillage str
+  mapValidationError $ crtVillage str
 
 
 
 
 toNeighborhood :: String -> Either ValidationError (Maybe Neighborhood)
 toNeighborhood str =
-  mapLeft ValidationError $ crtNghbrhd str
+  mapValidationError $ crtNghbrhd str
 
 
 
 
 toAddress :: String -> Either ValidationError Address
 toAddress str =
-  mapLeft ValidationError $ crtAddress str
+  mapValidationError $ crtAddress str
 
 
 
 
 toAttributeName :: String -> Either ValidationError AttributeName
 toAttributeName str =
-  mapLeft ValidationError $ crtAttrNm str
+  mapValidationError $ crtAttrNm str
 
 
 
 
 toAttributeDescpt :: String -> Either ValidationError ShortDescription
 toAttributeDescpt str =
-  mapLeft ValidationError $ crtShrtDescpt str
+  mapValidationError $ crtShrtDescpt str
 
 
 
 
 toAttributeValue :: String -> Either ValidationError (Maybe AttributeValue)
 toAttributeValue str =
-  mapLeft ValidationError $ crtOptAttrVal str
+  mapValidationError $ crtOptAttrVal str
 
 
 
 
 toAttributeUnit :: String -> Either ValidationError (Maybe AttributeUnit)
 toAttributeUnit str =
-  mapLeft ValidationError $ crtOptAttrUnt str
+  mapValidationError $ crtOptAttrUnt str
 
 
 
@@ -633,15 +609,15 @@ creatteLostItem =
     <*> validatedLostItemCategoryId
     <*> validatedLostItemDescription
     <*> fromList
-      . fmap toLocation
-      . toList
-      . validatedLostItemLocations
+        . fmap toLocation
+        . toList
+        . validatedLostItemLocations
     <*> validatedLostItemDateTimeSpan
     <*> validatedLostItemRegistrTime
     <*> fromList
-      . fmap toAttribute
-      . toList
-      . validatedLostItemAttributes
+        . fmap toAttribute
+        . toList
+        . validatedLostItemAttributes
     <*> toPerson . validatedLostItemOwner
 
 
@@ -707,7 +683,10 @@ toLocation vLoc =
 
 
 
-checkRefCatgrEnabled :: ValidatedLostItem -> Category -> Either DomainError ValidatedLostItem
+checkRefCatgrEnabled :: 
+    ValidatedLostItem 
+    -> Category 
+    -> Either DomainError ValidatedLostItem
 checkRefCatgrEnabled vli (RootCategory refCatgr)
   | validatedLostItemCategoryId vli == categoryId refCatgr =
     case categoryEnablementStatus refCatgr of
@@ -731,9 +710,11 @@ checkRefCatgrEnabled vli (SubCategory refCatgr _)
 
 
 
+
 -- ----------------------------------------------------------------------------
 -- Aknowledgment step
 -- ----------------------------------------------------------------------------
+
 
 
 
@@ -772,25 +753,62 @@ acknowledgemenDeclaredLostItem
 
 
 
-createEvents :: DeclaredLostItem -> Maybe DeclarationAcknowledgmentSent -> [DeclareLostItemEvent]
+createEvents :: 
+    DeclaredLostItem 
+    -> Maybe DeclarationAcknowledgmentSent 
+    -> [DeclareLostItemEvent]
 createEvents declaredLosItem optionDeclarationAcknowledgmentSent =
   let acknoledgmentEvents =
-        maybeToList $ AcknowledgmentSent <$> optionDeclarationAcknowledgmentSent
+        maybeToList 
+            $ AcknowledgmentSent 
+            <$> optionDeclarationAcknowledgmentSent
       lostDeclrationCreatedEvents =
-        singleton $ LostItemDeclared $ crtLostItemDeclaredEvent declaredLosItem
-      loctsAddedEvents = singleton . LocationsAdded . crtLoctsAddedEvent $ declaredLosItem
-      attrbtsAddedEvents = singleton . AttributesAdded . crtAttrbtesAddedEvent $ declaredLosItem
+        singleton 
+            $ LostItemDeclared 
+            $ crtLostItemDeclaredEvent declaredLosItem
+      loctsAddedEvents = 
+        singleton 
+            . LocationsAdded 
+            . crtLoctsAddedEvent 
+            $ declaredLosItem
+      attrbtsAddedEvents = 
+        singleton 
+            . AttributesAdded 
+            . crtAttrbtesAddedEvent 
+            $ declaredLosItem
       searchableItemDeclaredEvents =
-        singleton $ SearchableItemDeclared $ crtSearchableLostItemDeclaredEvent declaredLosItem
+        singleton 
+            $ SearchableItemDeclared 
+            $ crtSearchableLostItemDeclaredEvent declaredLosItem
    in case (head loctsAddedEvents, head attrbtsAddedEvents) of
         (LocationsAdded [], AttributesAdded []) ->
-          concat [lostDeclrationCreatedEvents, searchableItemDeclaredEvents, acknoledgmentEvents]
+          concat 
+            [lostDeclrationCreatedEvents
+            , searchableItemDeclaredEvents
+            , acknoledgmentEvents
+            ]
         (LocationsAdded (x : xs), AttributesAdded []) ->
-          concat [lostDeclrationCreatedEvents, loctsAddedEvents, searchableItemDeclaredEvents, acknoledgmentEvents]
+          concat 
+            [lostDeclrationCreatedEvents
+            , loctsAddedEvents
+            , searchableItemDeclaredEvents
+            , acknoledgmentEvents
+            ]
         (LocationsAdded [], AttributesAdded (x : xs)) ->
-          concat [lostDeclrationCreatedEvents, attrbtsAddedEvents, searchableItemDeclaredEvents, acknoledgmentEvents]
+          concat 
+            [lostDeclrationCreatedEvents
+            , attrbtsAddedEvents
+            , searchableItemDeclaredEvents
+            , acknoledgmentEvents
+            ]
         (LocationsAdded (x : xs), AttributesAdded (y : ys)) ->
-          concat [lostDeclrationCreatedEvents, loctsAddedEvents, attrbtsAddedEvents, searchableItemDeclaredEvents, acknoledgmentEvents]
+          concat 
+            [lostDeclrationCreatedEvents
+            , loctsAddedEvents
+            , attrbtsAddedEvents
+            , searchableItemDeclaredEvents
+            , acknoledgmentEvents
+            ]
 
 
 
@@ -817,11 +835,13 @@ crtAttrbtesAddedEvent = toList . lostItemAttributes
 
 
 
+
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
 -- Overall workflow --
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
+
 
 
 

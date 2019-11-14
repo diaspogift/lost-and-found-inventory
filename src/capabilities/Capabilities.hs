@@ -21,7 +21,7 @@ import CommonSimpleTypes (
 import Data.Int (
     Int32
     )
-import DeclaredLostItemPublicTypes (
+import DeclareLostItemPublicTypes (
     DeclaredLostItem
     )
 import EventStore (

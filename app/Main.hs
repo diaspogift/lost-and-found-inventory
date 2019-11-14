@@ -4,9 +4,9 @@ module Main where
 import CommonSimpleTypes
 import CommonCompoundTypes
 
-import DeclaredLostItemPublicTypes
+import DeclareLostItemPublicTypes
 import DeclareLostItemImplementation
-import DeclaredLostItemHandler
+import DeclareLostItemHandler
 
 import CreateRootCategoryPublicTypes
 import CreateRootCategoryImplementation

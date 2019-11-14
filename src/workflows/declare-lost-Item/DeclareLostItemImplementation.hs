@@ -10,7 +10,7 @@ import Data.Set
     (Set, toList, fromList)
 import Data.Time 
     (UTCTime)
-import DeclaredLostItemPublicTypes
+import DeclareLostItemPublicTypes
 import Util 
     (singleton)
 
@@ -884,7 +884,7 @@ declareLostItem
             crtDeclarationAcknowledgment
             sendAcknowledgment
             crtdLostItem
-            
+
       -- Events creation step
 
       return $

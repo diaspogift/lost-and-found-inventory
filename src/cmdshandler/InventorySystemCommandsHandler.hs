@@ -23,10 +23,10 @@ import CreateRootCategoryHandler (
 import CreateSubCategoryHandler (
     publicCreateSubCategoryHandler
     )
-import DeclaredLostItemHandler (
+import DeclareLostItemHandler (
     publicDeclareLostItemHandler
     )
-import DeclaredLostItemPublicTypes (
+import DeclareLostItemPublicTypes (
     DeclareLostItemEvent
     )
 import InventorySystemCommands (

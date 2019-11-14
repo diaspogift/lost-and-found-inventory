@@ -15,7 +15,7 @@ import Data.Set
     (Set, toList)
 import Data.Time 
     (UTCTime,)
-import DeclaredLostItemPublicTypes
+import DeclareLostItemPublicTypes
 import GHC.Generics 
     (Generic)
 import Prelude hiding 
@@ -28,7 +28,7 @@ import Prelude hiding
 -- This file contains the the logic for working with data transfer objects (DTOs)
 --
 -- Each type of DTO is defined using primitive, serializable types and there are
--- toUnvlidated, toDomain and fromDclLstItmEvtDomain functions defined for each of them.
+-- toUnvalidated, toDomain and fromDclLstItmEvtDomain functions defined for each of them.
 --
 -- ==========================================================================================
 

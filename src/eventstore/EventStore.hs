@@ -85,7 +85,7 @@ import DeclareLostItemDto (
     fromLocationsAdded,
     fromAttributesAdded
     )
-import DeclaredLostItemPublicTypes (
+import DeclareLostItemPublicTypes (
     DeclaredLostItem,
     DeclareLostItemEvent (..)
     )

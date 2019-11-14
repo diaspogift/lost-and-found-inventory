@@ -16,7 +16,7 @@ import CreateRootCategoryPublicTypes (
 import CreateSubCategoryPublicTypes (
     UnvalidatedSubCategory
     )
-import DeclaredLostItemPublicTypes (
+import DeclareLostItemPublicTypes (
     UnvalidatedLostItem, 
     DeclareLostItemEvent
     )

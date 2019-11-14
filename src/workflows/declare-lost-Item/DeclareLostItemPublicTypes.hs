@@ -1,4 +1,4 @@
-module DeclaredLostItemPublicTypes where
+module DeclareLostItemPublicTypes where
 
 import CommonCompoundTypes
 import CommonSimpleTypes

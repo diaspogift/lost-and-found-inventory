@@ -38,10 +38,10 @@ library
   exposed-modules:     CommonSimpleTypes
                      , CommonCompoundTypes
 
-                     , DeclaredLostItemPublicTypes
+                     , DeclareLostItemPublicTypes
                      , DeclareLostItemImplementation
                      , DeclareLostItemDto
-                     , DeclaredLostItemHandler
+                     , DeclareLostItemHandler
 
                      , CreateAttributePublicTypes
                      , CreateAttributeImplementation

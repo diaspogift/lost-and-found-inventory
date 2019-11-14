@@ -209,7 +209,6 @@ declareLostItemHandler
   writeDeclaredLostItemEvents
   nextId
   (Command unvalidatedLostItem curTime userId) =
-    ---------------------------------------- IO at the boundary start -----------------------------------------
     do
       -- retrieve the referenced categoryId
 
@@ -265,7 +264,8 @@ declareLostItemHandler
               declarationTime -- Input
               (lostItemUuid <> ":" <> userId) -- Input
 
-      -- publish / persit event(s) into the event store and other interested third parties
+      -- publish / persit event(s) into the event store
+      -- and other interested third parties
 
       case events of
         Right allEvents ->
@@ -284,7 +284,6 @@ declareLostItemHandler
       persistableEvts (AttributesAdded _) = True
       persistableEvts _ = False
 
-      ---------------------------------- Side effects handling end --------------------------------------------
 
 
 

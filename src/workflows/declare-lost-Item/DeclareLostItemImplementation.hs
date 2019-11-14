@@ -20,7 +20,6 @@ import Util
 -- ==========================================================================================
 -- This file contains the initial implementation for the declareLostItem workflow
 --
---
 -- There are two parts:
 
 -- * the first section contains the (type-only) definitions for each step
@@ -52,6 +51,8 @@ import Util
 ---
 
 
+
+
 type AdminAreaValidationError = String
 
 
@@ -63,7 +64,9 @@ type CheckAdministrativeAreaInfoValid =
 
 
 
+
 type ContactInfoValidationError = String
+
 
 
 
@@ -73,7 +76,9 @@ type CheckContactInfoValid =
 
 
 
+
 type AttributeValidationError = String
+
 
 
 
@@ -81,6 +86,7 @@ type CheckAttributeInfoValid =
   UnvalidatedAttribute ->
   UnvalidatedLostItem ->
   Either AttributeValidationError ValidatedAttribute
+
 
 
 
@@ -95,6 +101,7 @@ data ValidatedLocation
 
 
 
+
 data ValidatedAttribute
   = ValidatedAttribute
       { vattributeCode :: AttributeCode,
@@ -104,6 +111,7 @@ data ValidatedAttribute
         vattributeUnit :: Maybe AttributeUnit
       }
   deriving (Eq, Ord, Show)
+
 
 
 
@@ -249,18 +257,42 @@ validateUnvalidatedLostItem
       <*> dateTimeSpan 
       <*> attrs 
       <*> owner
-    where
-      itemId = toLostItemId unvalidatedAssignUuid
-      name = (toLostItemName . uliName) unvalidatedLostItem
-      catgrId = (toCategoryId . uliCategoryId) unvalidatedLostItem
-      descpt = (toLostItemDescription . uliDescription) unvalidatedLostItem
-      locts = (fmap fromList . traverse (toLostItemLocation checkAdministrativeAreaInfoValid) . ulocations) 
-                unvalidatedLostItem
-      registTime = pure decalrationTime
-      dateTimeSpan = (toDateTimeSpan . uliDateAndTimeSpan) unvalidatedLostItem
-      attrs = (fmap fromList . traverse (toValidatedAttribute checkAttributeInfoValid unvalidatedLostItem) . uliattributes) 
-                unvalidatedLostItem
-      owner = (toOwner checkContactInfoValid . uowner) unvalidatedLostItem
+    where   itemId = 
+                toLostItemId 
+                    unvalidatedAssignUuid
+            name = 
+                toLostItemName 
+                . uliName 
+                $ unvalidatedLostItem
+            catgrId = 
+                toCategoryId 
+                . uliCategoryId 
+                $ unvalidatedLostItem
+            descpt = 
+                toLongDescpt 
+                . uliDescription 
+                $ unvalidatedLostItem
+            locts = 
+                fmap fromList 
+                . traverse (toLostItemLocation checkAdministrativeAreaInfoValid) 
+                . ulocations
+                $ unvalidatedLostItem
+            registTime = 
+                pure decalrationTime
+            dateTimeSpan = 
+                toDateTimeSpan 
+                . uliDateAndTimeSpan 
+                $ unvalidatedLostItem
+            attrs = 
+                fmap fromList 
+                . traverse (toValidatedAttribute checkAttributeInfoValid unvalidatedLostItem) 
+                . uliattributes
+                $ unvalidatedLostItem
+            owner = 
+                toOwner checkContactInfoValid 
+                . uowner
+                $ unvalidatedLostItem
+                
 
 
 
@@ -270,10 +302,6 @@ validateUnvalidatedLostItem
 ---
 
 
-
-toDateTimeSpan :: (String, String) -> Either ValidationError DateTimeSpan
-toDateTimeSpan (startDate, endDate) =
-    mapValidationError $ crtDtTmSpan startDate endDate " "
 
 
 
@@ -387,55 +415,12 @@ toCheckedValidTelephone checkContactInfoValid str =
 
 
 
-
-toTelephone :: String -> Either ValidationError Telephone
-toTelephone str =
-  mapValidationError $ crtTel str
-
-
-
-
-toEmail :: String -> Either ValidationError EmailAddress
-toEmail str =
-  mapValidationError $ crtEmailAddress str
-
-
-
-
-toPostalAddress :: String -> Either ValidationError PostalAddress
-toPostalAddress str =
-  mapValidationError $ crtPstAddress str
-
-
-
-
-toFirst :: String -> Either ValidationError FirstName
-toFirst str =
-  mapValidationError $ crtFstNm str
-
-
-
-
 toFullName :: UnvalidatedFullName -> Either ValidationError FullName
 toFullName uFullName =
   FullName
-    <$> (toFirst . ufirst) uFullName
-    <*> (toMiddle . umiddle) uFullName
-    <*> (toLast . ulast) uFullName
-
-
-
-
-toMiddle :: String -> Either ValidationError (Maybe Middle)
-toMiddle str =
-  mapValidationError $ crtMdleNm str
-
-
-
-
-toLast :: String -> Either ValidationError LastName
-toLast str =
-  mapValidationError $ crtLstNm str
+    <$> (toFirstName . ufirst) uFullName
+    <*> (toMiddleName . umiddle) uFullName
+    <*> (toLastName . ulast) uFullName
 
 
 
@@ -451,34 +436,6 @@ toValidatedAttribute checkAttributeInfoValid ulostitem uattr =
 
 
 
-toLostItemId :: String -> Either ValidationError LostItemId
-toLostItemId str =
-  mapValidationError $ crtLstItmId str
-
-
-
-
-toLostItemName :: String -> Either ValidationError ItemName
-toLostItemName str =
-  mapValidationError $ crtItmNm str
-
-
-
-
-toUserId :: String -> Either ValidationError UserId
-toUserId str =
-  mapValidationError $ crtUsrId str
-
-
-
-
-toLostItemDescription :: String -> Either ValidationError LongDescription
-toLostItemDescription str =
-  mapValidationError $ crtLgDescpt str
-
-
-
-
 toCheckedValidAdminArea ::
   (String, String, String) ->
   CheckAdministrativeAreaInfoValid ->
@@ -486,82 +443,6 @@ toCheckedValidAdminArea ::
 toCheckedValidAdminArea (reg, divs, sub) checkAdministrativeAreaInfoValid =
   mapValidationError $ checkAdministrativeAreaInfoValid (reg, divs, sub)
 
-
-
-
-toCityOrVillage ::
-  (String, String) ->
-  Either ValidationError (Maybe CityOrVillage)
-toCityOrVillage (cityStr, villageStr)
-  | null cityStr && null villageStr =
-    return Nothing
-  | null cityStr && notNull villageStr =
-    do
-      village <- mapValidationError $ crtVillage villageStr
-      return $ Just $ Country village
-  | notNull cityStr && null villageStr =
-    do
-      city <- mapValidationError $ crtCity cityStr
-      return $ Just $ Urban city
-  | notNull cityStr && notNull villageStr =
-    Left $ ValidationError "provide either a city or a village not both"
-  | otherwise = return Nothing
-
-
-
-
-toCity :: String -> Either ValidationError City
-toCity str =
-  mapValidationError $ crtCity str
-
-
-
-
-toVillage :: String -> Either ValidationError Village
-toVillage str =
-  mapValidationError $ crtVillage str
-
-
-
-
-toNeighborhood :: String -> Either ValidationError (Maybe Neighborhood)
-toNeighborhood str =
-  mapValidationError $ crtNghbrhd str
-
-
-
-
-toAddress :: String -> Either ValidationError Address
-toAddress str =
-  mapValidationError $ crtAddress str
-
-
-
-
-toAttributeName :: String -> Either ValidationError AttributeName
-toAttributeName str =
-  mapValidationError $ crtAttrNm str
-
-
-
-
-toAttributeDescpt :: String -> Either ValidationError ShortDescription
-toAttributeDescpt str =
-  mapValidationError $ crtShrtDescpt str
-
-
-
-
-toAttributeValue :: String -> Either ValidationError (Maybe AttributeValue)
-toAttributeValue str =
-  mapValidationError $ crtOptAttrVal str
-
-
-
-
-toAttributeUnit :: String -> Either ValidationError (Maybe AttributeUnit)
-toAttributeUnit str =
-  mapValidationError $ crtOptAttrUnt str
 
 
 

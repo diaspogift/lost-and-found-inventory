@@ -1765,12 +1765,10 @@ wouriDivision = DivisionItem Wouri wouriSubDivisions
 
 
 
-
-
-
 -- =============================================================================
--- Category types shared functions
+-- Category type shared functions
 -- =============================================================================
+
 
 
 
@@ -1823,10 +1821,182 @@ createSubCategoryAddedEvt (RootCategory CategoryInfo {categoryId = id, categoryR
 
 
 
+
+-- =============================================================================
+-- Location type shared functions
+-- =============================================================================  
+
+
+
+toLostItemId :: String -> Either ValidationError LostItemId
+toLostItemId =
+  mapValidationError . crtLstItmId
+
+
+
+
+toLostItemName :: String -> Either ValidationError ItemName
+toLostItemName =
+  mapValidationError . crtItmNm
+
+
+
+
+
+
+-- =============================================================================
+-- Person type helper functions
+-- =============================================================================
+
+
+
+
+
+toUserId :: String -> Either ValidationError UserId
+toUserId =
+  mapValidationError . crtUsrId
+
+
+
+
+   
+toMiddleName :: String -> Either ValidationError (Maybe Middle)
+toMiddleName str =
+  mapValidationError $ crtMdleNm str
+
+
+
+
+toLastName :: String -> Either ValidationError LastName
+toLastName str =
+  mapValidationError $ crtLstNm str
+
+
+
+
+
+toFirstName :: String -> Either ValidationError FirstName
+toFirstName =
+  mapValidationError . crtFstNm
+
+
+
+
+
+
+
+
+-- =============================================================================
+-- Location type helper functions
+-- =============================================================================
+
+
+
+
+
+
+
+
+toCityOrVillage ::
+  (String, String) ->
+  Either ValidationError (Maybe CityOrVillage)
+toCityOrVillage (cityStr, villageStr)
+  | null cityStr && null villageStr =
+    return Nothing
+  | null cityStr && notNull villageStr =
+    do
+      village <- mapValidationError $ crtVillage villageStr
+      return $ Just $ Country village
+  | notNull cityStr && null villageStr =
+    do
+      city <- mapValidationError $ crtCity cityStr
+      return $ Just $ Urban city
+  | notNull cityStr && notNull villageStr =
+    Left $ ValidationError "provide either a city or a village not both"
+  | otherwise = return Nothing
+
+
+
+
+
+toCity :: String -> Either ValidationError City
+toCity =
+  mapValidationError . crtCity
+
+
+
+
+toVillage :: String -> Either ValidationError Village
+toVillage =
+  mapValidationError . crtVillage 
+
+
+
+
+toNeighborhood :: String -> Either ValidationError (Maybe Neighborhood)
+toNeighborhood =
+  mapValidationError . crtNghbrhd
+
+
+
+
+toAddress :: String -> Either ValidationError Address
+toAddress =
+  mapValidationError . crtAddress
+
+
+
+
+
+
+-- =============================================================================
+-- ConactInfo type helper functions
+-- =============================================================================
+
+
+
+
+
+
+toPostalAddress :: String -> Either ValidationError PostalAddress
+toPostalAddress =
+  mapValidationError . crtPstAddress
+
+
+
+
+
+toTelephone :: String -> Either ValidationError Telephone
+toTelephone =
+  mapValidationError . crtTel
+
+
+
+
+toEmail :: String -> Either ValidationError EmailAddress
+toEmail =
+  mapValidationError . crtEmailAddress
+
+
+  
+
+
+
 -- =============================================================================
 -- Generic helper functions
 -- =============================================================================
 
 
 
+
+
+toDateTimeSpan :: (String, String) -> Either ValidationError DateTimeSpan
+toDateTimeSpan (startDate, endDate) =
+    mapValidationError $ crtDtTmSpan startDate endDate " "
+
+
+
+
+
+notNull :: String -> Bool
 notNull = not . null

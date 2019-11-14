@@ -28,15 +28,22 @@ import EventStore (
     readOneDeclaredLostItem
     )
 
+
+
+
 -- =============================================================================
 -- This file defines the capabilities in the system
 -- =============================================================================
 
+
+
+
 -- -----------------------------------------------------------------------------
---
 -- Capability types
---
 -- -----------------------------------------------------------------------------
+
+
+
 
 type ReadCategoryStreamCap = () -> IO (Either WorkflowError Category)
 
@@ -50,11 +57,15 @@ type ReadDeclaredLostItemStreamCap = () -> IO (Either WorkflowError DeclaredLost
 
 type WriteDeclaredLostItemEventsCap = () -> IO ()
 
+
+
+
 -- -----------------------------------------------------------------------------
---
 -- Capability providers
---
 -- -----------------------------------------------------------------------------
+
+
+
 
 data CapabilityProvider
   = CapabilityProvider
@@ -72,8 +83,24 @@ data CapabilityProvider
         writeDeclaredLostItemEventsCap :: UserId -> IPrincipal -> Maybe WriteDeclaredLostItemEventsCap
       }
 
-getLostItemOnlyForSameId :: Int32 -> LostItemId -> IPrincipal -> Maybe (() -> IO (Either WorkflowError DeclaredLostItem))
-getLostItemOnlyForSameId numEvts id principal = onlyForSameId id principal (readOneDeclaredLostItem numEvts)
 
-getLostItemOnlyForAdmins :: Int32 -> LostItemId -> IPrincipal -> Maybe (() -> IO (Either WorkflowError DeclaredLostItem))
-getLostItemOnlyForAdmins numEvts id principal = onlyForAdmins id principal (readOneDeclaredLostItem numEvts)
+
+
+getLostItemOnlyForSameId :: 
+    Int32 
+    -> LostItemId 
+    -> IPrincipal 
+    -> Maybe (() -> IO (Either WorkflowError DeclaredLostItem))
+getLostItemOnlyForSameId numEvts id principal 
+    = onlyForSameId id principal (readOneDeclaredLostItem numEvts)
+
+
+
+    
+getLostItemOnlyForAdmins :: 
+    Int32 
+    -> LostItemId 
+    -> IPrincipal 
+    -> Maybe (() -> IO (Either WorkflowError DeclaredLostItem))
+getLostItemOnlyForAdmins numEvts id principal
+    = onlyForAdmins id principal (readOneDeclaredLostItem numEvts)

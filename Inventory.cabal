@@ -65,7 +65,6 @@ library
 
 
                      , EventStore
---                   , EventStorePlayGround
                      , Capabilities
                      , Authentication
                      , Authorization

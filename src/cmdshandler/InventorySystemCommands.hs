@@ -21,17 +21,23 @@ import DeclaredLostItemPublicTypes (
     DeclareLostItemEvent
     )
 
+
+
+
 -- ==========================================================================================
 -- This file contains the the handlers for all workflows in the Lost |&| Found Inventary
 -- subsystem
---
---
---
 -- ==========================================================================================
+
+
+
 
 -- =============================================================================
 -- All possible Commands for the System
 -- =============================================================================
+
+
+
 
 data InventoryCommand d = Command d String String deriving (Eq, Ord, Show)
 
@@ -49,6 +55,10 @@ type CreateRootCategoryCmd = InventoryCommand UnvalidatedRootCategory
 
 type CreateSubCategoryCmd = InventoryCommand UnvalidatedSubCategory
 
+
+
+
+
 data LostAndFoundInventoryCmd
   = Register DeclareLostItemCmd
   | Declare DeclareFoundItemCmd
@@ -59,9 +69,17 @@ data LostAndFoundInventoryCmd
   | CreateSubCategory CreateSubCategoryCmd
   deriving (Eq, Ord, Show)
 
+
+
+
+
 -- =============================================================================
 -- All possibled published Events from workflows
 -- =============================================================================
+
+
+
+
 
 data InventoryEvent
   = DclreLostItemEvt [DeclareLostItemEvent]
@@ -69,9 +87,17 @@ data InventoryEvent
   | CrteRootCatgrEvt [CreateCategoryEvent]
   | CrteSubCatgrEvt [CreateCategoryEvent]
 
+
+
+
+
 -- =============================================================================
 -- All possible Errors from workflows
 -- =============================================================================
+
+
+
+
 
 data InventoryError
   = DclreLostItemErr WorkflowError

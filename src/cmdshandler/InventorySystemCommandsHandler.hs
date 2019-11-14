@@ -35,18 +35,26 @@ import InventorySystemCommands (
     LostAndFoundInventoryCmd (..)
     )
 
+
+
+    
 -- ==========================================================================================
 -- This file contains the implentation details for the command handler of the Inventory
 -- bounded context.
 -- ==========================================================================================
 
+
+
+
 -- =============================================================================
 -- Overall Command Handler Implementation
 -- =============================================================================
 
-handle ::
-  LostAndFoundInventoryCmd ->
-  ExceptT InventoryError IO InventoryEvent
+
+
+
+
+handle :: LostAndFoundInventoryCmd -> ExceptT InventoryError IO InventoryEvent
 handle command =
   case command of
     Register declareLostItemCmd ->
@@ -87,9 +95,15 @@ handle command =
       ExceptT
         undefined
 
+
+
+
+
+
 --- Helper "mapping" functions
 ---
 ---
+
 
 mapBothDeclareLostItemErrorAndEvent ::
   IO (Either WorkflowError [DeclareLostItemEvent]) ->
@@ -101,6 +115,9 @@ mapBothDeclareLostItemErrorAndEvent resDclLstItmHandler =
       Right evts -> return $ Right $ DclreLostItemEvt evts
       Left errMsg -> return $ Left $ DclreLostItemErr errMsg
 
+
+
+
 mapBothCreateAttributeErrorAndEvent ::
   IO (Either WorkflowError [CreateAttributeEvent]) ->
   IO (Either InventoryError InventoryEvent)
@@ -110,6 +127,9 @@ mapBothCreateAttributeErrorAndEvent createAttrHandler =
     case ucreateAttrHandler of
       Right evts -> return $ Right $ CrteAttribueEvt evts
       Left errMsg -> return $ Left $ CrteAttribueErr errMsg
+
+
+
 
 mapBothCreateRootCategoryErrorAndEvent ::
   IO (Either WorkflowError [CreateCategoryEvent]) ->
@@ -121,6 +141,9 @@ mapBothCreateRootCategoryErrorAndEvent createCatgrHandler =
       Right evts -> return $ Right $ CrteRootCatgrEvt evts
       Left errMsg -> return $ Left $ CrteRootCatgrErr errMsg
 
+
+
+      
 mapBothCreateSubCategoryErrorAndEvent ::
   IO (Either WorkflowError [CreateCategoryEvent]) ->
   IO (Either InventoryError InventoryEvent)

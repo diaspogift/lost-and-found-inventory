@@ -90,15 +90,27 @@ import DeclaredLostItemPublicTypes (
     DeclareLostItemEvent (..)
     )
 
+
+
+
 -- =============================================================================
 -- Helper types
 -- =============================================================================
 
+
+
+
 type LocalStreamId = String
+
+
+
 
 --- Read types
 ---
 ---
+
+
+
 
 type ReadOneCategory =
   Int32 -> LocalStreamId -> IO (Either WorkflowError Category)
@@ -108,6 +120,9 @@ type ReadOneDeclaredLostItem =
 
 type ReadOneAttributeRef =
   Int32 -> LocalStreamId -> IO (Either WorkflowError AttributeRef)
+
+
+
 
 --- Write types
 ---
@@ -125,20 +140,35 @@ type WriteCreateRootCategoryEvents =
 type WriteCreateSubCategoryEvents =
   LocalStreamId -> [CreateCategoryEvent] -> IO ()
 
+
+
+
 -- =============================================================================
 -- Read operations
 -- =============================================================================
+
+
+
 
 ---------------------------------------
 -- Declare Lost Item
 ---------------------------------------
 
+
+
+
 readOneDeclaredLostItem :: ReadOneDeclaredLostItem
 readOneDeclaredLostItem = undefined
+
+
+
 
 ---------------------------------------
 --- Category
 ---------------------------------------
+
+
+
 
 readOneCategoryWithReaderT :: Int32 -> String -> ExceptT WorkflowError (ReaderT Connection IO) Category
 readOneCategoryWithReaderT eventNum streamId = do
@@ -164,9 +194,7 @@ readOneCategoryWithReaderT eventNum streamId = do
       | evtName == "SubCategoriesAdded" =
         let rs = fromMaybe (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe SubCategoriesAddedDto)
          in SubCatgrsAdded rs
-    {-  | evtName == "CreatedSubCategory" =
-         let rs = fromMaybe (error "Inconsitant data from event store") ( decode . fromStrict $ strEventData :: Maybe SSubCategoriesAddedDto)
-         in SSubCatsADD rs -}
+
 
     applyDtoEvent :: CreateCategoryEventDto -> CreateCategoryEventDto -> CreateCategoryEventDto
     applyDtoEvent (CatgrCreated acc) (CatgrCreated elm) = CatgrCreated acc
@@ -183,6 +211,11 @@ readOneCategoryWithReaderT eventNum streamId = do
             Left erroMsg -> Left . DataBaseError $ erroMsg
             Right result -> return result
 
+
+
+
+
+
 readOneCategory :: Int32 -> String -> IO (Either WorkflowError Category)
 readOneCategory num id = do
   conn <- connect defaultSettings (Static "localhost" 1113)
@@ -190,9 +223,17 @@ readOneCategory num id = do
   let uwrpReader = runReaderT uwrpEither
   uwrpReader conn
 
+
+
+
+
 ---------------------------------------
 --- AttributeRef
 ---------------------------------------
+
+
+
+
 
 readOneAttributeRefWithReaderT :: Int32 -> String -> ExceptT WorkflowError (ReaderT Connection IO) AttributeRef
 readOneAttributeRefWithReaderT evtNum streamId = do
@@ -227,6 +268,10 @@ readOneAttributeRefWithReaderT evtNum streamId = do
             Left erroMsg -> Left . DataBaseError $ erroMsg
             Right result -> return result
 
+
+
+
+
 readOneAttributeRef :: Int32 -> String -> IO (Either WorkflowError AttributeRef)
 readOneAttributeRef num id = do
   conn <- connect defaultSettings (Static "localhost" 1113)
@@ -234,13 +279,26 @@ readOneAttributeRef num id = do
   let uwrpReader = runReaderT uwrpEither
   uwrpReader conn
 
+
+
+
+
+  
 -- =============================================================================
 -- Write operations
 -- =============================================================================
 
+
+
+
+
 ---------------------------------------
 -- Declare Lost Item
 ---------------------------------------
+
+
+
+
 
 writeDeclaredLostItemEventsWithReaderT :: LocalStreamId -> [DeclareLostItemEvent] -> ReaderT Connection IO ()
 writeDeclaredLostItemEventsWithReaderT streamId evts =
@@ -269,15 +327,27 @@ writeDeclaredLostItemEventsWithReaderT streamId evts =
       let attrsaDto = fromAttributesAdded attrsa
        in createEvent "AttributesAdded" Nothing $ withJson attrsaDto
 
+
+
+
+
 writeDeclaredLostItemEvents :: LocalStreamId -> [DeclareLostItemEvent] -> IO ()
 writeDeclaredLostItemEvents id evts = do
   conn <- connect defaultSettings (Static "localhost" 1113)
   let uwrpReader = runReaderT $ writeDeclaredLostItemEventsWithReaderT id evts
   uwrpReader conn
 
+
+
+
+
 ---------------------------------------
 -- Create RootCategory
 ---------------------------------------
+
+
+
+
 
 writeCreateRootCategoryEventsWithReaderT :: LocalStreamId -> [CreateCategoryEvent] -> ReaderT Connection IO ()
 writeCreateRootCategoryEventsWithReaderT streamId evts =
@@ -302,9 +372,17 @@ writeCreateRootCategoryEvents id evts = do
   let uwrpReader = runReaderT $ writeCreateRootCategoryEventsWithReaderT id evts
   uwrpReader conn
 
+
+
+
+
 ---------------------------------------
 -- Create SubCategory
 ---------------------------------------
+
+
+
+
 
 writeCreateSubCategoryEventsWithReaderT :: LocalStreamId -> [CreateCategoryEvent] -> ReaderT Connection IO ()
 writeCreateSubCategoryEventsWithReaderT streamId evts =
@@ -329,9 +407,17 @@ writeCreateSubCategoryEvents id evts = do
   let uwrpReader = runReaderT $ writeCreateSubCategoryEventsWithReaderT id evts
   uwrpReader conn
 
+
+
+
+
 ---------------------------------------
 -- Create AttributeRef
 ---------------------------------------
+
+
+
+
 
 writeCreateAttributeRefEventsWithReaderT :: LocalStreamId -> CreateAttributeEvent -> ReaderT Connection IO ()
 writeCreateAttributeRefEventsWithReaderT streamId (AttributeRefCreated createdAttribute) =

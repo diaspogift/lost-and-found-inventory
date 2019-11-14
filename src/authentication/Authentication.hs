@@ -10,16 +10,25 @@ import CommonSimpleTypes
 import Data.Either.Combinators
 import Data.List.Split
 
+
+
+
 data Role
   = Administrator
   | Anonymous
   deriving (Eq, Show, Ord)
+
+
+
 
 data IPrincipal
   = IPrincipal
       { identity :: UserId,
         roles :: [Role]
       }
+
+
+
 
 authenticate :: UserId -> Either DomainError IPrincipal
 authenticate id = do
@@ -35,6 +44,9 @@ authenticate id = do
         return $ IPrincipal user2 [Anonymous]
       | otherwise = Left . DomainError $ "Authentication Faillure"
 
+
+
+
 lostItemOwnedByPrincipal :: LostItemId -> IPrincipal -> Bool
 lostItemOwnedByPrincipal lostItemId (IPrincipal userId _) =
   case toOwnerId lostItemId of
@@ -44,6 +56,9 @@ lostItemOwnedByPrincipal lostItemId (IPrincipal userId _) =
     splitOnColumn = splitOn ":"
     toOwnerId = crtUsrId . last . splitOnColumn . uwrpLstItmId
 
+
+
+    
 checkPrincipalIsInRole :: IPrincipal -> Role -> Bool
 checkPrincipalIsInRole (IPrincipal _ roles) role =
   role `elem` roles

@@ -218,25 +218,31 @@ createAttributeReference ::
 createAttributeReference
   unvalidatedAttributeRef -- Input
   unValidatedlostItemUuid -- Input
-  referencedCategories =
-    -- Input
+  referencedCategories = -- Input
     do
       -- Validation step
+
       validatedAttrRef <-
         mapLeft
           Validation
           $ validateUnvalidatedAttributeRef
             unvalidatedAttributeRef
             unValidatedlostItemUuid
+
       -- Verify that referred categories are all enabled
+
       _ <-
         mapLeft
           Domain
           $ traverse checkRefCatgrEnabled referencedCategories
+
       -- Creation step
+
       createdAttrRef <-
         return $
           createAttrinuteRef
             validatedAttrRef
+
       -- Events creation step
+      
       return $ createEvents createdAttrRef

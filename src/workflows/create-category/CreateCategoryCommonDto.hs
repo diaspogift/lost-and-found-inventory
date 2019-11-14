@@ -197,7 +197,15 @@ fromCategoryCreated (SubCategory catgrInfo (Just (ParentInfo id cd))) =
       subCategrs = toSubCatgrs catgrInfo
     }
 
--- helpers funtions
+
+
+
+--- helper funtions
+---
+---
+
+
+
 
 toId = uwrpCatgrId . categoryId
 

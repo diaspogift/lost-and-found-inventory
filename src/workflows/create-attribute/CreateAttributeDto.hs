@@ -24,6 +24,9 @@ import GHC.Generics
     (Generic)
 
 
+
+
+
 -- ==========================================================================================
 -- This file contains the the logic for working with data transfer objects (DTOs)
 --
@@ -31,6 +34,8 @@ import GHC.Generics
 -- toUnvlidated, toDomain and fromDclLstItmEvtDomain functions defined for each of them.
 --
 -- ==========================================================================================
+
+
 
 -- ==========================================================================================
 -- DTOs for DeclareLostItem workflow
@@ -115,8 +120,8 @@ fromAttributeRefCreated =
 
 
 
-toDomain1 :: AttributeRefCreatedDto -> Either ErrorMessage AttributeRef
-toDomain1 dto = do
+toAttributeRefDomain :: AttributeRefCreatedDto -> Either ErrorMessage AttributeRef
+toAttributeRefDomain dto = do
   cd <- crtAttrCd . code $ dto
   nm <- crtAttrNm . name $ dto
   descpt <- crtShrtDescpt . description $ dto

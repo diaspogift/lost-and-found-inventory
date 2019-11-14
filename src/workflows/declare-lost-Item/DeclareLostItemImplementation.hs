@@ -14,6 +14,9 @@ import DeclaredLostItemPublicTypes
 import Util 
     (singleton)
 
+
+
+
 -- ==========================================================================================
 -- This file contains the initial implementation for the declareLostItem workflow
 --
@@ -26,44 +29,60 @@ import Util
 --   and then the implementation of the overall workflow
 -- ==========================================================================================
 
+
+
+
 -- ==========================================================================================
 -- Section 1 : Defining each step in the workflow using types
 -- ==========================================================================================
+
+
+
 
 -- ----------------------------------------------------------------------------
 -- Validation step
 -- ----------------------------------------------------------------------------
 
---- Dependencies types
----
----
+
+
+
 
 --- Adminitrative data (Region, Division and Subdivison) validation
+---
+---
+
 
 type AdminAreaValidationError = String
+
+
+
 
 type CheckAdministrativeAreaInfoValid =
   (String, String, String) ->
   Either AdminAreaValidationError (Maybe (Region, Division, SubDivision))
 
---- Contact Information (Phone number) validation (Probably with an external service???)
+
 
 type ContactInfoValidationError = String
+
+
 
 type CheckContactInfoValid =
   Telephone ->
   Either ContactInfoValidationError Telephone
 
---- Attribute Information (Are they consistent with the category they reference ?) validation
+
 
 type AttributeValidationError = String
+
+
 
 type CheckAttributeInfoValid =
   UnvalidatedAttribute ->
   UnvalidatedLostItem ->
   Either AttributeValidationError ValidatedAttribute
 
---- Validated LostItem
+
 
 data ValidatedLocation
   = ValidatedLocation
@@ -73,6 +92,8 @@ data ValidatedLocation
         vlocationAddresses :: [Address]
       }
   deriving (Eq, Ord, Show)
+
+
 
 data ValidatedAttribute
   = ValidatedAttribute
@@ -84,6 +105,8 @@ data ValidatedAttribute
       }
   deriving (Eq, Ord, Show)
 
+
+
 data ValidatedPerson
   = ValidatedPerson
       { vpersonId :: UserId,
@@ -92,12 +115,18 @@ data ValidatedPerson
       }
   deriving (Eq, Ord, Show)
 
+
+
+
 data ValidatedContactInformation
   = ValidatedContactInformation
       { vcontactInfoAddress :: Maybe PostalAddress,
         vcontactInfoMethod :: ContactMethod
       }
   deriving (Eq, Ord, Show)
+
+
+
 
 data ValidatedLostItem
   = ValidatedLostItem
@@ -112,29 +141,47 @@ data ValidatedLostItem
         validatedLostItemOwner :: ValidatedPerson
       }
 
+
+
+
 type ValidateUnvalidatedLostItem =
-  CheckAdministrativeAreaInfoValid -> -- Dependency
-  CheckContactInfoValid -> -- Dependency
-  CheckAttributeInfoValid -> -- Dependancy
-  UnvalidatedLostItem -> -- Input
-  UTCTime -> -- Input
-  UnvalidatedLostItemId -> -- Input
-  Either ValidationError ValidatedLostItem -- Output
+  CheckAdministrativeAreaInfoValid -- Dependency
+  -> CheckContactInfoValid -- Dependency
+  -> CheckAttributeInfoValid -- Dependancy
+  -> UnvalidatedLostItem -- Input
+  -> UTCTime -- Input
+  -> UnvalidatedLostItemId -- Input
+  -> Either ValidationError ValidatedLostItem -- Output
+
+
+
 
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Check refered Category enablement status is enabled
 -- ----------------------------------------------------------------------------
+
+
+
 
 -- ----------------------------------------------------------------------------
 -- Acknowledgement step
 -- ----------------------------------------------------------------------------
 
+
+
+
 newtype HtmlString
   = HtmlString String
+
+
+
 
 data DeclarationAcknowledgment
   = DeclarationAcknowledgment
@@ -142,8 +189,14 @@ data DeclarationAcknowledgment
         letter :: HtmlString
       }
 
+
+
+
 type CreateDeclarationAcknowledgment =
   DeclaredLostItem -> HtmlString
+
+
+
 
 -- Send a lost item declaration / registration acknoledgment to the declarant
 -- Note that this does not generate an Either type
@@ -154,8 +207,14 @@ data SendResult
   = Sent
   | NotSent
 
+
+
+
 type SendAcknowledgment =
   DeclarationAcknowledgment -> SendResult
+
+
+
 
 type AcknowledgemenDeclaredLostItem =
   CreateDeclarationAcknowledgment -> -- Dependency
@@ -163,17 +222,31 @@ type AcknowledgemenDeclaredLostItem =
   DeclaredLostItem ->
   Maybe DeclarationAcknowledgmentSent
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Create events step
 -- ----------------------------------------------------------------------------
+
+
+
+
+
 
 -- ==========================================================================================
 -- Section 2 : Implementation
 -- ==========================================================================================
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- Validation step
 -- ----------------------------------------------------------------------------
+
+
+
 
 validateUnvalidatedLostItem :: ValidateUnvalidatedLostItem
 validateUnvalidatedLostItem
@@ -206,11 +279,21 @@ validateUnvalidatedLostItem
                 unvalidatedLostItem
       owner = (toOwner checkContactInfoValid . uowner) unvalidatedLostItem
 
+
+
+
 --- Helper functions for valodateUnvalidatedLostItem
+---
+---
+
+
 
 toDateTimeSpan :: (String, String) -> Either ValidationError DateTimeSpan
 toDateTimeSpan (startDate, endDate) =
   mapLeft ValidationError $ crtDtTmSpan startDate endDate " "
+
+
+
 
 toOwner :: CheckContactInfoValid -> UnvalidatedPerson -> Either ValidationError ValidatedPerson
 toOwner checkContactInfoValid uperson =
@@ -218,6 +301,9 @@ toOwner checkContactInfoValid uperson =
     <$> (toUserId . uuserId) uperson
     <*> (toContactInfo checkContactInfoValid . ucontact) uperson
     <*> (toFullName . ufullname) uperson
+
+
+
 
 toContactInfo ::
   CheckContactInfoValid ->
@@ -303,6 +389,9 @@ toContactInfo checkContactInfoValid uc
     givenSecTel = usecondaryTel uc
     givenAddress = uaddress uc
 
+
+
+
 toCheckedValidTelephone ::
   CheckContactInfoValid ->
   String ->
@@ -312,21 +401,37 @@ toCheckedValidTelephone checkContactInfoValid str =
     tel <- toTelephone str
     mapLeft ValidationError $ checkContactInfoValid tel
 
+
+
+
+
 toTelephone :: String -> Either ValidationError Telephone
 toTelephone str =
   mapLeft ValidationError $ crtTel str
+
+
+
 
 toEmail :: String -> Either ValidationError EmailAddress
 toEmail str =
   mapLeft ValidationError $ crtEmailAddress str
 
+
+
+
 toPostalAddress :: String -> Either ValidationError PostalAddress
 toPostalAddress str =
   mapLeft ValidationError $ crtPstAddress str
 
+
+
+
 toFirst :: String -> Either ValidationError FirstName
 toFirst str =
   mapLeft ValidationError $ crtFstNm str
+
+
+
 
 toFullName :: UnvalidatedFullName -> Either ValidationError FullName
 toFullName uFullName =
@@ -335,13 +440,22 @@ toFullName uFullName =
     <*> (toMiddle . umiddle) uFullName
     <*> (toLast . ulast) uFullName
 
+
+
+
 toMiddle :: String -> Either ValidationError (Maybe Middle)
 toMiddle str =
   mapLeft ValidationError $ crtMdleNm str
 
+
+
+
 toLast :: String -> Either ValidationError LastName
 toLast str =
   mapLeft ValidationError $ crtLstNm str
+
+
+
 
 toValidatedAttribute ::
   CheckAttributeInfoValid ->
@@ -351,25 +465,43 @@ toValidatedAttribute ::
 toValidatedAttribute checkAttributeInfoValid ulostitem uattr =
   mapLeft ValidationError $ checkAttributeInfoValid uattr ulostitem
 
+
+
+
 toLostItemId :: String -> Either ValidationError LostItemId
 toLostItemId str =
   mapLeft ValidationError $ crtLstItmId str
+
+
+
 
 toLostItemName :: String -> Either ValidationError ItemName
 toLostItemName str =
   mapLeft ValidationError $ crtItmNm str
 
+
+
+
 toCategoryId :: String -> Either ValidationError CategoryId
 toCategoryId str =
   mapLeft ValidationError $ crtCatgrId str
+
+
+
 
 toUserId :: String -> Either ValidationError UserId
 toUserId str =
   mapLeft ValidationError $ crtUsrId str
 
+
+
+
 toLostItemDescription :: String -> Either ValidationError LongDescription
 toLostItemDescription str =
   mapLeft ValidationError $ crtLgDescpt str
+
+
+
 
 toCheckedValidAdminArea ::
   (String, String, String) ->
@@ -377,6 +509,9 @@ toCheckedValidAdminArea ::
   Either ValidationError (Maybe (Region, Division, SubDivision))
 toCheckedValidAdminArea (reg, divs, sub) checkAdministrativeAreaInfoValid =
   mapLeft ValidationError $ checkAdministrativeAreaInfoValid (reg, divs, sub)
+
+
+
 
 toCityOrVillage ::
   (String, String) ->
@@ -396,37 +531,64 @@ toCityOrVillage (cityStr, villageStr)
     Left $ ValidationError "provide either a city or a village not both"
   | otherwise = return Nothing
 
+
+
+
 toCity :: String -> Either ValidationError City
 toCity str =
   mapLeft ValidationError $ crtCity str
+
+
+
 
 toVillage :: String -> Either ValidationError Village
 toVillage str =
   mapLeft ValidationError $ crtVillage str
 
+
+
+
 toNeighborhood :: String -> Either ValidationError (Maybe Neighborhood)
 toNeighborhood str =
   mapLeft ValidationError $ crtNghbrhd str
+
+
+
 
 toAddress :: String -> Either ValidationError Address
 toAddress str =
   mapLeft ValidationError $ crtAddress str
 
+
+
+
 toAttributeName :: String -> Either ValidationError AttributeName
 toAttributeName str =
   mapLeft ValidationError $ crtAttrNm str
+
+
+
 
 toAttributeDescpt :: String -> Either ValidationError ShortDescription
 toAttributeDescpt str =
   mapLeft ValidationError $ crtShrtDescpt str
 
+
+
+
 toAttributeValue :: String -> Either ValidationError (Maybe AttributeValue)
 toAttributeValue str =
   mapLeft ValidationError $ crtOptAttrVal str
 
+
+
+
 toAttributeUnit :: String -> Either ValidationError (Maybe AttributeUnit)
 toAttributeUnit str =
   mapLeft ValidationError $ crtOptAttrUnt str
+
+
+
 
 toLostItemLocation ::
   CheckAdministrativeAreaInfoValid ->
@@ -451,9 +613,17 @@ toLostItemLocation checkAdministrativeAreaInfoValid u =
         vlocationAddresses = addresses
       }
 
+
+
+
+
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
+
+
+
+
 
 creatteLostItem :: ValidatedLostItem -> DeclaredLostItem
 creatteLostItem =
@@ -474,9 +644,15 @@ creatteLostItem =
       . validatedLostItemAttributes
     <*> toPerson . validatedLostItemOwner
 
+
+
+
 --- Helper functions
 ---
 ---
+
+
+
 
 toPerson :: ValidatedPerson -> Person
 toPerson =
@@ -485,11 +661,17 @@ toPerson =
     <*> toContactInformation . vpersonContact
     <*> vpersonFullName
 
+
+
+
 toContactInformation :: ValidatedContactInformation -> ContactInformation
 toContactInformation =
   ContactInformation
     <$> vcontactInfoAddress
     <*> vcontactInfoMethod
+
+
+
 
 toAttribute :: ValidatedAttribute -> Attribute
 toAttribute valAttr =
@@ -501,6 +683,9 @@ toAttribute valAttr =
       attributeUnit = vattributeUnit valAttr
     }
 
+
+
+
 toLocation :: ValidatedLocation -> Location
 toLocation vLoc =
   Location
@@ -510,9 +695,17 @@ toLocation vLoc =
       locationAddresses = vlocationAddresses vLoc
     }
 
+
+
+
+
 -- ----------------------------------------------------------------------------
 -- Check refered category enabled step
 -- ----------------------------------------------------------------------------
+
+
+
+
 
 checkRefCatgrEnabled :: ValidatedLostItem -> Category -> Either DomainError ValidatedLostItem
 checkRefCatgrEnabled vli (RootCategory refCatgr)
@@ -534,9 +727,17 @@ checkRefCatgrEnabled vli (SubCategory refCatgr _)
       Enabled _ -> return vli
   | otherwise = Left . DomainError $ "category ids don't match"
 
+
+
+
+
 -- ----------------------------------------------------------------------------
 -- Aknowledgment step
 -- ----------------------------------------------------------------------------
+
+
+
+
 
 acknowledgemenDeclaredLostItem :: AcknowledgemenDeclaredLostItem
 acknowledgemenDeclaredLostItem
@@ -559,9 +760,17 @@ acknowledgemenDeclaredLostItem
           NotSent ->
             Nothing
 
+
+
+
+
 -- ----------------------------------------------------------------------------
 -- Create Events step
 -- ----------------------------------------------------------------------------
+
+
+
+
 
 createEvents :: DeclaredLostItem -> Maybe DeclarationAcknowledgmentSent -> [DeclareLostItemEvent]
 createEvents declaredLosItem optionDeclarationAcknowledgmentSent =
@@ -583,9 +792,15 @@ createEvents declaredLosItem optionDeclarationAcknowledgmentSent =
         (LocationsAdded (x : xs), AttributesAdded (y : ys)) ->
           concat [lostDeclrationCreatedEvents, loctsAddedEvents, attrbtsAddedEvents, searchableItemDeclaredEvents, acknoledgmentEvents]
 
+
+
+
+
 --- Helper functions
 ---
 ---
+
+
 
 crtLostItemDeclaredEvent :: DeclaredLostItem -> DeclaredLostItem
 crtLostItemDeclaredEvent declaredLostItem = declaredLostItem
@@ -601,11 +816,13 @@ crtAttrbtesAddedEvent = toList . lostItemAttributes
 
 
 
+
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
 -- Overall workflow --
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
+
 
 
 
@@ -633,6 +850,7 @@ declareLostItem
     -- Input
     do
       -- Validation step - making sure all field constraints are met
+
       validatedLostItem <-
         mapLeft Validation $
           validateUnvalidatedLostItem
@@ -642,25 +860,33 @@ declareLostItem
             unvalidatedLostItem
             lostItemCreationTime
             unValidatedlostItemUuid
+
       -- Verified referenced category enablement status is enabled step
+
       valiatedCheckedLostItem <-
         mapLeft Domain $
           checkRefCatgrEnabled
             validatedLostItem
             referencedCategory
+
       -- Creation step
+
       crtdLostItem <-
         return $
           creatteLostItem
             valiatedCheckedLostItem
+
       -- Aknowledgment step
+
       maybeAcknowledgment <-
         return $
           acknowledgemenDeclaredLostItem
             crtDeclarationAcknowledgment
             sendAcknowledgment
             crtdLostItem
+            
       -- Events creation step
+
       return $
         createEvents
           crtdLostItem

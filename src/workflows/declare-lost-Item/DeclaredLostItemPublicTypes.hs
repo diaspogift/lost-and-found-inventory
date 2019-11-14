@@ -133,7 +133,7 @@ data DeclarationAcknowledgmentSent
 
 
 
---- Events to send to search context / persit to the event store
+--- Events to send to the search context and to persit into the event store
 ---
 ---
 

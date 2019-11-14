@@ -125,7 +125,7 @@ createRootCategoryHandler
             liftEither events
         Left errorMsg -> liftEither $ Left errorMsg
 
----------------------------------------- Side effects handling end --------------------------------------------
+      ---------------------------------- Side effects handling end --------------------------------------------
 
 
 
@@ -134,6 +134,8 @@ createRootCategoryHandler
 --- partially applied function for the API (Upper) layer - hiding depencies
 ---
 ---
+
+
 
 publicCreateRootCategoryHandler :: 
     CreateRootCategoryCmd -> 

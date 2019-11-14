@@ -32,7 +32,7 @@ import Control.Monad.Reader (
 import CreateAttributeDto (
     AttributeRefCreatedDto, 
     CreateAttributeRefEventDto (..),
-    toDomain1,
+    toAttributeRefDomain,
     fromAttributeRefCreated
     )
 import CreateAttributePublicTypes (
@@ -263,7 +263,7 @@ readOneAttributeRefWithReaderT evtNum streamId = do
     rebuildAttributeRefDtoDto1 = foldr1 applyDtoEvent1
     toAttributeRefDomain1 :: CreateAttributeRefEventDto -> Either DataBaseError AttributeRef
     toAttributeRefDomain1 (CR catt) =
-      let res = toDomain1 catt
+      let res = toAttributeRefDomain catt
        in case res of
             Left erroMsg -> Left . DataBaseError $ erroMsg
             Right result -> return result

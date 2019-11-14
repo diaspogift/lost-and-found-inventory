@@ -299,23 +299,30 @@ createRootCatgory
     -- Input
     do
       -- Validation step
+
       validatedCatgr <-
         mapLeft
           Validation
           $ validateUnvalidatedCategory
             unvalidatedCategory
             unValidatedCatgrId
+
       -- Verify that referred sub categories have their RootStatus set to Sub and Enablement Status set to enabled
+
       _ <-
         mapLeft
           Domain
           $ checkRefSubCatgrsValid
             referredSubCatgrs
             validatedCatgr
+
       -- Creation step
+
       createdCatgr <-
         return $
           createRootCategory
             validatedCatgr
+
       -- Events creation step
+      
       return $ createEvents createdCatgr

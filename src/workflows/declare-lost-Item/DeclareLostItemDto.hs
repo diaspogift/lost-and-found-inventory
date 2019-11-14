@@ -21,6 +21,9 @@ import GHC.Generics
 import Prelude hiding 
     (id, last)
 
+
+
+
 -- ==========================================================================================
 -- This file contains the the logic for working with data transfer objects (DTOs)
 --
@@ -29,13 +32,23 @@ import Prelude hiding
 --
 -- ==========================================================================================
 
+
+
+
 -- ==========================================================================================
 -- DTOs for DeclareLostItem workflow
 -- ==========================================================================================
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for Location
 -- ----------------------------------------------------------------------------
+
+
+
+
 
 data LocationDto
   = LocationDto
@@ -50,8 +63,10 @@ data LocationDto
   deriving (Generic, Show)
 
 instance ToJSON LocationDto
-
 instance FromJSON LocationDto
+
+
+
 
 
 toUnvalidatedLocation :: LocationDto -> UnvalidatedLocation
@@ -63,6 +78,10 @@ toUnvalidatedLocation dto =
       uneighborhood = neighborhood dto,
       uloaddresses = locationAddresses dto
     }
+
+
+
+
 
 toLocation :: LocationDto -> Either ErrorMessage Cct.Location
 toLocation dto =
@@ -78,6 +97,10 @@ toLocation dto =
         Cct.locationAddresses = addresses
       }
 
+
+
+
+
 toAdminAreaInfo ::
   (String, String, String) -> Either ErrorMessage (Maybe Cct.AdministrativeAreaInfo)
 toAdminAreaInfo (strReg, strDiv, strSub)
@@ -88,6 +111,10 @@ toAdminAreaInfo (strReg, strDiv, strSub)
       div <- Cct.toDivision strDiv
       sub <- Cct.toSubDivision strSub
       return $ Just (reg, div, sub)
+
+
+
+
 
 toCityOrVillage ::
   (String, String) ->
@@ -107,8 +134,13 @@ toCityOrVillage (strCity, strVillage)
   
 
 
+
+
 toAddress :: String -> Either ErrorMessage Address
 toAddress = crtAddress
+
+
+
 
 fromLocation :: Cct.Location -> LocationDto
 fromLocation loc =
@@ -126,22 +158,37 @@ fromLocation loc =
           locationAddresses = addresses
         }
 
+
+
+
 fromMaybeAdminArea :: Maybe Cct.AdministrativeAreaInfo -> (String, String, String)
 fromMaybeAdminArea Nothing = ("", "", "")
 fromMaybeAdminArea (Just (reg, div, sub)) = (Cct.fromRegion reg, Cct.fromDivision div, Cct.fromSubDivision sub)
+
+
+
 
 fromMaybeCityOrVillage :: Maybe CityOrVillage -> (String, String)
 fromMaybeCityOrVillage (Just (Urban wCity)) = (uwrpCity wCity, "")
 fromMaybeCityOrVillage (Just (Country wVillage)) = ("", uwrpVillage wVillage)
 fromMaybeCityOrVillage Nothing = ("", "")
 
+
+
+
 fromMaybeNeighborhood :: Maybe Neighborhood -> String
 fromMaybeNeighborhood (Just wNeighborhood) = uwrpNghbrhd wNeighborhood
 fromMaybeNeighborhood Nothing = ""
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for Attribute
 -- ----------------------------------------------------------------------------
+
+
+
 
 data AttributeDto
   = AttributeDto
@@ -154,10 +201,15 @@ data AttributeDto
   deriving (Generic, Show)
 
 instance ToJSON AttributeDto 
-
 instance FromJSON AttributeDto
 
--- Helper functions for converting from / to domain as well as to other states
+
+
+
+--- Helper functions for converting from / to domain as well as to other states
+---
+---
+
 
 toUnvalidatedAttribute :: AttributeDto -> UnvalidatedAttribute
 toUnvalidatedAttribute =
@@ -167,6 +219,9 @@ toUnvalidatedAttribute =
     <*> attrDescription
     <*> attrValue
     <*> attrUnit
+
+
+
 
 toAttribute :: AttributeDto -> Either ErrorMessage Cct.Attribute
 toAttribute dto =
@@ -190,6 +245,9 @@ toAttribute dto =
         catType <- crtCatgrCd strCatType
         return (catId, catType)
 
+
+
+
 fromAttribute :: Cct.Attribute -> AttributeDto
 fromAttribute =
   AttributeDto
@@ -199,9 +257,15 @@ fromAttribute =
     <*> uwrpOptAttrVal . Cct.attributeValue
     <*> uwrpOptAttrUnt . Cct.attributeUnit
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for Person
 -- ----------------------------------------------------------------------------
+
+
+
 
 data PersonDto
   = PersonDto
@@ -212,10 +276,16 @@ data PersonDto
   deriving (Generic, Show)
 
 instance ToJSON PersonDto 
-
 instance FromJSON PersonDto
 
--- Helper functions for converting from / to domain as well as to other states
+
+
+
+--- Helper functions for converting from / to domain as well as to other states
+---
+---
+
+
 
 toUnvalidatedPerson :: PersonDto -> UnvalidatedPerson
 toUnvalidatedPerson =
@@ -231,9 +301,15 @@ fromPerson =
     <*> fromContactInformation . Cct.personContact
     <*> fromFullName . Cct.personFullName
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for ContactInformation
 -- ----------------------------------------------------------------------------
+
+
+
 
 data ContactInformationDto
   = ContactInformationDto
@@ -245,10 +321,16 @@ data ContactInformationDto
   deriving (Generic, Show)
 
 instance ToJSON ContactInformationDto
-
 instance FromJSON ContactInformationDto
 
--- Helper functions for converting from / to domain as well as to other states
+
+
+
+--- Helper functions for converting from / to domain as well as to other states
+---
+---
+
+
 
 toUnvalidatedContactInformation ::
   ContactInformationDto -> UnvalidatedContactInformation
@@ -258,6 +340,9 @@ toUnvalidatedContactInformation =
     <*> address
     <*> primaryTel
     <*> secondaryTel
+
+
+
 
 toContactInformation ::
   ContactInformationDto -> Either ErrorMessage Cct.ContactInformation
@@ -269,6 +354,9 @@ toContactInformation dto =
       { Cct.conatInfoAddress = add,
         Cct.contactInfoMethod = contact
       }
+
+
+
 
 toContactMethod :: (String, String, String) -> Either ErrorMessage Cct.ContactMethod
 toContactMethod (givenEmail, givenPrimTel, givenSecTel)
@@ -323,6 +411,9 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
           }
   | otherwise = error "Invalid contact information"
 
+
+
+
 fromContactInformation ::
   Cct.ContactInformation -> ContactInformationDto
 fromContactInformation ci =
@@ -334,6 +425,9 @@ fromContactInformation ci =
           primaryTel = primTel,
           secondaryTel = secTel
         }
+
+
+
 
 fromContactMethod :: Cct.ContactMethod -> (String, String, String)
 fromContactMethod (Cct.EmailOnly email) = (uwrpEmailAddress email, "", "")
@@ -349,9 +443,15 @@ fromContactMethod (Cct.EmailAndPhone both) =
         Just wrappedSecTel -> (email, primTel, uwrpTel wrappedSecTel)
         Nothing -> (email, primTel, "")
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for FullName
 -- ----------------------------------------------------------------------------
+
+
+
 
 data FullNameDto
   = FullNameDto
@@ -362,10 +462,17 @@ data FullNameDto
   deriving (Generic, Show)
 
 instance ToJSON FullNameDto
-
 instance FromJSON FullNameDto
 
--- Helper functions for converting from / to domain as well as to other states
+
+
+
+--- Helper functions for converting from / to domain as well as to other states
+---
+---
+
+
+
 
 toUnvalidatedFullName :: FullNameDto -> UnvalidatedFullName
 toUnvalidatedFullName =
@@ -374,12 +481,18 @@ toUnvalidatedFullName =
     <*> middle
     <*> last
 
+
+
+
 toFullName :: FullNameDto -> Either ErrorMessage Cct.FullName
 toFullName dto =
   Cct.FullName
     <$> (crtFstNm . first) dto
     <*> (crtMdleNm . middle) dto
     <*> (crtLstNm . last) dto
+
+
+
 
 fromFullName :: Cct.FullName -> FullNameDto
 fromFullName =
@@ -388,9 +501,15 @@ fromFullName =
     <*> uwrpMdleNm . Cct.middleName
     <*> uwrpLstNm . Cct.lastName
 
+
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for DeclareLostItemForm
 -- ----------------------------------------------------------------------------
+
+
+
 
 data DeclareLostItemForm
   = DeclareLostItemForm
@@ -405,10 +524,16 @@ data DeclareLostItemForm
   deriving (Generic, Show)
 
 instance ToJSON DeclareLostItemForm
-
 instance FromJSON DeclareLostItemForm
 
--- Helper functions for converting from / to domain as well as to other states
+
+
+
+--- Helper functions for converting from / to domain as well as to other states
+---
+---
+
+
 
 toUnvalidatedLostItem :: DeclareLostItemForm -> UnvalidatedLostItem
 toUnvalidatedLostItem =
@@ -421,9 +546,16 @@ toUnvalidatedLostItem =
     <*> fmap toUnvalidatedAttribute . attributes
     <*> toUnvalidatedPerson . owner
 
+
+
+
+
 -------------------------------------------------------------------------------
 -- DTO for LostItemDeclared  and SearchableItemDeclared Events
 -- ----------------------------------------------------------------------------
+
+
+
 
 data LostItemDeclaredDto
   = LostItemDeclaredDto
@@ -440,10 +572,16 @@ data LostItemDeclaredDto
   deriving (Generic, Show)
 
 instance ToJSON LostItemDeclaredDto
-
 instance FromJSON LostItemDeclaredDto
 
--- Helper functions for converting from / to domain as well as to other states
+
+
+
+--- Helper functions for converting from / to domain as well as to other states
+---
+---
+
+
 
 fromLostItemDeclared :: LostItemDeclared -> LostItemDeclaredDto
 fromLostItemDeclared =
@@ -458,12 +596,21 @@ fromLostItemDeclared =
     <*> fmap fromAttribute . toList . lostItemAttributes
     <*> fromPerson . lostItemOwner
 
+
+
+
 fromDateTimeSpan :: DateTimeSpan -> (String, String)
 fromDateTimeSpan = uwrpDtTmSpan
+
+
+
 
 -- ----------------------------------------------------------------------------
 -- DTO for AcknowledgmentSent Event
 -- ----------------------------------------------------------------------------
+
+
+
 
 data DeclarationAcknowledgmentSentDto
   = DeclarationAcknowledgmentSentDto
@@ -473,10 +620,16 @@ data DeclarationAcknowledgmentSentDto
   deriving (Generic, Show)
 
 instance ToJSON DeclarationAcknowledgmentSentDto
-
 instance FromJSON DeclarationAcknowledgmentSentDto
 
--- Helper functions for converting from / to domain as well as to other states
+
+
+
+--- Helper functions for converting from / to domain as well as to other states
+---
+---
+
+
 
 fromDeclarationAcknowledgmentSent ::
   DeclarationAcknowledgmentSent -> DeclarationAcknowledgmentSentDto
@@ -485,15 +638,27 @@ fromDeclarationAcknowledgmentSent =
     <$> uwrpLstItmId . declaredLostItemId
     <*> fromContactInformation . ownerContactInfo
 
+
+
+
+
 -- ----------------------------------------------------------------------------
 -- DTO for DeclareLostItemEvent
 -- ----------------------------------------------------------------------------
 
----
+
+
+
 
 type LocationDtos = [LocationDto]
 
+
+
+
 type AttributeDtos = [AttributeDto]
+
+
+
 
 data DeclareLostItemEventDto
   = LI LostItemDeclaredDto
@@ -504,23 +669,37 @@ data DeclareLostItemEventDto
 
 instance ToJSON DeclareLostItemEventDto
 
--- helper functions
+
+
+
+--- helper functions
+---
+---
+
 
 fromLocationsAdded :: [Cct.Location] -> [LocationDto]
 fromLocationsAdded = fmap fromLocation
 
+
+
+
 fromAttributesAdded :: [Cct.Attribute] -> [AttributeDto]
 fromAttributesAdded = fmap fromAttribute
 
----
+
+
 
 type DeclareLostItemEventResponse = Map String DeclareLostItemEventDto
 
 instance ToJSONKey DeclareLostItemEventResponse
 
----
+
+
 
 type RespDclLstItemWorkflow = [DeclareLostItemEventResponse]
+
+
+
 
 fromDclLstItmEvtDomain :: DeclareLostItemEvent -> DeclareLostItemEventResponse
 fromDclLstItmEvtDomain evt =

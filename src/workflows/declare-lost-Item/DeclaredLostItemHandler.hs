@@ -272,7 +272,7 @@ declareLostItemHandler
       persistableEvts (AttributesAdded _) = True
       persistableEvts _ = False
 
----------------------------------------- Side effects handling end --------------------------------------------
+      ---------------------------------- Side effects handling end --------------------------------------------
 
 
 

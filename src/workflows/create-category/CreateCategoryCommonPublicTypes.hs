@@ -44,14 +44,16 @@ type SubCategoriesAdded = [AddedSubCategory]
 
 
 
--- Create Category state (Category type in Common Shared Compound Types)
--- data Category = Category {...}
---
+--- Create Category state (Category type in Common Shared Compound Types)
+--- data Category = Category {...}
+---
 
 
 
 
--- The possible events resulting from the CreateRootCategory workflow
+--- The possible events resulting from the CreateRootCategory workflow
+---
+---
 
 data CreateCategoryEvent
   = CategoryCreated CategoryCreated

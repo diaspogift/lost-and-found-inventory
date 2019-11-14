@@ -365,38 +365,48 @@ createSubCatgory
     -- Input
     do
       -- Validation step
+
       validatedCatgr <-
         mapLeft
           Validation
           $ validateUnvalidatedCategory
             unvalidatedCategory
             unValidatedCatgrId
+
       -- Verify that referred sub categories have their RootStatus set to Sub and Enablement Status set to enabled
+
       _ <-
         mapLeft
           Domain
           $ checkRefSubCatgrsValid
             referredSubCatgrs
             validatedCatgr
+
       -- Vefify (if present) that the referred parent category **exists** and is not part of the subs categories specified
       -- and it is enabled
+
       _ <-
         mapLeft
           Domain
           $ checkRefPrntCatgrNotInSubs
             referencedParentCatgr
             validatedCatgr
+
       -- Vefify (if present) that the referred parent category enablement status is enabled
+
       _ <-
         mapLeft
           Domain
           $ checkRefPrntCatgrEnabled
             referencedParentCatgr
+
       -- Creation step
 
       createdCatgr <-
         return $
           createSubCategory
             validatedCatgr
+
       -- Events creation step
+      
       return $ createEvents createdCatgr

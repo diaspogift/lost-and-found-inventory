@@ -27,20 +27,33 @@ import InventorySystemCommands
     CreateAttributeRefCmd
     )
 
+
+
+
 -- ==========================================================================
 -- This file contains the definitions of PUBLIC types
 -- (exposed at the boundary of the bounded context )
 -- related to the Create Attribute Ref workflow
 -- ==========================================================================
 
+
+
+
 -- =============================================================================
 -- IO Dependencies types
 -- =============================================================================
 
+
+
+
 type LookupOneCategory =
   String -> ExceptT WorkflowError IO Category
 
+
+
+
 type NextId = IO UnvalidatedAttributeCode
+
 
 
 
@@ -50,9 +63,10 @@ type NextId = IO UnvalidatedAttributeCode
 
 
 
+
 nextId :: NextId
-nextId =
-  let id = nextRandom in fmap (fmap toUpper . toString) id
+nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
+
 
 
 
@@ -71,47 +85,49 @@ createAttributeRefHandler
   writeCreateAttributeRefEvents
   nextId
   (Command unvalidatedAttributeRef curTime userId) =
-    ---------------------------------------- IO at the boundary start -----------------------------------------
 
     do
-      -- get all referenced categories / verified they actually exist
+      -- get all referenced categories / verify they actually exist
+
       referencedCatgrs 
         <- ExceptT 
             $ liftIO 
             $ fmap sequence 
             $ traverse (readOneCategory 10) 
             $ fst <$> urelatedCategories unvalidatedAttributeRef
+
       -- get randon uuid for the attribute code
+
       attributeRefCode 
         <- liftIO nextId
-      ---------------------------------------- IO at the boundary end -----------------------------------------
-
-      ---------------------------------------- Core business logic start --------------------------------------
 
       -- call workflow
+
       let events =
             createAttributeReference
               unvalidatedAttributeRef -- Input
               attributeRefCode -- Input
               referencedCatgrs -- Input
 
-      ---------------------------------------- Core business logic end ----------------------------------------
+      -- publish / persit event(s) into the event store 
+      -- and other interested third parties
 
-      ---------------------------------------- Side effects handling start ------------------------------------
-
-      -- publish / persit event(s) into the event store and other interested third parties
       case events of
         Right allEvents ->
           do
-            let crtAttrRefEvet = filter isCreateAttributeRefEvent allEvents
+            let crtAttrRefEvet = 
+                    filter isCreateAttributeRefEvent allEvents
                 evt = head crtAttrRefEvet
-            res <- liftIO $ writeCreateAttributeRefEvents attributeRefCode evt
+            res <- 
+                liftIO 
+                    $ writeCreateAttributeRefEvents 
+                        attributeRefCode 
+                        evt
             liftEither events
         Left errorMsg -> liftEither $ Left errorMsg
     where
       isCreateAttributeRefEvent (AttributeRefCreated attrRefCreated) = True
 
-    ---------------------------------------- Side effects handling end ----------------------------------------
 
 
 
@@ -119,6 +135,8 @@ createAttributeRefHandler
 --- partially applied function for the API (Upper) layer - hiding depencies
 ---
 ---
+
+
 
 publicCreateAttributeRefHandler :: 
     CreateAttributeRefCmd 

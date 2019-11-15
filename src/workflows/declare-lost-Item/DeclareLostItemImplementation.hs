@@ -641,7 +641,7 @@ declareLostItem checkAdminAreaInfoValid
                 lostItemCreationTime
                 unValidatedlostItemUuid =
     do validatedLostItem <- 
-            mapValidation $
+            mapValidationErr $
                 validateUnvalidatedLostItem 
                     checkAdminAreaInfoValid                        
                     checkContactInfoValid
@@ -650,7 +650,7 @@ declareLostItem checkAdminAreaInfoValid
                     lostItemCreationTime
                     unValidatedlostItemUuid
        valiatedCheckedLostItem <-
-            mapDomain $ 
+            mapDomainErr $ 
                 checkRefCatgrEnabled 
                     validatedLostItem
                     referencedCategory

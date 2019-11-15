@@ -15,7 +15,7 @@ import CommonSimpleTypes (
         DataBaseError (..),
         LostItemId,
         WorkflowError (..),
-        mapDataBase,
+        mapDataBaseErr,
 
         )
 import Control.Concurrent.Async (
@@ -182,8 +182,8 @@ readOneCategoryWithReaderT eventNum streamId = do
       let pairs = eventDataPair <$> recordedEvts1
       let events = eventDataPairTypes <$> pairs
       let reducedEvent = rebuildCategoryDto events
-      liftEither . mapDataBase . toCategoryDomain $ reducedEvent
-    e -> liftEither . mapDataBase . Left . DataBaseError $ "Read Category failure: " <> show e
+      liftEither . mapDataBaseErr . toCategoryDomain $ reducedEvent
+    e -> liftEither . mapDataBaseErr . Left . DataBaseError $ "Read Category failure: " <> show e
   where
     eventDataPair recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
     eventDataPairTypes ::
@@ -247,8 +247,8 @@ readOneAttributeRefWithReaderT evtNum streamId = do
       let pairs = eventDataPair1 <$> recordedEvts
       let events = eventDataPairTypes1 <$> pairs
       let reducedEvent = rebuildAttributeRefDtoDto1 events
-      liftEither . mapDataBase . toAttributeRefDomain1 $ reducedEvent
-    e -> liftEither . mapDataBase . Left . DataBaseError $ "Read AttributeRef failure: " <> show e
+      liftEither . mapDataBaseErr . toAttributeRefDomain1 $ reducedEvent
+    e -> liftEither . mapDataBaseErr . Left . DataBaseError $ "Read AttributeRef failure: " <> show e
   where
     eventDataPair1 recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
     eventDataPairTypes1 ::

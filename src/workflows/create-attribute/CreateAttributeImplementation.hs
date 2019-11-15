@@ -209,30 +209,11 @@ createAttributeReference :: UnvalidatedAttributeRef
 createAttributeReference unvalidatedAttributeRef
                          unValidatedlostItemUuid
                          referencedCategories =
-    do
-      -- Validation step
-
-      validatedAttrRef <-
-        mapLeft
-          Validation
-          $ validateUnvalidatedAttributeRef
-            unvalidatedAttributeRef
-            unValidatedlostItemUuid
-
-      -- Verify that referred categories are all enabled
-
-      _ <-
-        mapLeft
-          Domain
-          $ traverse checkRefCatgrEnabled referencedCategories
-
-      -- Creation step
-
-      createdAttrRef <-
-        return $
-          createAttrinuteRef
-            validatedAttrRef
-
-      -- Events creation step
-      
-      return $ createEvents createdAttrRef
+    do  validatedAttrRef <-
+             mapValidationErr $ 
+                validateUnvalidatedAttributeRef
+                    unvalidatedAttributeRef
+                    unValidatedlostItemUuid
+        _ <- mapDomainErr $ traverse checkRefCatgrEnabled referencedCategories
+        createdAttrRef <- return . createAttrinuteRef $ validatedAttrRef        
+        return $ createEvents createdAttrRef

@@ -217,52 +217,45 @@ data SendResult
 
 
 
-validateUnvalidatedLostItem :: 
-    CheckAdministrativeAreaInfoValid -- Dependency
-    -> CheckContactInfoValid -- Dependency
-    -> CheckAttributeInfoValid -- Dependancy
-    -> UnvalidatedLostItem -- Input
-    -> UTCTime -- Input
-    -> UnvalidatedLostItemId -- Input
-    -> Either ValidationError ValidatedLostItem -- Output
-validateUnvalidatedLostItem
-  checkAdministrativeAreaInfoValid
-  checkContactInfoValid
-  checkAttributeInfoValid
-  unvalidatedLostItem
-  decalrationTime
-  unvalidatedAssignUuid =
-    ValidatedLostItem
-      <$> itemId 
-      <*> name 
-      <*> catgrId 
-      <*> descpt 
-      <*> locts 
-      <*> registTime 
-      <*> dateTimeSpan 
-      <*> attrs 
-      <*> owner
+validateUnvalidatedLostItem :: CheckAdministrativeAreaInfoValid
+                                -> CheckContactInfoValid
+                                -> CheckAttributeInfoValid
+                                -> UnvalidatedLostItem
+                                -> UTCTime
+                                -> UnvalidatedLostItemId
+                                -> Either ValidationError ValidatedLostItem
+    
+validateUnvalidatedLostItem checkAdministrativeAreaInfoValid
+                            checkContactInfoValid
+                            checkAttributeInfoValid
+                            unvalidatedLostItem
+                            decalrationTime
+                            unvalidatedAssignUuid =
+  
+    ValidatedLostItem <$> itemId 
+                      <*> name 
+                      <*> catgrId
+                      <*> descpt 
+                      <*> locts 
+                      <*> registrationTime 
+                      <*> dateSpan 
+                      <*> attrs 
+                      <*> owner
     where   itemId = toLostItemId unvalidatedAssignUuid
             name = toLostItemName . uliName $ unvalidatedLostItem
             catgrId = toCategoryId . uliCategoryId $ unvalidatedLostItem
             descpt = toLongDescpt . uliDescription $ unvalidatedLostItem
-            locts = fmap fromList . traverse (toLostItemLocation checkAdministrativeAreaInfoValid) 
-                    . ulocations $ unvalidatedLostItem
-            registTime = pure decalrationTime
-            dateTimeSpan = toDateTimeSpan . uliDateAndTimeSpan $ unvalidatedLostItem
-            attrs = fmap fromList . traverse (toValidatedAttribute checkAttributeInfoValid unvalidatedLostItem) 
-                    . uliattributes $ unvalidatedLostItem
+            locts = fmap fromList .  toValidLocations $ unvalidatedLostItem
+            registrationTime = pure decalrationTime
+            dateSpan = toDateTimeSpan . uliDateAndTimeSpan $ unvalidatedLostItem
+            attrs = fmap fromList . toValidAttributes $ unvalidatedLostItem
             owner = toOwner checkContactInfoValid . uowner $ unvalidatedLostItem
-            
+
             toLostItemLocation :: CheckAdministrativeAreaInfoValid
                                     -> UnvalidatedLocation
                                     -> Either ValidationError ValidatedLocation
             toLostItemLocation checkAdministrativeAreaInfoValid u =
-                do
-                    adminArea <-
-                        toCheckedValidAdminArea
-                            (uadminArea u)
-                            checkAdministrativeAreaInfoValid
+                do  adminArea <- toCheckedValidAdminArea (uadminArea u) checkAdministrativeAreaInfoValid
                     cityOrVillage <-
                         toCityOrVillage (ucity u, uvillage u)
                     neighborhood <-
@@ -303,76 +296,79 @@ validateUnvalidatedLostItem
                                 -> Either ValidationError ValidatedContactInformation
             toContactInfo checkContactInfoValid ucontactInfo
 
-                -- no email but both prim and sec phone given
-                | null givenEmail && notNull givenPrimTel && notNull givenSecTel =
-                    do
-                    adress <- toOptPostalAddress givenAddress
-                    primTel <- toTelephone givenPrimTel
-                    secTel <- toOptTelephone givenSecTel
-                    return ValidatedContactInformation
-                        { vcontactInfoAddress = adress,
-                        vcontactInfoMethod = PhoneOnly primTel secTel
-                        }
+                | emailNotProvided && primTelProvided && secTelProvided =
+                    
+                    do address <- toOptPostalAddress givenAddress
+                       primTel <- toTelephone givenPrimTel
+                       secTel <- toOptTelephone givenSecTel
+                       return ValidatedContactInformation
+                           { vcontactInfoAddress = address,
+                           vcontactInfoMethod = PhoneOnly primTel secTel
+                           }
 
-                -- no email but only prim phone given
-                | null givenEmail && notNull givenPrimTel && null givenSecTel =
-                    do
-                    adress <- toOptPostalAddress givenAddress
-                    primTel <- toTelephone givenPrimTel
-                    return ValidatedContactInformation
-                        { vcontactInfoAddress = adress,
-                        vcontactInfoMethod = PhoneOnly primTel Nothing
-                        }
-
-                -- just email given
-                | notNull givenEmail && null givenPrimTel && null givenSecTel =
-                    do
-                    adress <- toOptPostalAddress givenAddress
-                    email <- toEmailAddress givenEmail
-                    return ValidatedContactInformation
-                        { vcontactInfoAddress = adress,
-                        vcontactInfoMethod = EmailOnly email
-                        }
-
-                -- email and prim phone given
-                | notNull givenEmail && notNull givenPrimTel && null givenSecTel =
-                    do
-                    address <- toOptPostalAddress givenAddress
-                    primTel <- toTelephone givenPrimTel
-                    email <- toEmailAddress givenEmail
-                    return ValidatedContactInformation
-                        { vcontactInfoAddress = address,
-                        vcontactInfoMethod = EmailAndPhone BothContactInfo
-                            { bothContactInfoEmail = email,
-                                bothContactInfoPrimTel = primTel,
-                                bothContactInfoSndTel = Nothing
+                | emailNotProvided && primTelProvided && secTelNotProvided =
+                    
+                    do  address <- toOptPostalAddress givenAddress
+                        primTel <- toTelephone givenPrimTel
+                        return ValidatedContactInformation
+                            { vcontactInfoAddress = address,
+                            vcontactInfoMethod = PhoneOnly primTel Nothing
                             }
-                        }
 
-                -- email, prim and sec phones given
-                | notNull givenEmail && notNull givenPrimTel && notNull givenSecTel =
-                    do
-                    adress <- toOptPostalAddress givenAddress
-                    primTel <-toTelephone givenPrimTel
-                    email <- toEmailAddress givenEmail
-                    secTel <- toOptTelephone givenSecTel
-                    return ValidatedContactInformation
-                        { vcontactInfoAddress = adress,
-                        vcontactInfoMethod = EmailAndPhone BothContactInfo
-                            { bothContactInfoEmail = email,
-                                bothContactInfoPrimTel = primTel,
-                                bothContactInfoSndTel = secTel
+                | emailProvided && primTelNotProvided && secTelNotProvided =
+                    
+                    do  address <- toOptPostalAddress givenAddress
+                        email <- toEmailAddress givenEmail
+                        return ValidatedContactInformation
+                            { vcontactInfoAddress = address,
+                            vcontactInfoMethod = EmailOnly email
                             }
-                        }
+
+                | emailProvided && primTelProvided && secTelNotProvided =
+                    
+                    do  address <- toOptPostalAddress givenAddress
+                        primTel <- toTelephone givenPrimTel
+                        email <- toEmailAddress givenEmail
+                        return ValidatedContactInformation
+                            { vcontactInfoAddress = address,
+                              vcontactInfoMethod = 
+                                EmailAndPhone BothContactInfo
+                                    { bothContactInfoEmail = email,
+                                        bothContactInfoPrimTel = primTel,
+                                        bothContactInfoSndTel = Nothing
+                                    }
+                            }
+
+                | emailProvided && primTelProvided && secTelProvided =
+                    
+                    do  address <- toOptPostalAddress givenAddress
+                        primTel <-toTelephone givenPrimTel
+                        email <- toEmailAddress givenEmail
+                        secTel <- toOptTelephone givenSecTel
+                        return ValidatedContactInformation
+                            { vcontactInfoAddress = address,
+                              vcontactInfoMethod = 
+                                EmailAndPhone BothContactInfo
+                                    { bothContactInfoEmail = email,
+                                        bothContactInfoPrimTel = primTel,
+                                        bothContactInfoSndTel = secTel
+                                    }
+                            }
                 | otherwise = 
                         Left 
                         . ValidationError 
                         $ "Provide at least one contact method (Phone or Email)"
-                where
-                    givenEmail = uemail ucontactInfo
-                    givenPrimTel = uprimaryTel ucontactInfo
-                    givenSecTel = usecondaryTel ucontactInfo
-                    givenAddress = uaddress ucontactInfo
+                
+                where   givenEmail = uemail ucontactInfo
+                        givenPrimTel = uprimaryTel ucontactInfo
+                        givenSecTel = usecondaryTel ucontactInfo
+                        givenAddress = uaddress ucontactInfo
+                        emailProvided = notNull givenEmail
+                        primTelProvided = notNull givenPrimTel
+                        secTelProvided = notNull givenSecTel
+                        emailNotProvided = null givenEmail
+                        primTelNotProvided = null givenPrimTel
+                        secTelNotProvided = null givenSecTel
 
             toFullName :: UnvalidatedFullName -> Either ValidationError FullName
             toFullName ufullName =
@@ -380,8 +376,13 @@ validateUnvalidatedLostItem
                     <$> (toFirstName . ufirst) ufullName
                     <*> (toMiddleName . umiddle) ufullName
                     <*> (toLastName . ulast) ufullName
-
-
+            
+            toValidLocations :: UnvalidatedLostItem -> Either ValidationError [ValidatedLocation]
+            toValidLocations = traverse (toLostItemLocation checkAdministrativeAreaInfoValid) . ulocations
+            
+            toValidAttributes :: UnvalidatedLostItem -> Either ValidationError [ValidatedAttribute]
+            toValidAttributes = traverse (toValidatedAttribute checkAttributeInfoValid unvalidatedLostItem) 
+                                . uliattributes
 
 
 
@@ -464,10 +465,9 @@ creatteLostItem =
 
 
 
-checkRefCatgrEnabled :: 
-    ValidatedLostItem 
-    -> Category 
-    -> Either DomainError ValidatedLostItem
+checkRefCatgrEnabled :: ValidatedLostItem 
+                        -> Category 
+                        -> Either DomainError ValidatedLostItem
 checkRefCatgrEnabled vli (RootCategory refCatgr)
   | validatedLostItemCategoryId vli == categoryId refCatgr =
     case categoryEnablementStatus refCatgr of

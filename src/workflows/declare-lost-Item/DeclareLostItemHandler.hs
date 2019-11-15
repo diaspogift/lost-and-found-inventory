@@ -168,21 +168,21 @@ crtDeclarationAcknowledgment item =
 
 
 sendAcknowledgment :: DeclarationAcknowledgment -> SendResult
-sendAcknowledgment declarationAcknowledgment =
-  Sent -- DeclarationAcknowledgment -> SendResult
+sendAcknowledgment _ =
+  Sent
 
 
 
 
 loadAdministrativeAreaMap :: LoadAdministrativeAreaMap
-loadAdministrativeAreaMap country =
+loadAdministrativeAreaMap _ =
   liftEither $ Right camerounAdministrativeMap
 
 
 
 
 nextId :: NextId
-nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
+nextId = let randomId = nextRandom in fmap (fmap toUpper . toString) randomId
 
 
 

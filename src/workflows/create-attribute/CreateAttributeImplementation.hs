@@ -214,6 +214,6 @@ createAttributeReference unvalidatedAttributeRef
                 validateUnvalidatedAttributeRef
                     unvalidatedAttributeRef
                     unValidatedlostItemUuid
-        _ <- mapDomainErr $ traverse checkRefCatgrEnabled referencedCategories
+        _ <- mapDomainErr . traverse checkRefCatgrEnabled $ referencedCategories
         createdAttrRef <- return . createAttrinuteRef $ validatedAttrRef        
         return $ createEvents createdAttrRef

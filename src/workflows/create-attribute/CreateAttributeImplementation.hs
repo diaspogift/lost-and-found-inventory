@@ -118,25 +118,22 @@ checkRefCatgrEnabled (SubCategory CategoryInfo {categoryEnablementStatus = enblm
 
 
 
-validateUnvalidatedAttributeRef :: 
-    UnvalidatedAttributeRef 
-    -> UnvalidatedAttributeCode 
-    -> Either ValidationError ValidatedAttributeRef
+validateUnvalidatedAttributeRef :: UnvalidatedAttributeRef 
+                                    -> UnvalidatedAttributeCode 
+                                    -> Either ValidationError ValidatedAttributeRef
 validateUnvalidatedAttributeRef uattrRef uattrCd =
-  ValidatedAttributeRef 
-    <$> code 
-    <*> name 
-    <*> desc 
-    <*> values 
-    <*> units 
-    <*> refCatgrs
-  where
-    code = toAttributeCodeRef uattrCd
-    name = toAttributeName . uattributeName $ uattrRef
-    desc = toShortDescpt . uattributeDescription $ uattrRef
-    values = traverse toAttributeValue . uattributesValues $ uattrRef
-    units = traverse toAttributeUnit . uattributeUnits $ uattrRef
-    refCatgrs = traverse toAttributeRefCatgrs . urelatedCategories $ uattrRef
+    ValidatedAttributeRef <$> code 
+                          <*> name 
+                          <*> desc 
+                          <*> values 
+                          <*> units 
+                          <*> refCatgrs
+  where code = toAttributeCodeRef uattrCd
+        name = toAttributeName . uattributeName $ uattrRef
+        desc = toShortDescpt . uattributeDescription $ uattrRef
+        values = traverse toAttributeValue . uattributesValues $ uattrRef
+        units = traverse toAttributeUnit . uattributeUnits $ uattrRef
+        refCatgrs = traverse toAttributeRefCatgrs . urelatedCategories $ uattrRef
 
 
 
@@ -205,15 +202,13 @@ createAttrRefCreatedEvt declaredLostItem = declaredLostItem
 
 
 
-createAttributeReference ::
-  UnvalidatedAttributeRef ->
-  UnvalidatedAttributeCode ->
-  [Category] ->
-  Either WorkflowError [CreateAttributeEvent]
-createAttributeReference
-  unvalidatedAttributeRef -- Input
-  unValidatedlostItemUuid -- Input
-  referencedCategories = -- Input
+createAttributeReference :: UnvalidatedAttributeRef
+                            -> UnvalidatedAttributeCode
+                            -> [Category]
+                            -> Either WorkflowError [CreateAttributeEvent]
+createAttributeReference unvalidatedAttributeRef
+                         unValidatedlostItemUuid
+                         referencedCategories =
     do
       -- Validation step
 

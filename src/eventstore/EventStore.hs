@@ -14,7 +14,9 @@ import CommonDtos (
 import CommonSimpleTypes (
         DataBaseError (..),
         LostItemId,
-        WorkflowError (..)
+        WorkflowError (..),
+        mapDataBase,
+
         )
 import Control.Concurrent.Async (
     wait
@@ -180,8 +182,8 @@ readOneCategoryWithReaderT eventNum streamId = do
       let pairs = eventDataPair <$> recordedEvts1
       let events = eventDataPairTypes <$> pairs
       let reducedEvent = rebuildCategoryDto events
-      liftEither $ mapLeft DataBase $ toCategoryDomain reducedEvent
-    e -> liftEither $ mapLeft DataBase $ Left $ DataBaseError $ "Read Category failure: " <> show e
+      liftEither . mapDataBase . toCategoryDomain $ reducedEvent
+    e -> liftEither . mapDataBase . Left . DataBaseError $ "Read Category failure: " <> show e
   where
     eventDataPair recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
     eventDataPairTypes ::
@@ -240,13 +242,13 @@ readOneAttributeRefWithReaderT evtNum streamId = do
   conn <- ask
   rs <- liftIO $ readEventsForward conn (StreamName $ pack streamId) streamStart evtNum NoResolveLink Nothing >>= wait
   case rs of
-    ReadSuccess sl@(Slice resolvedEvents mm) -> do
+    ReadSuccess (Slice resolvedEvents _) -> do
       let recordedEvts = mapMaybe resolvedEventRecord resolvedEvents
       let pairs = eventDataPair1 <$> recordedEvts
       let events = eventDataPairTypes1 <$> pairs
       let reducedEvent = rebuildAttributeRefDtoDto1 events
-      liftEither . mapLeft DataBase $ toAttributeRefDomain1 reducedEvent
-    e -> liftEither . mapLeft DataBase . Left . DataBaseError $ "Read AttributeRef failure: " <> show e
+      liftEither . mapDataBase . toAttributeRefDomain1 $ reducedEvent
+    e -> liftEither . mapDataBase . Left . DataBaseError $ "Read AttributeRef failure: " <> show e
   where
     eventDataPair1 recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
     eventDataPairTypes1 ::

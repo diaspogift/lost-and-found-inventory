@@ -631,57 +631,38 @@ declareLostItem :: CheckAdministrativeAreaInfoValid
                     -> UTCTime
                     -> UnvalidatedLostItemId 
                     -> Either WorkflowError [DeclareLostItemEvent]
-declareLostItem
-  checkAdministrativeAreaInfoValid -- Dependency
-  checkAttributeInfoValid -- Dependency
-  checkContactInfoValid -- Dependency
-  crtDeclarationAcknowledgment -- Dependency
-  sendAcknowledgment -- Dependency
-  referencedCategory -- Input
-  unvalidatedLostItem -- Input
-  lostItemCreationTime -- Input
-  unValidatedlostItemUuid =
-    -- Input
-    do
-      -- Validation step - making sure all field constraints are met
+declareLostItem checkAdminAreaInfoValid 
+                checkAttributeInfoValid 
+                checkContactInfoValid
+                createAcknowledgment
+                sendAcknowledgment
+                referencedCategory 
+                unvalidatedLostItem 
+                lostItemCreationTime
+                unValidatedlostItemUuid =
+    do validatedLostItem <- 
+            mapValidation $
+                validateUnvalidatedLostItem 
+                    checkAdminAreaInfoValid                        
+                    checkContactInfoValid
+                    checkAttributeInfoValid
+                    unvalidatedLostItem
+                    lostItemCreationTime
+                    unValidatedlostItemUuid
+       valiatedCheckedLostItem <-
+            mapDomain $ 
+                checkRefCatgrEnabled 
+                    validatedLostItem
+                    referencedCategory
+       createdLostItem <- 
+            return $ 
+                creatteLostItem valiatedCheckedLostItem
+       maybeAcknowledgment <-
+            return $ 
+                acknowledgemenDeclaredLostItem 
+                    createAcknowledgment
+                    sendAcknowledgment
+                    createdLostItem
 
-      validatedLostItem <-
-        mapLeft Validation $
-          validateUnvalidatedLostItem
-            checkAdministrativeAreaInfoValid
-            checkContactInfoValid
-            checkAttributeInfoValid
-            unvalidatedLostItem
-            lostItemCreationTime
-            unValidatedlostItemUuid
-
-      -- Verified referenced category enablement status is enabled step
-
-      valiatedCheckedLostItem <-
-        mapLeft Domain $
-          checkRefCatgrEnabled
-            validatedLostItem
-            referencedCategory
-
-      -- Creation step
-
-      crtdLostItem <-
-        return $
-          creatteLostItem
-            valiatedCheckedLostItem
-
-      -- Aknowledgment step
-
-      maybeAcknowledgment <-
-        return $
-          acknowledgemenDeclaredLostItem
-            crtDeclarationAcknowledgment
-            sendAcknowledgment
-            crtdLostItem
-
-      -- Events creation step
-
-      return $
-        createEvents
-          crtdLostItem
-          maybeAcknowledgment
+       return $ 
+            createEvents createdLostItem maybeAcknowledgment

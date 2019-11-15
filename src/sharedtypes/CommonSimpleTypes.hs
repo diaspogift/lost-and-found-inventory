@@ -108,6 +108,9 @@ module CommonSimpleTypes
     mapValidationError,
     mapDomainError,
     mapDataBaseError,
+    mapValidation,
+    mapDomain,
+    mapDataBase,
 
     toAttributeCodeRef,
     toAttributeName,
@@ -850,3 +853,16 @@ mapDataBaseError :: Either String b -> Either DataBaseError b
 mapDataBaseError = mapLeft DataBaseError
 
 
+
+mapValidation :: Either ValidationError b -> Either WorkflowError b
+mapValidation = mapLeft Validation
+
+
+
+mapDomain :: Either DomainError b -> Either WorkflowError b
+mapDomain = mapLeft Domain
+
+
+
+mapDataBase :: Either DataBaseError b -> Either WorkflowError b
+mapDataBase = mapLeft DataBase

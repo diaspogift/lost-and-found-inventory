@@ -76,57 +76,34 @@ nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
 
 
 
-createAttributeRefHandler ::
-  WriteCreateAttributeRefEvents ->
-  NextId ->
-  CreateAttributeRefCmd ->
-  ExceptT WorkflowError IO [CreateAttributeEvent]
-createAttributeRefHandler
-  writeCreateAttributeRefEvents
-  nextId
-  (Command unvalidatedAttributeRef curTime userId) =
+createAttributeRefHandler :: WriteCreateAttributeRefEvents
+                                -> NextId
+                                -> CreateAttributeRefCmd
+                                -> ExceptT WorkflowError IO [CreateAttributeEvent]
+createAttributeRefHandler   writeCreateAttributeRefEvents
+                            nextId
+                            (Command unvalidatedAttributeRef curTime userId) =
 
-    do
-      -- get all referenced categories / verify they actually exist
+    do referencedCatgrs <- ExceptT . liftIO 
+                                   . fmap sequence 
+                                   . traverse (readOneCategory 10) 
+                                   $ fst <$> urelatedCategories unvalidatedAttributeRef
+       attributeRefCode <- liftIO nextId
 
-      referencedCatgrs 
-        <- ExceptT 
-            $ liftIO 
-            $ fmap sequence 
-            $ traverse (readOneCategory 10) 
-            $ fst <$> urelatedCategories unvalidatedAttributeRef
+       let events = createAttributeReference unvalidatedAttributeRef 
+                                             attributeRefCode 
+                                             referencedCatgrs 
 
-      -- get a random uuid for the attribute code
-
-      attributeRefCode 
-        <- liftIO nextId
-
-      -- call workflow
-
-      let events =
-            createAttributeReference
-              unvalidatedAttributeRef -- Input
-              attributeRefCode -- Input
-              referencedCatgrs -- Input
-
-      -- publish / persit event(s) into the event store 
-      -- and other interested third parties
-
-      case events of
-        Right allEvents ->
-          do
-            let crtAttrRefEvet = 
-                    filter isCreateAttributeRefEvent allEvents
-                evt = head crtAttrRefEvet
-            res <- 
-                liftIO 
-                    $ writeCreateAttributeRefEvents 
-                        attributeRefCode 
-                        evt
-            liftEither events
-        Left errorMsg -> liftEither $ Left errorMsg
-    where
-      isCreateAttributeRefEvent (AttributeRefCreated attrRefCreated) = True
+       
+       case events of Right allEvents -> do
+                        let crtAttrRefEvt = filter isCreateAttributeRefEvent allEvents
+                            evt = head crtAttrRefEvt
+                        res <- liftIO $ writeCreateAttributeRefEvents attributeRefCode 
+                                                                      evt
+                        liftEither events
+                      Left errorMsg -> liftEither $ Left errorMsg
+                      
+    where isCreateAttributeRefEvent (AttributeRefCreated attrRefCreated) = True
 
 
 
@@ -138,10 +115,7 @@ createAttributeRefHandler
 
 
 
-publicCreateAttributeRefHandler :: 
-    CreateAttributeRefCmd 
-    -> ExceptT WorkflowError IO [CreateAttributeEvent]
-publicCreateAttributeRefHandler =
-  createAttributeRefHandler
-    writeCreateAttributeRefEvents
-    nextId
+publicCreateAttributeRefHandler :: CreateAttributeRefCmd 
+                                    -> ExceptT WorkflowError IO [CreateAttributeEvent]
+publicCreateAttributeRefHandler = createAttributeRefHandler writeCreateAttributeRefEvents
+                                                            nextId

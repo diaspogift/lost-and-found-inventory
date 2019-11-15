@@ -394,33 +394,28 @@ validateUnvalidatedLostItem checkAdministrativeAreaInfoValid
 
 
 creatteLostItem :: ValidatedLostItem -> DeclaredLostItem
-creatteLostItem =
-  DeclaredLostItem
-    <$> validatedLostItemId
-    <*> validatedLostItemName
-    <*> validatedLostItemCategoryId
-    <*> validatedLostItemDescription
-    <*> fromList
-        . fmap toLocation
-        . toList
-        . validatedLostItemLocations
-    <*> validatedLostItemDateTimeSpan
-    <*> validatedLostItemRegistrTime
-    <*> fromList
-        . fmap toAttribute
-        . toList
-        . validatedLostItemAttributes
-    <*> toPerson . validatedLostItemOwner
-    where 
-          toPerson :: ValidatedPerson -> Person
-          toPerson = 
-            Person
-                <$> vpersonId
-                <*> toContactInformation . vpersonContact
-                <*> vpersonFullName
+
+creatteLostItem = DeclaredLostItem  <$> validatedLostItemId
+                                    <*> validatedLostItemName
+                                    <*> validatedLostItemCategoryId
+                                    <*> validatedLostItemDescription
+                                    <*> fromList
+                                        . fmap toLocation
+                                        . toList
+                                        . validatedLostItemLocations
+                                    <*> validatedLostItemDateTimeSpan
+                                    <*> validatedLostItemRegistrTime
+                                    <*> fromList
+                                        . fmap toAttribute
+                                        . toList
+                                        . validatedLostItemAttributes
+                                    <*> toPerson . validatedLostItemOwner
+    where toPerson :: ValidatedPerson -> Person
+          toPerson = Person <$> vpersonId
+                            <*> toContactInformation . vpersonContact
+                            <*> vpersonFullName
           
-          toContactInformation :: ValidatedContactInformation 
-                                    -> ContactInformation
+          toContactInformation :: ValidatedContactInformation -> ContactInformation
           toContactInformation =
             ContactInformation
                 <$> vcontactInfoAddress

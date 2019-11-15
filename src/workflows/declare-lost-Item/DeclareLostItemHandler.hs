@@ -100,39 +100,36 @@ checkAdministrativeAreaInfoValid ::AdministrativeMap -> CheckAdministrativeAreaI
 checkAdministrativeAreaInfoValid (AdministrativeMap regions) (strReg, strDiv, strSub)
   | null strReg && null strDiv && null strSub =
     Right Nothing
-  | otherwise =
-    do
-      reg <- toRegion strReg
-      div <- toDivision strDiv
-      sub <- toSubDivision strSub
-      let singRegion = filter (isRegionItemRegion reg) regions
-      case singRegion of
-        [RegionItem freg divs] ->
-          let singDivision = filter (isDivisionItemDivision div) divs
-           in case singDivision of
-                [DivisionItem fdiv subs] ->
-                  let singSub = filter (== sub) subs
-                   in case singSub of
-                        [fsub] -> Right $ Just (freg, fdiv, fsub)
-                        _ -> Left "given sub division not found"
-                _ -> Left "given division not found"
-        _ -> Left "given region not found"
+  
+    
+    | otherwise = do reg <- toRegion strReg
+                     div <- toDivision strDiv
+                     sub <- toSubDivision strSub
+                     let singRegion = filter (isRegionItemRegion reg) regions
+                     case singRegion of
+                            [RegionItem freg divs] ->
+                                let singDivision = filter (isDivisionItemDivision div) divs
+                                in case singDivision of
+                                    [DivisionItem fdiv subs] ->
+                                        let singSub = filter (== sub) subs
+                                        in case singSub of
+                                            [fsub] -> Right $ Just (freg, fdiv, fsub)
+                                            _ -> Left "given sub division not found"
+                                    _ -> Left "given division not found"
+                            _ -> Left "given region not found"
 
 
 
 
 checkAttributeInfoValid ::[AttributeRef] ->CheckAttributeInfoValid
 checkAttributeInfoValid refferedAttributes uattr ulositem =
-  do
-    let foundAttribute = filter (isAttributesEqualTo uattr) refferedAttributes
-    case foundAttribute of
+  do let foundAttribute = filter (isAttributesEqualTo uattr) refferedAttributes
+     case foundAttribute of
       [attributeRef] ->
-        do
-          lostItemCatId <- crtCatgrId $ uliCategoryId ulositem
-          let maybeCatType = lookup lostItemCatId (attributeRefRelatedCategories attributeRef)
-          case maybeCatType of
-            Just _ ->
-              do
+        do lostItemCatId <- crtCatgrId $ uliCategoryId ulositem
+           let maybeCatType = lookup lostItemCatId (attributeRefRelatedCategories attributeRef)
+           case maybeCatType of
+            Just _ -> do
                 code <- crtAttrCd $ uattrCode uattr
                 name <- crtAttrNm $ uattrName uattr
                 desc <- crtShrtDescpt $ uattrDescription uattr

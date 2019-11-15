@@ -127,7 +127,7 @@ checkAttributeInfoValid refferedAttributes uattr ulositem =
      case foundAttribute of
       [attributeRef] ->
         do lostItemCatId <- crtCatgrId $ uliCategoryId ulositem
-           let maybeCatType = lookup lostItemCatId (attributeRefRelatedCategories attributeRef)
+           let maybeCatType = lookup lostItemCatId . attributeRefRelatedCategories $ attributeRef
            case maybeCatType of
             Just _ -> do
                 code <- crtAttrCd $ uattrCode uattr
@@ -144,9 +144,8 @@ checkAttributeInfoValid refferedAttributes uattr ulositem =
                   }
             Nothing -> Left "invalid referenced attribute"
       _ -> Left "referenced attribute not found"
-  where
-    isAttributesEqualTo unalidatedAttr attribute =
-      (uattrCode unalidatedAttr) == (uwrpAttrCd $ attributeRefCode attribute)
+  where isAttributesEqualTo uvattr attr = uattrCode uvattr == (uwrpAttrCd . attributeRefCode $ attr)
+ 
 
 
 

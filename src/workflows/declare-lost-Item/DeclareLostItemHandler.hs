@@ -167,7 +167,7 @@ crtDeclarationAcknowledgment item =
 
 
 
-sendAcknowledgment :: SendAcknowledgment
+sendAcknowledgment :: DeclarationAcknowledgment -> SendResult
 sendAcknowledgment declarationAcknowledgment =
   Sent -- DeclarationAcknowledgment -> SendResult
 
@@ -196,96 +196,54 @@ nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
 
 
 
-declareLostItemHandler ::
-  LoadAdministrativeAreaMap ->
-  ReadOneCategory ->
-  ReadOneAttributeRef ->
-  WriteDeclaredLostItemEvents ->
-  NextId ->
-  DeclareLostItemCmd ->
-  ExceptT WorkflowError IO [DeclareLostItemEvent]
-declareLostItemHandler
-  loadAdministrativeAreaMap
-  readOneCategory
-  readOneAttributeRef
-  writeDeclaredLostItemEvents
-  nextId
-  (Command unvalidatedLostItem curTime userId) =
-  
-    do
-      -- retrieve the referenced categoryId
+declareLostItemHandler :: LoadAdministrativeAreaMap 
+                            -> ReadOneCategory 
+                            -> ReadOneAttributeRef 
+                            -> WriteDeclaredLostItemEvents 
+                            -> NextId 
+                            -> DeclareLostItemCmd 
+                            -> ExceptT WorkflowError IO [DeclareLostItemEvent]
+declareLostItemHandler  loadAdministrativeAreaMap
+                        readOneCategory
+                        readOneAttributeRef
+                        writeDeclaredLostItemEvents
+                        nextId
+                        (Command unvalidatedLostItem curTime userId) =
+                        
+   
 
-      let strCatgryId = uliCategoryId unvalidatedLostItem
-
-      -- retrieve adminitrative area map
-
-      adminAreaMap 
-        <- loadAdministrativeAreaMap "Cameroun"
-
-      -- retrieve referenced category from event store
-
-      referencedCatgr 
-        <- ExceptT $ liftIO $ readOneCategory 10 strCatgryId
-
-      -- retrieve referenced attributes
-
-      refAttributes 
-        <- ExceptT 
-            $ liftIO 
-            $ fmap sequence 
-            $ traverse (readOneAttributeRef 10) 
-            $ uattrCode <$> uliattributes unvalidatedLostItem
-
-      -- get creation time
-
-      declarationTime 
-        <- liftIO getCurrentTime
-
-      -- get a random uuid
-
-      lostItemUuid 
-        <- liftIO nextId
-
-      -- Arranging final dependencies
-
-      let checkAdministrativeArea =
-            checkAdministrativeAreaInfoValid adminAreaMap
-      let checkAttributeInfo =
-            checkAttributeInfoValid refAttributes
-
-      -- call workflow
-
-      let events =
-            declareLostItem
-              checkAdministrativeArea -- Dependency
-              checkAttributeInfo -- Dependency
-              checkContactInfoValid -- Dependency
-              crtDeclarationAcknowledgment -- Dependency
-              sendAcknowledgment -- Dependency
-              referencedCatgr -- Input
-              unvalidatedLostItem -- Input
-              declarationTime -- Input
-              (lostItemUuid <> ":" <> userId) -- Input
-
-      -- publish / persit event(s) into the event store
-      -- and other interested third parties
-
-      case events of
-        Right allEvents ->
-          do
-            let declLostItemEvts = filter persistableEvts allEvents
-            res <- 
-                liftIO 
-                    $ writeDeclaredLostItemEvents 
-                        (lostItemUuid <> ":" <> userId) 
-                        declLostItemEvts
-            liftEither events
-        Left errorMsg -> liftEither $ Left errorMsg
-    where
-      persistableEvts (LostItemDeclared _) = True
-      persistableEvts (LocationsAdded _) = True
-      persistableEvts (AttributesAdded _) = True
-      persistableEvts _ = False
+    do let strCatgryId = uliCategoryId unvalidatedLostItem
+       adminAreaMap <- loadAdministrativeAreaMap "Cameroun"
+       referencedCatgr  <- ExceptT $ liftIO $ readOneCategory 10 strCatgryId       
+       refAttributes <- ExceptT $ liftIO 
+                                $ fmap sequence 
+                                $ traverse (readOneAttributeRef 10) 
+                                $ uattrCode <$> uliattributes unvalidatedLostItem
+       declarationTime <- liftIO getCurrentTime
+       lostItemUuid <- liftIO nextId
+       let checkAdministrativeArea = checkAdministrativeAreaInfoValid adminAreaMap
+       let checkAttributeInfo = checkAttributeInfoValid refAttributes    
+       let lostItemIdentifier = lostItemUuid <> ":" <> userId
+         
+       let events = declareLostItem checkAdministrativeArea 
+                                    checkAttributeInfo 
+                                    checkContactInfoValid 
+                                    crtDeclarationAcknowledgment 
+                                    sendAcknowledgment 
+                                    referencedCatgr 
+                                    unvalidatedLostItem 
+                                    declarationTime 
+                                    lostItemIdentifier 
+       case events of Right allEvents ->
+                        do  let declLostItemEvts = filter persistableEvts allEvents
+                            _ <- liftIO $ writeDeclaredLostItemEvents lostItemIdentifier
+                                                                      declLostItemEvts
+                            liftEither events
+                      Left errorMsg -> liftEither $ Left errorMsg
+                      where persistableEvts (LostItemDeclared _) = True
+                            persistableEvts (LocationsAdded _) = True
+                            persistableEvts (AttributesAdded _) = True
+                            persistableEvts _ = False
 
 
 
@@ -297,13 +255,11 @@ declareLostItemHandler
 
 
 
-publicDeclareLostItemHandler :: 
-    DeclareLostItemCmd 
-    -> ExceptT WorkflowError IO [DeclareLostItemEvent]
-publicDeclareLostItemHandler =
-  declareLostItemHandler
-    loadAdministrativeAreaMap
-    readOneCategory
-    readOneAttributeRef
-    writeDeclaredLostItemEvents
-    nextId
+publicDeclareLostItemHandler :: DeclareLostItemCmd 
+                                -> ExceptT WorkflowError IO [DeclareLostItemEvent]
+publicDeclareLostItemHandler = declareLostItemHandler loadAdministrativeAreaMap
+                                                      readOneCategory
+                                                      readOneAttributeRef
+                                                      writeDeclaredLostItemEvents
+                                                      nextId
+                                                            

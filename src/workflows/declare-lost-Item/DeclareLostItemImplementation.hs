@@ -202,21 +202,6 @@ data SendResult
 
 
 
-type SendAcknowledgment =
-  DeclarationAcknowledgment -> SendResult
-
-
-
-
-type AcknowledgemenDeclaredLostItem =
-  CreateDeclarationAcknowledgment -> -- Dependency
-  SendAcknowledgment -> -- Dependency
-  DeclaredLostItem -> -- Input
-  Maybe DeclarationAcknowledgmentSent
-
-
-
-
 
 -- ==========================================================================================
 -- Section 2 : Implementation
@@ -257,218 +242,145 @@ validateUnvalidatedLostItem
       <*> dateTimeSpan 
       <*> attrs 
       <*> owner
-    where   itemId = 
-                toLostItemId 
-                    unvalidatedAssignUuid
-            name = 
-                toLostItemName 
-                . uliName 
-                $ unvalidatedLostItem
-            catgrId = 
-                toCategoryId 
-                . uliCategoryId 
-                $ unvalidatedLostItem
-            descpt = 
-                toLongDescpt 
-                . uliDescription 
-                $ unvalidatedLostItem
-            locts = 
-                fmap fromList 
-                . traverse (toLostItemLocation checkAdministrativeAreaInfoValid) 
-                . ulocations
-                $ unvalidatedLostItem
-            registTime = 
-                pure decalrationTime
-            dateTimeSpan = 
-                toDateTimeSpan 
-                . uliDateAndTimeSpan 
-                $ unvalidatedLostItem
-            attrs = 
-                fmap fromList 
-                . traverse (toValidatedAttribute checkAttributeInfoValid unvalidatedLostItem) 
-                . uliattributes
-                $ unvalidatedLostItem
-            owner = 
-                toOwner checkContactInfoValid 
-                . uowner
-                $ unvalidatedLostItem
-                
+    where   itemId = toLostItemId unvalidatedAssignUuid
+            name = toLostItemName . uliName $ unvalidatedLostItem
+            catgrId = toCategoryId . uliCategoryId $ unvalidatedLostItem
+            descpt = toLongDescpt . uliDescription $ unvalidatedLostItem
+            locts = fmap fromList . traverse (toLostItemLocation checkAdministrativeAreaInfoValid) 
+                    . ulocations $ unvalidatedLostItem
+            registTime = pure decalrationTime
+            dateTimeSpan = toDateTimeSpan . uliDateAndTimeSpan $ unvalidatedLostItem
+            attrs = fmap fromList . traverse (toValidatedAttribute checkAttributeInfoValid unvalidatedLostItem) 
+                    . uliattributes $ unvalidatedLostItem
+            owner = toOwner checkContactInfoValid . uowner $ unvalidatedLostItem
+            
+            toLostItemLocation :: CheckAdministrativeAreaInfoValid
+                                    -> UnvalidatedLocation
+                                    -> Either ValidationError ValidatedLocation
+            toLostItemLocation checkAdministrativeAreaInfoValid u =
+                do
+                    adminArea <-
+                        toCheckedValidAdminArea
+                            (uadminArea u)
+                            checkAdministrativeAreaInfoValid
+                    cityOrVillage <-
+                        toCityOrVillage (ucity u, uvillage u)
+                    neighborhood <-
+                        toNeighborhood $ uneighborhood u
+                    addresses <-
+                        traverse toAddress $ uloaddresses u
+                    return ValidatedLocation
+                        { vadminArea = adminArea,
+                            vcityOrVillage = cityOrVillage,
+                            vneighborhood = neighborhood,
+                            vlocationAddresses = addresses
+                        }
 
+            toCheckedValidAdminArea :: (String, String, String)
+                                        -> CheckAdministrativeAreaInfoValid
+                                        -> Either ValidationError (Maybe (Region, Division, SubDivision))
+            toCheckedValidAdminArea (reg, divs, sub) checkAdministrativeAreaInfoValid =
+                mapValidationError $ checkAdministrativeAreaInfoValid (reg, divs, sub)
 
+            toValidatedAttribute :: CheckAttributeInfoValid
+                                    -> UnvalidatedLostItem
+                                    -> UnvalidatedAttribute
+                                    -> Either ValidationError ValidatedAttribute
+            toValidatedAttribute checkAttributeInfoValid ulostitem uattr =
+                mapValidationError $ checkAttributeInfoValid uattr ulostitem
 
+            toOwner :: CheckContactInfoValid 
+                        -> UnvalidatedPerson 
+                        -> Either ValidationError ValidatedPerson
+            toOwner checkContactInfoValid uperson =
+                ValidatedPerson
+                    <$> (toUserId . uuserId) uperson
+                    <*> (toContactInfo checkContactInfoValid . ucontact) uperson
+                    <*> (toFullName . ufullname) uperson
+            
+            toContactInfo :: CheckContactInfoValid
+                                -> UnvalidatedContactInformation
+                                -> Either ValidationError ValidatedContactInformation
+            toContactInfo checkContactInfoValid ucontactInfo
 
---- Helper functions for valodateUnvalidatedLostItem
----
----
+                -- no email but both prim and sec phone given
+                | null givenEmail && notNull givenPrimTel && notNull givenSecTel =
+                    do
+                    adress <- toOptPostalAddress givenAddress
+                    primTel <- toTelephone givenPrimTel
+                    secTel <- toOptTelephone givenSecTel
+                    return ValidatedContactInformation
+                        { vcontactInfoAddress = adress,
+                        vcontactInfoMethod = PhoneOnly primTel secTel
+                        }
 
+                -- no email but only prim phone given
+                | null givenEmail && notNull givenPrimTel && null givenSecTel =
+                    do
+                    adress <- toOptPostalAddress givenAddress
+                    primTel <- toTelephone givenPrimTel
+                    return ValidatedContactInformation
+                        { vcontactInfoAddress = adress,
+                        vcontactInfoMethod = PhoneOnly primTel Nothing
+                        }
 
+                -- just email given
+                | notNull givenEmail && null givenPrimTel && null givenSecTel =
+                    do
+                    adress <- toOptPostalAddress givenAddress
+                    email <- toEmailAddress givenEmail
+                    return ValidatedContactInformation
+                        { vcontactInfoAddress = adress,
+                        vcontactInfoMethod = EmailOnly email
+                        }
 
+                -- email and prim phone given
+                | notNull givenEmail && notNull givenPrimTel && null givenSecTel =
+                    do
+                    address <- toOptPostalAddress givenAddress
+                    primTel <- toTelephone givenPrimTel
+                    email <- toEmailAddress givenEmail
+                    return ValidatedContactInformation
+                        { vcontactInfoAddress = address,
+                        vcontactInfoMethod = EmailAndPhone BothContactInfo
+                            { bothContactInfoEmail = email,
+                                bothContactInfoPrimTel = primTel,
+                                bothContactInfoSndTel = Nothing
+                            }
+                        }
 
+                -- email, prim and sec phones given
+                | notNull givenEmail && notNull givenPrimTel && notNull givenSecTel =
+                    do
+                    adress <- toOptPostalAddress givenAddress
+                    primTel <-toTelephone givenPrimTel
+                    email <- toEmailAddress givenEmail
+                    secTel <- toOptTelephone givenSecTel
+                    return ValidatedContactInformation
+                        { vcontactInfoAddress = adress,
+                        vcontactInfoMethod = EmailAndPhone BothContactInfo
+                            { bothContactInfoEmail = email,
+                                bothContactInfoPrimTel = primTel,
+                                bothContactInfoSndTel = secTel
+                            }
+                        }
+                | otherwise = 
+                        Left 
+                        . ValidationError 
+                        $ "Provide at least one contact method (Phone or Email)"
+                where
+                    givenEmail = uemail ucontactInfo
+                    givenPrimTel = uprimaryTel ucontactInfo
+                    givenSecTel = usecondaryTel ucontactInfo
+                    givenAddress = uaddress ucontactInfo
 
+            toFullName :: UnvalidatedFullName -> Either ValidationError FullName
+            toFullName ufullName =
+                FullName
+                    <$> (toFirstName . ufirst) ufullName
+                    <*> (toMiddleName . umiddle) ufullName
+                    <*> (toLastName . ulast) ufullName
 
-toOwner :: CheckContactInfoValid -> UnvalidatedPerson -> Either ValidationError ValidatedPerson
-toOwner checkContactInfoValid uperson =
-  ValidatedPerson
-    <$> (toUserId . uuserId) uperson
-    <*> (toContactInfo checkContactInfoValid . ucontact) uperson
-    <*> (toFullName . ufullname) uperson
-
-
-
-
-toContactInfo ::
-  CheckContactInfoValid ->
-  UnvalidatedContactInformation ->
-  Either ValidationError ValidatedContactInformation
-toContactInfo checkContactInfoValid uc
-  -- no email but both prim and sec phone given
-  | null givenEmail
-      && notNull givenPrimTel
-      && notNull givenSecTel =
-    do
-      adress <- mapValidationError $ crtOptPstAddrss givenAddress
-      primTel <- mapValidationError $ crtTel givenPrimTel
-      secTel <- mapValidationError $ crtOptTel givenSecTel
-      let contactMethod = PhoneOnly primTel secTel
-      return ValidatedContactInformation
-        { vcontactInfoAddress = adress,
-          vcontactInfoMethod = contactMethod
-        }
-  -- no email but only prim phone given
-  | null givenEmail
-      && notNull givenPrimTel
-      && null givenSecTel =
-    do
-      adress <- mapValidationError $ crtOptPstAddrss givenAddress
-      primTel <- mapValidationError $ crtTel givenPrimTel
-      let contactMethod = PhoneOnly primTel Nothing
-      return ValidatedContactInformation
-        { vcontactInfoAddress = adress,
-          vcontactInfoMethod = contactMethod
-        }
-  -- just email given
-  | notNull givenEmail
-      && null givenPrimTel
-      && null givenSecTel =
-    do
-      adress <- mapValidationError $ crtOptPstAddrss givenAddress
-      email <- mapValidationError $ crtEmailAddress givenEmail
-      let contactMethod = EmailOnly email
-      return ValidatedContactInformation
-        { vcontactInfoAddress = adress,
-          vcontactInfoMethod = contactMethod
-        }
-  -- email and prim phone given
-  | notNull givenEmail
-      && notNull givenPrimTel
-      && null givenSecTel =
-    do
-      adress <- mapValidationError $ crtOptPstAddrss givenAddress
-      primTel <- mapValidationError $ crtTel givenPrimTel
-      email <- mapValidationError $ crtEmailAddress givenEmail
-      let contactMethod = EmailAndPhone BothContactInfo
-            { bothContactInfoEmail = email,
-              bothContactInfoPrimTel = primTel,
-              bothContactInfoSndTel = Nothing
-            }
-      return ValidatedContactInformation
-        { vcontactInfoAddress = adress,
-          vcontactInfoMethod = contactMethod
-        }
-  -- email, prim and sec phones given
-  | notNull givenEmail
-      && notNull givenPrimTel
-      && notNull givenSecTel =
-    do
-      adress <- mapValidationError $ crtOptPstAddrss givenAddress
-      primTel <- mapValidationError $ crtTel givenPrimTel
-      email <- mapValidationError $ crtEmailAddress givenEmail
-      secTel <- mapValidationError $ crtOptTel givenSecTel
-      let contactMethod = EmailAndPhone BothContactInfo
-            { bothContactInfoEmail = email,
-              bothContactInfoPrimTel = primTel,
-              bothContactInfoSndTel = secTel
-            }
-      return ValidatedContactInformation
-        { vcontactInfoAddress = adress,
-          vcontactInfoMethod = contactMethod
-        }
-  | otherwise = Left $ ValidationError "Provide at least one contact method (Phone or Email)"
-  where
-    givenEmail = uemail uc
-    givenPrimTel = uprimaryTel uc
-    givenSecTel = usecondaryTel uc
-    givenAddress = uaddress uc
-
-
-
-
-toCheckedValidTelephone ::
-  CheckContactInfoValid ->
-  String ->
-  Either ValidationError Telephone
-toCheckedValidTelephone checkContactInfoValid str =
-  do
-    tel <- toTelephone str
-    mapValidationError $ checkContactInfoValid tel
-
-
-
-
-toFullName :: UnvalidatedFullName -> Either ValidationError FullName
-toFullName uFullName =
-  FullName
-    <$> (toFirstName . ufirst) uFullName
-    <*> (toMiddleName . umiddle) uFullName
-    <*> (toLastName . ulast) uFullName
-
-
-
-
-toValidatedAttribute ::
-  CheckAttributeInfoValid ->
-  UnvalidatedLostItem ->
-  UnvalidatedAttribute ->
-  Either ValidationError ValidatedAttribute
-toValidatedAttribute checkAttributeInfoValid ulostitem uattr =
-  mapValidationError $ checkAttributeInfoValid uattr ulostitem
-
-
-
-
-toCheckedValidAdminArea ::
-  (String, String, String) ->
-  CheckAdministrativeAreaInfoValid ->
-  Either ValidationError (Maybe (Region, Division, SubDivision))
-toCheckedValidAdminArea (reg, divs, sub) checkAdministrativeAreaInfoValid =
-  mapValidationError $ checkAdministrativeAreaInfoValid (reg, divs, sub)
-
-
-
-
-
-toLostItemLocation ::
-  CheckAdministrativeAreaInfoValid ->
-  UnvalidatedLocation ->
-  Either ValidationError ValidatedLocation
-toLostItemLocation checkAdministrativeAreaInfoValid u =
-  do
-    adminArea <-
-      toCheckedValidAdminArea
-        (uadminArea u)
-        checkAdministrativeAreaInfoValid
-    cityOrVillage <-
-      toCityOrVillage (ucity u, uvillage u)
-    neighborhood <-
-      toNeighborhood $ uneighborhood u
-    addresses <-
-      traverse toAddress $ uloaddresses u
-    return ValidatedLocation
-      { vadminArea = adminArea,
-        vcityOrVillage = cityOrVillage,
-        vneighborhood = neighborhood,
-        vlocationAddresses = addresses
-      }
 
 
 
@@ -477,6 +389,7 @@ toLostItemLocation checkAdministrativeAreaInfoValid u =
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
+
 
 
 
@@ -500,57 +413,42 @@ creatteLostItem =
         . toList
         . validatedLostItemAttributes
     <*> toPerson . validatedLostItemOwner
+    where 
+          toPerson :: ValidatedPerson -> Person
+          toPerson = 
+            Person
+                <$> vpersonId
+                <*> toContactInformation . vpersonContact
+                <*> vpersonFullName
+          
+          toContactInformation :: ValidatedContactInformation 
+                                    -> ContactInformation
+          toContactInformation =
+            ContactInformation
+                <$> vcontactInfoAddress
+                <*> vcontactInfoMethod
+
+          toAttribute :: ValidatedAttribute -> Attribute
+          toAttribute valAttr =
+            Attribute
+                { attributeCode = vattributeCode valAttr,
+                attributeName = vattributeName valAttr,
+                attributeDescription = vattributeDescription valAttr,
+                attributeValue = vattributeValue valAttr,
+                attributeUnit = vattributeUnit valAttr
+                }
+
+          toLocation :: ValidatedLocation -> Location
+          toLocation vLoc =
+            Location
+                { locationAdminArea = vadminArea vLoc,
+                locationCityOrVillage = vcityOrVillage vLoc,
+                locationNeighborhood = vneighborhood vLoc,
+                locationAddresses = vlocationAddresses vLoc
+                }
 
 
 
-
---- Helper functions
----
----
-
-
-
-
-toPerson :: ValidatedPerson -> Person
-toPerson =
-  Person
-    <$> vpersonId
-    <*> toContactInformation . vpersonContact
-    <*> vpersonFullName
-
-
-
-
-toContactInformation :: ValidatedContactInformation -> ContactInformation
-toContactInformation =
-  ContactInformation
-    <$> vcontactInfoAddress
-    <*> vcontactInfoMethod
-
-
-
-
-toAttribute :: ValidatedAttribute -> Attribute
-toAttribute valAttr =
-  Attribute
-    { attributeCode = vattributeCode valAttr,
-      attributeName = vattributeName valAttr,
-      attributeDescription = vattributeDescription valAttr,
-      attributeValue = vattributeValue valAttr,
-      attributeUnit = vattributeUnit valAttr
-    }
-
-
-
-
-toLocation :: ValidatedLocation -> Location
-toLocation vLoc =
-  Location
-    { locationAdminArea = vadminArea vLoc,
-      locationCityOrVillage = vcityOrVillage vLoc,
-      locationNeighborhood = vneighborhood vLoc,
-      locationAddresses = vlocationAddresses vLoc
-    }
 
 
 
@@ -559,6 +457,8 @@ toLocation vLoc =
 -- ----------------------------------------------------------------------------
 -- Check refered category enabled step
 -- ----------------------------------------------------------------------------
+
+
 
 
 
@@ -601,14 +501,17 @@ checkRefCatgrEnabled vli (SubCategory refCatgr _)
 
 
 
-acknowledgemenDeclaredLostItem :: AcknowledgemenDeclaredLostItem
+acknowledgemenDeclaredLostItem :: CreateDeclarationAcknowledgment
+                                    -> (DeclarationAcknowledgment -> SendResult) 
+                                    -> DeclaredLostItem
+                                    -> Maybe DeclarationAcknowledgmentSent
 acknowledgemenDeclaredLostItem
   crtDeclarationAcknowledgment
   sendAcknowledgment
   declaredLostItem =
     let letter = crtDeclarationAcknowledgment declaredLostItem
         acknoledgment = DeclarationAcknowledgment
-          { ownerEmail = personContact $ lostItemOwner declaredLostItem,
+          { ownerEmail = personContact . lostItemOwner $ declaredLostItem,
             letter = letter
           }
         resultSent = sendAcknowledgment acknoledgment
@@ -616,7 +519,7 @@ acknowledgemenDeclaredLostItem
           Sent ->
             let event = DeclarationAcknowledgmentSent
                   { declaredLostItemId = lostItemId declaredLostItem,
-                    ownerContactInfo = personContact $ lostItemOwner declaredLostItem
+                    ownerContactInfo = personContact . lostItemOwner $ declaredLostItem
                   }
              in Just event
           NotSent ->
@@ -634,10 +537,9 @@ acknowledgemenDeclaredLostItem
 
 
 
-createEvents :: 
-    DeclaredLostItem 
-    -> Maybe DeclarationAcknowledgmentSent 
-    -> [DeclareLostItemEvent]
+createEvents :: DeclaredLostItem 
+                -> Maybe DeclarationAcknowledgmentSent 
+                -> [DeclareLostItemEvent]
 createEvents declaredLosItem optionDeclarationAcknowledgmentSent =
   let acknoledgmentEvents =
         maybeToList 
@@ -727,17 +629,16 @@ crtAttrbtesAddedEvent = toList . lostItemAttributes
 
 
 
-declareLostItem ::
-  CheckAdministrativeAreaInfoValid ->
-  CheckAttributeInfoValid ->
-  CheckContactInfoValid ->
-  CreateDeclarationAcknowledgment ->
-  SendAcknowledgment ->
-  Category ->
-  UnvalidatedLostItem ->
-  UTCTime ->
-  UnvalidatedLostItemId ->
-  Either WorkflowError [DeclareLostItemEvent]
+declareLostItem :: CheckAdministrativeAreaInfoValid 
+                    -> CheckAttributeInfoValid 
+                    -> CheckContactInfoValid 
+                    -> CreateDeclarationAcknowledgment
+                    -> (DeclarationAcknowledgment -> SendResult)
+                    -> Category
+                    -> UnvalidatedLostItem 
+                    -> UTCTime
+                    -> UnvalidatedLostItemId 
+                    -> Either WorkflowError [DeclareLostItemEvent]
 declareLostItem
   checkAdministrativeAreaInfoValid -- Dependency
   checkAttributeInfoValid -- Dependency

@@ -1966,6 +1966,13 @@ toPostalAddress =
 
 
 
+toOptPostalAddress :: String -> Either ValidationError (Maybe PostalAddress)
+toOptPostalAddress =
+  mapValidationError . crtOptPstAddrss
+
+
+
+
 toTelephone :: String -> Either ValidationError Telephone
 toTelephone =
   mapValidationError . crtTel
@@ -1973,8 +1980,17 @@ toTelephone =
 
 
 
-toEmail :: String -> Either ValidationError EmailAddress
-toEmail =
+
+
+toOptTelephone :: String -> Either ValidationError (Maybe Telephone)
+toOptTelephone =
+  mapValidationError . crtOptTel
+
+
+
+
+toEmailAddress :: String -> Either ValidationError EmailAddress
+toEmailAddress =
   mapValidationError . crtEmailAddress
 
 

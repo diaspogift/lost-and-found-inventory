@@ -256,12 +256,9 @@ validateUnvalidatedLostItem checkAdministrativeAreaInfoValid
                                     -> Either ValidationError ValidatedLocation
             toLostItemLocation checkAdministrativeAreaInfoValid u =
                 do  adminArea <- toCheckedValidAdminArea (uadminArea u) checkAdministrativeAreaInfoValid
-                    cityOrVillage <-
-                        toCityOrVillage (ucity u, uvillage u)
-                    neighborhood <-
-                        toNeighborhood $ uneighborhood u
-                    addresses <-
-                        traverse toAddress $ uloaddresses u
+                    cityOrVillage <- toCityOrVillage (ucity u, uvillage u)
+                    neighborhood <- toNeighborhood $ uneighborhood u
+                    addresses <- traverse toAddress $ uloaddresses u
                     return ValidatedLocation
                         { vadminArea = adminArea,
                             vcityOrVillage = cityOrVillage,

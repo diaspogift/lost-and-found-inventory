@@ -65,7 +65,7 @@ type NextId = IO UnvalidatedAttributeCode
 
 
 nextId :: NextId
-nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
+nextId = let randomId = nextRandom in fmap (fmap toUpper . toString) randomId
 
 
 
@@ -76,6 +76,8 @@ nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
 
 
 
+
+
 createAttributeRefHandler :: WriteCreateAttributeRefEvents
                                 -> NextId
                                 -> CreateAttributeRefCmd
@@ -83,18 +85,14 @@ createAttributeRefHandler :: WriteCreateAttributeRefEvents
 createAttributeRefHandler   writeCreateAttributeRefEvents
                             nextId
                             (Command unvalidatedAttributeRef curTime userId) =
-
     do referencedCatgrs <- ExceptT . liftIO 
                                    . fmap sequence 
                                    . traverse (readOneCategory 10) 
                                    $ fst <$> urelatedCategories unvalidatedAttributeRef
        attributeRefCode <- liftIO nextId
-
        let events = createAttributeReference unvalidatedAttributeRef 
                                              attributeRefCode 
                                              referencedCatgrs 
-
-       
        case events of Right allEvents -> do
                         let crtAttrRefEvt = filter isCreateAttributeRefEvent allEvents
                             evt = head crtAttrRefEvt

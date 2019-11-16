@@ -84,8 +84,7 @@ toUnvalidatedLocation dto =
 
 
 toLocation :: LocationDto -> Either ErrorMessage Cct.Location
-toLocation dto =
-  do
+toLocation dto = do
     area <- toAdminAreaInfo (region dto, division dto, subdivision dto)
     lieu <- toCityOrVillage (city dto, village dto)
     voisinage <- crtOptNghbrhd $ neighborhood dto
@@ -101,33 +100,29 @@ toLocation dto =
 
 
 
-toAdminAreaInfo ::
-  (String, String, String) -> Either ErrorMessage (Maybe Cct.AdministrativeAreaInfo)
+toAdminAreaInfo :: (String, String, String) 
+                    -> Either ErrorMessage (Maybe Cct.AdministrativeAreaInfo)
 toAdminAreaInfo (strReg, strDiv, strSub)
   | null strReg && null strDiv, null strSub = Right Nothing
-  | otherwise =
-    do
+  | otherwise = do
       reg <- Cct.toRegion strReg
-      div <- Cct.toDivision strDiv
-      sub <- Cct.toSubDivision strSub
-      return $ Just (reg, div, sub)
+      divs <- Cct.toDivision strDiv
+      subd <- Cct.toSubDivision strSub
+      return $ Just (reg, divs, subd)
 
 
 
 
 
-toCityOrVillage ::
-  (String, String) ->
-  Either ErrorMessage (Maybe CityOrVillage)
+toCityOrVillage :: (String, String)
+                    -> Either ErrorMessage (Maybe CityOrVillage)
 toCityOrVillage (strCity, strVillage)
   | null strCity && null strVillage =
     return Nothing
-  | null strCity && Cct.notNull strVillage =
-    do
+  | null strCity && Cct.notNull strVillage = do
       village <- crtVillage strVillage
       return $ Just $ Country village
-  | Cct.notNull strCity && null strVillage =
-    do
+  | Cct.notNull strCity && null strVillage = do
       city <- crtCity strCity
       return $ Just $ Urban city
   | otherwise = return Nothing
@@ -144,26 +139,27 @@ toAddress = crtAddress
 
 fromLocation :: Cct.Location -> LocationDto
 fromLocation loc =
-  let (reg, div, sub) = fromMaybeAdminArea $ Cct.locationAdminArea loc
+  let (reg, divs, subd) = fromMaybeAdminArea $ Cct.locationAdminArea loc
       (city, village) = fromMaybeCityOrVillage $ Cct.locationCityOrVillage loc
       maybeNeighborhood = fromMaybeNeighborhood $ Cct.locationNeighborhood loc
-      addresses = fmap uwrpAddress $ Cct.locationAddresses loc
-   in LocationDto
-        { region = reg,
-          division = div,
-          subdivision = sub,
-          city = city,
-          village = village,
-          neighborhood = maybeNeighborhood,
-          locationAddresses = addresses
-        }
+      addresses = fmap uwrpAddress $ Cct.locationAddresses loc in
+   LocationDto
+    { region = reg,
+      division = divs,
+      subdivision = subd,
+      city = city,
+      village = village,
+      neighborhood = maybeNeighborhood,
+      locationAddresses = addresses
+    }
 
 
 
 
 fromMaybeAdminArea :: Maybe Cct.AdministrativeAreaInfo -> (String, String, String)
 fromMaybeAdminArea Nothing = ("", "", "")
-fromMaybeAdminArea (Just (reg, div, sub)) = (Cct.fromRegion reg, Cct.fromDivision div, Cct.fromSubDivision sub)
+fromMaybeAdminArea (Just (reg, div, sub)) = 
+    (Cct.fromRegion reg, Cct.fromDivision div, Cct.fromSubDivision sub)
 
 
 
@@ -183,9 +179,11 @@ fromMaybeNeighborhood Nothing = ""
 
 
 
+
 -- ----------------------------------------------------------------------------
 -- DTO for Attribute
 -- ----------------------------------------------------------------------------
+
 
 
 
@@ -206,9 +204,12 @@ instance FromJSON AttributeDto
 
 
 
+
 --- Helper functions for converting from / to domain as well as to other states
 ---
 ---
+
+
 
 
 toUnvalidatedAttribute :: AttributeDto -> UnvalidatedAttribute
@@ -224,8 +225,7 @@ toUnvalidatedAttribute =
 
 
 toAttribute :: AttributeDto -> Either ErrorMessage Cct.Attribute
-toAttribute dto =
-  do
+toAttribute dto = do
     code <- crtAttrCd $ attrCode dto
     name <- crtAttrNm $ attrName dto
     desc <- crtShrtDescpt $ attrDescription dto
@@ -238,9 +238,7 @@ toAttribute dto =
         attributeValue = val,
         attributeUnit = unit
       }
-  where
-    toCatIdCatTypePair (strCatId, strCatType) =
-      do
+  where toCatIdCatTypePair (strCatId, strCatType) = do
         catId <- crtCatgrId strCatId
         catType <- crtCatgrCd strCatType
         return (catId, catType)
@@ -250,12 +248,11 @@ toAttribute dto =
 
 fromAttribute :: Cct.Attribute -> AttributeDto
 fromAttribute =
-  AttributeDto
-    <$> uwrpAttrCd . Cct.attributeCode
-    <*> uwrpAttrNm . Cct.attributeName
-    <*> uwrpShrtDescpt . Cct.attributeDescription
-    <*> uwrpOptAttrVal . Cct.attributeValue
-    <*> uwrpOptAttrUnt . Cct.attributeUnit
+  AttributeDto <$> uwrpAttrCd . Cct.attributeCode
+               <*> uwrpAttrNm . Cct.attributeName
+               <*> uwrpShrtDescpt . Cct.attributeDescription
+               <*> uwrpOptAttrVal . Cct.attributeValue
+               <*> uwrpOptAttrUnt . Cct.attributeUnit
 
 
 
@@ -289,17 +286,15 @@ instance FromJSON PersonDto
 
 toUnvalidatedPerson :: PersonDto -> UnvalidatedPerson
 toUnvalidatedPerson =
-  UnvalidatedPerson
-    <$> userId
-    <*> toUnvalidatedContactInformation . contact
-    <*> toUnvalidatedFullName . fullname
+  UnvalidatedPerson <$> userId
+                    <*> toUnvalidatedContactInformation . contact
+                    <*> toUnvalidatedFullName . fullname
 
 fromPerson :: Cct.Person -> PersonDto
 fromPerson =
-  PersonDto
-    <$> uwrpUsrId . Cct.personId
-    <*> fromContactInformation . Cct.personContact
-    <*> fromFullName . Cct.personFullName
+  PersonDto <$> uwrpUsrId . Cct.personId
+            <*> fromContactInformation . Cct.personContact
+            <*> fromFullName . Cct.personFullName
 
 
 
@@ -332,22 +327,20 @@ instance FromJSON ContactInformationDto
 
 
 
-toUnvalidatedContactInformation ::
-  ContactInformationDto -> UnvalidatedContactInformation
+toUnvalidatedContactInformation :: ContactInformationDto 
+                                    -> UnvalidatedContactInformation
 toUnvalidatedContactInformation =
-  UnvalidatedContactInformation
-    <$> email
-    <*> address
-    <*> primaryTel
-    <*> secondaryTel
+  UnvalidatedContactInformation <$> email
+                                <*> address
+                                <*> primaryTel
+                                <*> secondaryTel
 
 
 
 
 toContactInformation ::
   ContactInformationDto -> Either ErrorMessage Cct.ContactInformation
-toContactInformation dto =
-  do
+toContactInformation dto = do
     add <- (crtOptPstAddrss . address) dto
     contact <- toContactMethod (email dto, primaryTel dto, secondaryTel dto)
     return Cct.ContactInformation
@@ -358,7 +351,8 @@ toContactInformation dto =
 
 
 
-toContactMethod :: (String, String, String) -> Either ErrorMessage Cct.ContactMethod
+toContactMethod :: (String, String, String) 
+                    -> Either ErrorMessage Cct.ContactMethod
 toContactMethod (givenEmail, givenPrimTel, givenSecTel)
   -- no email but both prim and sec phone given
   | null givenEmail
@@ -414,8 +408,7 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
 
 
 
-fromContactInformation ::
-  Cct.ContactInformation -> ContactInformationDto
+fromContactInformation :: Cct.ContactInformation -> ContactInformationDto
 fromContactInformation ci =
   let add = uwrpOptPstAddress $ Cct.conatInfoAddress ci
       (email, primTel, secTel) = fromContactMethod $ Cct.contactInfoMethod ci
@@ -438,8 +431,8 @@ fromContactMethod (Cct.PhoneOnly primTel maybeSecTel) =
 fromContactMethod (Cct.EmailAndPhone both) =
   let email = uwrpEmailAddress $ Cct.bothContactInfoEmail both
       primTel = uwrpTel $ Cct.bothContactInfoPrimTel both
-      maybeSecTel = Cct.bothContactInfoSndTel both
-   in case maybeSecTel of
+      maybeSecTel = Cct.bothContactInfoSndTel both in
+   case maybeSecTel of
         Just wrappedSecTel -> (email, primTel, uwrpTel wrappedSecTel)
         Nothing -> (email, primTel, "")
 
@@ -476,30 +469,27 @@ instance FromJSON FullNameDto
 
 toUnvalidatedFullName :: FullNameDto -> UnvalidatedFullName
 toUnvalidatedFullName =
-  UnvalidatedFullName
-    <$> first
-    <*> middle
-    <*> last
+  UnvalidatedFullName <$> first
+                      <*> middle
+                      <*> last
 
 
 
 
 toFullName :: FullNameDto -> Either ErrorMessage Cct.FullName
 toFullName dto =
-  Cct.FullName
-    <$> (crtFstNm . first) dto
-    <*> (crtMdleNm . middle) dto
-    <*> (crtLstNm . last) dto
+  Cct.FullName <$> (crtFstNm . first) dto
+               <*> (crtMdleNm . middle) dto
+               <*> (crtLstNm . last) dto
 
 
 
 
 fromFullName :: Cct.FullName -> FullNameDto
 fromFullName =
-  FullNameDto
-    <$> uwrpFstNm . Cct.firstName
-    <*> uwrpMdleNm . Cct.middleName
-    <*> uwrpLstNm . Cct.lastName
+  FullNameDto <$> uwrpFstNm . Cct.firstName
+              <*> uwrpMdleNm . Cct.middleName
+              <*> uwrpLstNm . Cct.lastName
 
 
 
@@ -537,14 +527,13 @@ instance FromJSON DeclareLostItemForm
 
 toUnvalidatedLostItem :: DeclareLostItemForm -> UnvalidatedLostItem
 toUnvalidatedLostItem =
-  UnvalidatedLostItem
-    <$> name
-    <*> categoryId
-    <*> descrpt
-    <*> dateAndTimeSpan
-    <*> fmap toUnvalidatedLocation . locations
-    <*> fmap toUnvalidatedAttribute . attributes
-    <*> toUnvalidatedPerson . owner
+  UnvalidatedLostItem <$> name
+                      <*> categoryId
+                      <*> descrpt
+                      <*> dateAndTimeSpan
+                      <*> fmap toUnvalidatedLocation . locations
+                      <*> fmap toUnvalidatedAttribute . attributes
+                      <*> toUnvalidatedPerson . owner
 
 
 
@@ -585,16 +574,15 @@ instance FromJSON LostItemDeclaredDto
 
 fromLostItemDeclared :: LostItemDeclared -> LostItemDeclaredDto
 fromLostItemDeclared =
-  LostItemDeclaredDto
-    <$> uwrpLstItmId . lostItemId
-    <*> uwrpItmNm . lostItemName
-    <*> uwrpCatgrId . lostItemCategoryId
-    <*> uwrpLgDescpt . lostItemDescription
-    <*> fmap fromLocation . toList . lostItemLocations
-    <*> lostItemRegistrationTime
-    <*> uwrpDtTmSpan . lostItemDateAndTimeSpan
-    <*> fmap fromAttribute . toList . lostItemAttributes
-    <*> fromPerson . lostItemOwner
+  LostItemDeclaredDto <$> uwrpLstItmId . lostItemId
+                      <*> uwrpItmNm . lostItemName
+                      <*> uwrpCatgrId . lostItemCategoryId
+                      <*> uwrpLgDescpt . lostItemDescription
+                      <*> fmap fromLocation . toList . lostItemLocations
+                      <*> lostItemRegistrationTime
+                      <*> uwrpDtTmSpan . lostItemDateAndTimeSpan
+                      <*> fmap fromAttribute . toList . lostItemAttributes
+                      <*> fromPerson . lostItemOwner
 
 
 
@@ -631,13 +619,11 @@ instance FromJSON DeclarationAcknowledgmentSentDto
 
 
 
-fromDeclarationAcknowledgmentSent ::
-  DeclarationAcknowledgmentSent -> DeclarationAcknowledgmentSentDto
+fromDeclarationAcknowledgmentSent :: DeclarationAcknowledgmentSent 
+                                        -> DeclarationAcknowledgmentSentDto
 fromDeclarationAcknowledgmentSent =
-  DeclarationAcknowledgmentSentDto
-    <$> uwrpLstItmId . declaredLostItemId
-    <*> fromContactInformation . ownerContactInfo
-
+  DeclarationAcknowledgmentSentDto <$> uwrpLstItmId . declaredLostItemId
+                                   <*> fromContactInformation . ownerContactInfo
 
 
 
@@ -677,6 +663,8 @@ instance ToJSON DeclareLostItemEventDto
 ---
 
 
+
+
 fromLocationsAdded :: [Cct.Location] -> [LocationDto]
 fromLocationsAdded = fmap fromLocation
 
@@ -701,26 +689,27 @@ type RespDclLstItemWorkflow = [DeclareLostItemEventResponse]
 
 
 
-fromDclLstItmEvtDomain :: DeclareLostItemEvent -> DeclareLostItemEventResponse
+fromDclLstItmEvtDomain :: DeclareLostItemEvent 
+                            -> DeclareLostItemEventResponse
 fromDclLstItmEvtDomain evt =
   case evt of
     LostItemDeclared lid ->
       let key = "declaredLostItem"
-          val = fromLostItemDeclared lid
-       in singleton key (LI val)
+          val = fromLostItemDeclared lid in
+       singleton key (LI val)
     LocationsAdded locs ->
       let key = "locationsadded"
-          val = fromLocationsAdded locs
-       in singleton key (LOCTS val)
+          val = fromLocationsAdded locs in
+       singleton key (LOCTS val)
     AttributesAdded attrs ->
       let key = "attributesadded"
-          val = fromAttributesAdded attrs
-       in singleton key (ATTRS val)
+          val = fromAttributesAdded attrs in
+       singleton key (ATTRS val)
     SearchableItemDeclared sid ->
       let key = "searchableLostItem"
-          val = fromLostItemDeclared sid
-       in singleton key (LI val)
+          val = fromLostItemDeclared sid in
+       singleton key (LI val)
     AcknowledgmentSent as ->
       let key = "acknowledgmentSent"
-          val = fromDeclarationAcknowledgmentSent as
-       in singleton key (DA val)
+          val = fromDeclarationAcknowledgmentSent as in
+       singleton key (DA val)

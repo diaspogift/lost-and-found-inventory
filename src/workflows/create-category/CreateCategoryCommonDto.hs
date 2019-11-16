@@ -99,43 +99,36 @@ catgrDtoToDomain dto = do
   descpt <- crtLgDescpt . catDesc $ dto
   subs <- traverse crtCatgrId . subCategrs $ dto
   case rtStatus dto of
-    "Root" ->
-      return $ RootCategory catgrInfo
-      where
-        catgrInfo = CategoryInfo
-          { categoryId = id,
-            categoryCode = code,
-            categoryEnablementStatus = enblmntStts,
-            categoryDescription = descpt,
-            categoryRelatedSubCategories = Data.Set.fromList subs
-          }
-    "Sub" ->
-      let (strPrntId, strPrntCd) = (prtCatgrId dto, prtCatgrCode dto)
+    "Root" -> return $ RootCategory catgrInfo
+      where catgrInfo = CategoryInfo
+                { categoryId = id,
+                  categoryCode = code,
+                  categoryEnablementStatus = enblmntStts,
+                  categoryDescription = descpt,
+                  categoryRelatedSubCategories = Data.Set.fromList subs
+                }
+    "Sub" -> let (strPrntId, strPrntCd) = (prtCatgrId dto, prtCatgrCode dto)
        in case (strPrntId, strPrntCd) of
-            ("", "") ->
-              return $ SubCategory catgrInfo Nothing
-              where
-                catgrInfo = CategoryInfo
-                  { categoryId = id,
-                    categoryCode = code,
-                    categoryEnablementStatus = enblmntStts,
-                    categoryDescription = descpt,
-                    categoryRelatedSubCategories = Data.Set.fromList subs
-                  }
+            ("", "") -> return $ SubCategory catgrInfo Nothing
+              where catgrInfo = CategoryInfo
+                        { categoryId = id,
+                          categoryCode = code,
+                          categoryEnablementStatus = enblmntStts,
+                          categoryDescription = descpt,
+                          categoryRelatedSubCategories = Data.Set.fromList subs
+                        }
             _ ->
-              do
-                prntId <- crtCatgrId strPrntId
-                prntCd <- crtCatgrCd strPrntCd
-                let parentInfo = ParentInfo prntId prntCd
-                return $ SubCategory catgrInfo (Just parentInfo)
-              where
-                catgrInfo = CategoryInfo
-                  { categoryId = id,
-                    categoryCode = code,
-                    categoryEnablementStatus = enblmntStts,
-                    categoryDescription = descpt,
-                    categoryRelatedSubCategories = Data.Set.fromList subs
-                  }
+              do prntId <- crtCatgrId strPrntId
+                 prntCd <- crtCatgrCd strPrntCd
+                 let parentInfo = ParentInfo prntId prntCd
+                 return $ SubCategory catgrInfo (Just parentInfo)
+              where catgrInfo = CategoryInfo
+                        { categoryId = id,
+                          categoryCode = code,
+                          categoryEnablementStatus = enblmntStts,
+                          categoryDescription = descpt,
+                          categoryRelatedSubCategories = Data.Set.fromList subs
+                        }
 
 
 
@@ -223,12 +216,11 @@ toSubCatgrs = fmap uwrpCatgrId . toList . categoryRelatedSubCategories
 fromSubCategoriesAdded :: SubCategoriesAdded -> SubCategoriesAddedDto
 fromSubCategoriesAdded =
   fmap toSubCategoriesAddedDto
-  where
-    toSubCategoriesAddedDto AddedSubCategory {..} =
-      AddedSubCategoryDto
-        { parent = uwrpCatgrId addedSubCategoryParent,
-          sub = uwrpCatgrId addSubCategoryId
-        }
+  where toSubCategoriesAddedDto AddedSubCategory {..} =
+          AddedSubCategoryDto
+            { parent = uwrpCatgrId addedSubCategoryParent,
+              sub = uwrpCatgrId addSubCategoryId
+            }
 
 
 
@@ -270,9 +262,9 @@ type RespCrtCatgrWorkflow = [CreateCategoryEventResponse]
 fromCrtCatgrEvtDomain :: CreateCategoryEvent -> CreateCategoryEventResponse
 fromCrtCatgrEvtDomain (CategoryCreated catgr) =
   let key = "createrootcategory"
-      val = fromCategoryCreated catgr
-   in singleton key (CatgrCreated val)
+      val = fromCategoryCreated catgr in
+   singleton key (CatgrCreated val)
 fromCrtCatgrEvtDomain (SubCategoriesAdded subcatgrs) =
   let key = "subcategoriesadded"
-      val = fromSubCategoriesAdded subcatgrs
-   in singleton key (SubCatgrsAdded val)
+      val = fromSubCategoriesAdded subcatgrs in
+  singleton key (SubCatgrsAdded val)

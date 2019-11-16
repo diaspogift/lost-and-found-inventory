@@ -132,38 +132,34 @@ type CreateEvents =
 
 
 
-validateUnvalidatedCategory :: 
-    UnvalidatedSubCategory
-    -> UnvalidatedCategoryId
-    -> Either ValidationError ValidatedSubCategory
+validateUnvalidatedCategory :: UnvalidatedSubCategory
+                                -> UnvalidatedCategoryId
+                                -> Either ValidationError ValidatedSubCategory
 validateUnvalidatedCategory ucatgr ucatgrId =
-  do
-    catgrId <- toCategoryId ucatgrId
-    catgrCd <- toCategoryCode . usubCategoryCode $ ucatgr
-    parntIdCd <- toMaybePrntIdCd . usubCategoryParentIdandCd $ ucatgr
-    enblmntStatus <- toEnblmntStatus . usubCatgrEnablementStatus $ ucatgr
-    descpt <- toLongDescpt . usubCategoryDescription $ ucatgr
-    subCatgrs <- toValidatedSubCatgrs . usubCatgrRelatedsubCatgrs $ ucatgr
-    return $
-      ValidatedSubCategory
-        { vsubCategoryId = catgrId,
-          vsubCategoryCode = catgrCd,
-          vsubCategoryParentIdCd = parntIdCd,
-          vsubCategoryEnablementStatus = enblmntStatus,
-          vsubCategoryDescription = descpt,
-          vsubCatgrRelatedSubCatgrs = subCatgrs
-        }
-    where toMaybePrntIdCd :: 
-            (String, String) 
-            -> Either ValidationError (Maybe (CategoryId, CategoryCode))
-          toMaybePrntIdCd (prntId, prntCd)
-            | null prntId && null prntCd =
-                return Nothing
-            | otherwise =
-                do
-                prntCatId <- mapValidationError . crtCatgrId $ prntId
-                prntCatCd <- mapValidationError . crtCatgrCd $ prntCd
-                return . Just $ (prntCatId, prntCatCd)
+    do catgrId <- toCategoryId ucatgrId
+       catgrCd <- toCategoryCode . usubCategoryCode $ ucatgr
+       parntIdCd <- toMaybePrntIdCd . usubCategoryParentIdandCd $ ucatgr
+       enblmntStatus <- toEnblmntStatus . usubCatgrEnablementStatus $ ucatgr
+       descpt <- toLongDescpt . usubCategoryDescription $ ucatgr
+       subCatgrs <- toValidatedSubCatgrs . usubCatgrRelatedsubCatgrs $ ucatgr
+       return ValidatedSubCategory
+               { vsubCategoryId = catgrId,
+                 vsubCategoryCode = catgrCd,
+                 vsubCategoryParentIdCd = parntIdCd,
+                 vsubCategoryEnablementStatus = enblmntStatus,
+                 vsubCategoryDescription = descpt,
+                 vsubCatgrRelatedSubCatgrs = subCatgrs
+               }
+       where toMaybePrntIdCd :: (String, String) 
+                                    -> Either ValidationError (Maybe (CategoryId, CategoryCode))
+             toMaybePrntIdCd (prntId, prntCd)
+                | null prntId && null prntCd =
+                    return Nothing
+                | otherwise =
+                    do
+                    prntCatId <- mapValidationError . crtCatgrId $ prntId
+                    prntCatCd <- mapValidationError . crtCatgrCd $ prntCd
+                    return . Just $ (prntCatId, prntCatCd)
 
 
 
@@ -177,10 +173,9 @@ validateUnvalidatedCategory ucatgr ucatgrId =
 
 --- TODO: I should probably use a fold here
 
-checkRefSubCatgrsValid :: 
-    [Category]
-    -> ValidatedSubCategory
-    -> Either DomainError [CategoryId]
+checkRefSubCatgrsValid :: [Category]
+                            -> ValidatedSubCategory
+                            -> Either DomainError [CategoryId]
 checkRefSubCatgrsValid catgrs =
   traverse (checkRefSubCatgrValid catgrs) . toList . vsubCatgrRelatedSubCatgrs
   where
@@ -222,7 +217,9 @@ checkRefPrntCatgrEnabled Nothing = return Nothing
 
 
 
-checkRefPrntCatgrNotInSubs :: Maybe Category -> ValidatedSubCategory -> Either DomainError Bool
+checkRefPrntCatgrNotInSubs :: Maybe Category 
+                                -> ValidatedSubCategory 
+                                -> Either DomainError Bool
 checkRefPrntCatgrNotInSubs Nothing vSubCatgr =
   return True
 checkRefPrntCatgrNotInSubs (Just (RootCategory prntCatgr)) vSubCatgr =
@@ -299,62 +296,19 @@ createEvents cat =
 
 
 
-createSubCatgory ::
-  [Category] ->
-  Maybe Category ->
-  UnvalidatedSubCategory ->
-  UnvalidatedCategoryId ->
-  Either WorkflowError [CreateCategoryEvent]
-createSubCatgory
-  referredSubCatgrs -- Input
-  referencedParentCatgr -- Input
-  unvalidatedCategory -- Input
-  unValidatedCatgrId =
-    -- Input
-    do
-      -- Validation step
-
-      validatedCatgr <-
-        mapLeft
-          Validation
-          $ validateUnvalidatedCategory
-            unvalidatedCategory
-            unValidatedCatgrId
-
-      -- Verify that referred sub categories have their RootStatus set to Sub and Enablement Status set to enabled
-
-      _ <-
-        mapLeft
-          Domain
-          $ checkRefSubCatgrsValid
-            referredSubCatgrs
-            validatedCatgr
-
-      -- Vefify (if present) that the referred parent category **exists** and is not part of the subs categories specified
-      -- and it is enabled
-
-      _ <-
-        mapLeft
-          Domain
-          $ checkRefPrntCatgrNotInSubs
-            referencedParentCatgr
-            validatedCatgr
-
-      -- Vefify (if present) that the referred parent category enablement status is enabled
-
-      _ <-
-        mapLeft
-          Domain
-          $ checkRefPrntCatgrEnabled
-            referencedParentCatgr
-
-      -- Creation step
-
-      createdCatgr <-
-        return $
-          createSubCategory
-            validatedCatgr
-
-      -- Events creation step
-      
-      return $ createEvents createdCatgr
+createSubCatgory :: [Category]
+                        -> Maybe Category
+                        -> UnvalidatedSubCategory
+                        -> UnvalidatedCategoryId
+                        -> Either WorkflowError [CreateCategoryEvent]
+createSubCatgory referredSubCatgrs
+                 referencedParentCatgr
+                 unvalidatedCategory 
+                 unValidatedCatgrId =
+    do validatedCatgr <- mapValidationErr $ validateUnvalidatedCategory unvalidatedCategory
+                                                                        unValidatedCatgrId
+       _ <- mapDomainErr $ checkRefSubCatgrsValid referredSubCatgrs validatedCatgr
+       _ <- mapDomainErr $ checkRefPrntCatgrNotInSubs referencedParentCatgr validatedCatgr
+       _ <- mapDomainErr $ checkRefPrntCatgrEnabled referencedParentCatgr
+       createdCatgr <- return $ createSubCategory validatedCatgr      
+       return $ createEvents createdCatgr

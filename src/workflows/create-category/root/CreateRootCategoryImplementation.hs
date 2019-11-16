@@ -136,10 +136,9 @@ type CreateEvents =
 
 
 
-validateUnvalidatedCategory :: 
-    UnvalidatedRootCategory
-    -> UnvalidatedCategoryId
-    -> Either ValidationError ValidatedRootCategory
+validateUnvalidatedCategory :: UnvalidatedRootCategory
+                                -> UnvalidatedCategoryId
+                                -> Either ValidationError ValidatedRootCategory
 validateUnvalidatedCategory ucatgr ucatgrId =
   ValidatedRootCategory 
     <$> catgrId 
@@ -158,7 +157,8 @@ validateUnvalidatedCategory ucatgr ucatgrId =
 
 
 -- ----------------------------------------------------------------------------
--- Verify reffered sub categories are not either Root or already have a parent step
+-- Verify reffered sub categories are not either Root or already have 
+-- a parent step
 -- ----------------------------------------------------------------------------
 
 
@@ -166,14 +166,15 @@ validateUnvalidatedCategory ucatgr ucatgrId =
 
 --- TODO: I should probably use a foldr here ???
 
-checkRefSubCatgrsValid :: 
-    [Category] 
-    -> ValidatedRootCategory 
-    -> Either DomainError [CategoryId]
+checkRefSubCatgrsValid :: [Category] 
+                            -> ValidatedRootCategory 
+                            -> Either DomainError [CategoryId]
 checkRefSubCatgrsValid catgrs =
   traverse (checkRefSubCatgrValid catgrs) . toList . vrootCatgrRelatedSubCatgrs
   where
-    checkRefSubCatgrValid :: [Category] -> CategoryId -> Either DomainError CategoryId
+    checkRefSubCatgrValid :: [Category] 
+                                -> CategoryId 
+                                -> Either DomainError CategoryId
     checkRefSubCatgrValid cats catId =
       let singletonCatgr = filter (\cat -> toCatgrId cat == catId) cats
        in case singletonCatgr of
@@ -188,9 +189,11 @@ checkRefSubCatgrsValid catgrs =
 
 
 
+
 -- ----------------------------------------------------------------------------
 -- Creation step
 -- ----------------------------------------------------------------------------
+
 
 
 
@@ -210,9 +213,11 @@ createRootCategory ValidatedRootCategory {..} =
 
 
 
+
 -- ----------------------------------------------------------------------------
 -- Create Events step
 -- ----------------------------------------------------------------------------
+
 
 
 
@@ -229,6 +234,7 @@ createEvents cat =
 
 
 
+
 -- ---------------------------------------------------------------------------- --
 -- ---------------------------------------------------------------------------- --
 -- Overall workflow --
@@ -239,42 +245,17 @@ createEvents cat =
 
 
 
-createRootCatgory ::
-  [Category] ->
-  UnvalidatedRootCategory ->
-  UnvalidatedCategoryId ->
-  Either WorkflowError [CreateCategoryEvent]
-createRootCatgory
-  referredSubCatgrs -- Dependency
-  unvalidatedCategory -- Input
-  unValidatedCatgrId =
-    -- Input
-    do
-      -- Validation step
 
-      validatedCatgr <-
-        mapLeft
-          Validation
-          $ validateUnvalidatedCategory
-            unvalidatedCategory
-            unValidatedCatgrId
-
-      -- Verify that referred sub categories have their RootStatus set to Sub and Enablement Status set to enabled
-
-      _ <-
-        mapLeft
-          Domain
-          $ checkRefSubCatgrsValid
-            referredSubCatgrs
-            validatedCatgr
-
-      -- Creation step
-
-      createdCatgr <-
-        return $
-          createRootCategory
-            validatedCatgr
-
-      -- Events creation step
-      
-      return $ createEvents createdCatgr
+createRootCatgory :: [Category]
+                    -> UnvalidatedRootCategory
+                    -> UnvalidatedCategoryId
+                    -> Either WorkflowError [CreateCategoryEvent]
+createRootCatgory referredSubCatgrs
+                  unvalidatedCategory
+                  unValidatedCatgrId =
+    do  validatedCatgr <- mapValidationErr 
+                                $ validateUnvalidatedCategory unvalidatedCategory
+                                                              unValidatedCatgrId    
+        _ <- mapDomainErr $ checkRefSubCatgrsValid referredSubCatgrs validatedCatgr
+        createdCatgr <- return $ createRootCategory validatedCatgr      
+        return $ createEvents createdCatgr

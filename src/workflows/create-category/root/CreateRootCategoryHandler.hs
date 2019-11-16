@@ -67,7 +67,7 @@ type NextId = IO UnvalidatedCategoryId
 
 
 nextId :: NextId
-nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
+nextId = let randomId = nextRandom in fmap (fmap toUpper . toString) randomId
 
 
 
@@ -79,51 +79,30 @@ nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
 
 
 
-createRootCategoryHandler ::
-  ReadOneCategory ->
-  WriteCreateRootCategoryEvents ->
-  NextId ->
-  CreateRootCategoryCmd ->
-  ExceptT WorkflowError IO [CreateCategoryEvent]
-createRootCategoryHandler
-  readOneCategory
-  writeCreateRootCategoryEvents
-  nextId
-  (Command unvalidatedRootCategory curTime userId) =
+createRootCategoryHandler :: ReadOneCategory 
+                                -> WriteCreateRootCategoryEvents
+                                -> NextId
+                                -> CreateRootCategoryCmd
+                                -> ExceptT WorkflowError IO [CreateCategoryEvent]
 
-  do
-      -- get all referenced sub category 
-      -- then verify they exist and they do not have a parent yet
+createRootCategoryHandler readOneCategory
+                          writeCreateRootCategoryEvents
+                          nextId
+                          (Command unvalidatedRootCategory curTime us_erId) =
+  do refSubCatgrs <- ExceptT . liftIO 
+                             . fmap sequence 
+                             . traverse (readOneCategory 10) 
+                             $ urootCatgrRelatedsubCatgrs unvalidatedRootCategory
+     unvalidatedCategoryId <- liftIO nextId
+     let events = createRootCatgory refSubCatgrs
+                                    unvalidatedRootCategory 
+                                    unvalidatedCategoryId 
+     case events of Right allEvents -> do
+                        _ <- liftIO $ writeCreateRootCategoryEvents unvalidatedCategoryId 
+                                                                    allEvents
+                        liftEither events
+                    Left errorMsg -> liftEither $ Left errorMsg
 
-      refSubCatgrs 
-        <- ExceptT 
-            $ liftIO 
-            $ fmap sequence 
-            $ traverse (readOneCategory 10) 
-            $ urootCatgrRelatedsubCatgrs unvalidatedRootCategory
-
-      -- get a random uuid for the attribute code
-
-      unvalidatedCategoryId 
-        <- liftIO nextId
-
-      -- call workflow
-
-      let events =
-            createRootCatgory
-              refSubCatgrs
-              unvalidatedRootCategory -- Input
-              unvalidatedCategoryId -- Input
-
-      -- publish / persit event(s) into the event store and other interested third parties
-
-      case events of
-        Right allEvents ->
-          do
-            _ <- liftIO $ writeCreateRootCategoryEvents unvalidatedCategoryId allEvents
-            liftEither events
-        Left errorMsg -> 
-            liftEither $ Left errorMsg
 
 
 
@@ -134,11 +113,9 @@ createRootCategoryHandler
 
 
 
-publicCreateRootCategoryHandler :: 
-    CreateRootCategoryCmd -> 
-    ExceptT WorkflowError IO [CreateCategoryEvent]
-publicCreateRootCategoryHandler =
-  createRootCategoryHandler
-    readOneCategory
-    writeCreateRootCategoryEvents
-    nextId
+
+publicCreateRootCategoryHandler :: CreateRootCategoryCmd 
+                                    -> ExceptT WorkflowError IO [CreateCategoryEvent]
+publicCreateRootCategoryHandler = createRootCategoryHandler readOneCategory
+                                                            writeCreateRootCategoryEvents
+                                                            nextId

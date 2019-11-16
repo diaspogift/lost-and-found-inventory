@@ -77,61 +77,41 @@ nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
 
 
 
-createSubCategoryHandler ::
-  ReadOneCategory ->
-  WriteCreateSubCategoryEvents ->
-  NextId ->
-  CreateSubCategoryCmd ->
-  ExceptT WorkflowError IO [CreateCategoryEvent]
-createSubCategoryHandler
-  readOneCategory
-  writeEventToStore
-  nextId
-  (Command unvalidatedSubCategory curTime userId) =
+createSubCategoryHandler :: ReadOneCategory
+                            -> WriteCreateSubCategoryEvents
+                            -> NextId 
+                            -> CreateSubCategoryCmd 
+                            -> ExceptT WorkflowError IO [CreateCategoryEvent]
+createSubCategoryHandler readOneCategory 
+                         writeEventToStore 
+                         nextId
+                         (Command unvalidatedSubCategory curTime userId) =
     do
-      -- get all referenced sub category 
-      -- then verify they exist and they do not have a parent yet
-
-      refSubCatgrs 
-        <- ExceptT 
-            $ liftIO 
-            $ fmap sequence 
-            $ traverse (readOneCategory 10) 
-            $ usubCatgrRelatedsubCatgrs unvalidatedSubCategory
-
-      -- get the eventual referred parent category (fail earlier rather than later)
-
+      refSubCatgrs <- ExceptT . liftIO 
+                              . fmap sequence 
+                              . traverse (readOneCategory 10) 
+                              $ usubCatgrRelatedsubCatgrs unvalidatedSubCategory
       let (strPrntCatId, strPrntCatCd) = usubCategoryParentIdandCd unvalidatedSubCategory
-      if notNull strPrntCatId && notNull strPrntCatCd
-        then do
+      unvalidatedCategoryId <- liftIO nextId
+      if notNull strPrntCatId && notNull strPrntCatCd then do
           refParentCategory <- ExceptT $ liftIO $ readOneCategory 10 strPrntCatId
-          unvalidatedCategoryId <- liftIO nextId
-          let events =
-                createSubCatgory
-                  refSubCatgrs
-                  (Just refParentCategory)
-                  unvalidatedSubCategory -- Input
-                  unvalidatedCategoryId -- Input
-          case events of
-            Right allEvents ->
-              do
-                _ <- liftIO $ writeCreateSubCategoryEvents unvalidatedCategoryId allEvents
-                liftEither events
-            Left errorMsg -> liftEither $ Left errorMsg
-        else do
-          unvalidatedCategoryId <- liftIO nextId
-          let events =
-                createSubCatgory
-                  refSubCatgrs
-                  Nothing
-                  unvalidatedSubCategory -- Input
-                  unvalidatedCategoryId -- Input
-          case events of
-            Right allEvents ->
-              do
-                _ <- liftIO $ writeCreateSubCategoryEvents unvalidatedCategoryId allEvents
-                liftEither events
-            Left errorMsg -> liftEither $ Left errorMsg
+          let events = createSubCatgory refSubCatgrs
+                                        (Just refParentCategory)
+                                        unvalidatedSubCategory
+                                        unvalidatedCategoryId
+          case events of Right allEvents -> do
+                            _ <- liftIO $ writeCreateSubCategoryEvents unvalidatedCategoryId allEvents
+                            liftEither events
+                         Left errorMsg -> liftEither $ Left errorMsg
+      else do let events = createSubCatgory refSubCatgrs
+                                            Nothing
+                                            unvalidatedSubCategory
+                                            unvalidatedCategoryId
+              case events of Right allEvents -> do
+                                _ <- liftIO $ writeCreateSubCategoryEvents unvalidatedCategoryId allEvents
+                                liftEither events
+                             Left errorMsg -> liftEither $ Left errorMsg
+
 
 
 
@@ -142,11 +122,9 @@ createSubCategoryHandler
 
 
 
-publicCreateSubCategoryHandler :: 
-    CreateSubCategoryCmd -> 
-    ExceptT WorkflowError IO [CreateCategoryEvent]
-publicCreateSubCategoryHandler =
-  createSubCategoryHandler
-    readOneCategory
-    writeCreateSubCategoryEvents
-    nextId
+
+publicCreateSubCategoryHandler :: CreateSubCategoryCmd
+                                    -> ExceptT WorkflowError IO [CreateCategoryEvent]
+publicCreateSubCategoryHandler = createSubCategoryHandler readOneCategory
+                                                          writeCreateSubCategoryEvents
+                                                          nextId

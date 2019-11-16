@@ -146,12 +146,11 @@ validateUnvalidatedCategory ucatgr ucatgrId =
     <*> enblmntStatus 
     <*> descpt
     <*> subCatgrs
-  where
-    catgrId = toCategoryId ucatgrId
-    catgrCd = toCategoryCode . urootCategoryCode $ ucatgr
-    enblmntStatus = toEnblmntStatus . urootCategoryEnablement $ ucatgr
-    descpt = toLongDescpt . urootCategoryDescription $ ucatgr
-    subCatgrs = toValidatedSubCatgrs . urootCatgrRelatedsubCatgrs $ ucatgr
+  where catgrId = toCategoryId ucatgrId
+        catgrCd = toCategoryCode . urootCategoryCode $ ucatgr
+        enblmntStatus = toEnblmntStatus . urootCategoryEnablement $ ucatgr
+        descpt = toLongDescpt . urootCategoryDescription $ ucatgr
+        subCatgrs = toValidatedSubCatgrs . urootCatgrRelatedsubCatgrs $ ucatgr
 
 
 
@@ -171,20 +170,17 @@ checkRefSubCatgrsValid :: [Category]
                             -> Either DomainError [CategoryId]
 checkRefSubCatgrsValid catgrs =
   traverse (checkRefSubCatgrValid catgrs) . toList . vrootCatgrRelatedSubCatgrs
-  where
-    checkRefSubCatgrValid :: [Category] 
+  where checkRefSubCatgrValid :: [Category] 
                                 -> CategoryId 
                                 -> Either DomainError CategoryId
-    checkRefSubCatgrValid cats catId =
-      let singletonCatgr = filter (\cat -> toCatgrId cat == catId) cats
-       in case singletonCatgr of
-            [catgr] ->
-              checkIsSubAndEnabled catId catgr
-            _ ->
-              Left $ DomainError "referenced sub category not found"
-      where
-        toCatgrId (RootCategory catgrInfo) = categoryId catgrInfo
-        toCatgrId (SubCategory catgrInfo _) = categoryId catgrInfo
+        checkRefSubCatgrValid cats catId =
+            let singletonCatgr = filter (\cat -> toCatgrId cat == catId) cats
+            in case singletonCatgr of
+                    [catgr] -> checkIsSubAndEnabled catId catgr
+                    _ -> Left $ DomainError "referenced sub category not found"
+            where
+                toCatgrId (RootCategory catgrInfo) = categoryId catgrInfo
+                toCatgrId (SubCategory catgrInfo _) = categoryId catgrInfo
 
 
 

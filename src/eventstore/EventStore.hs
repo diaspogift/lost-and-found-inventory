@@ -34,7 +34,7 @@ import Control.Monad.Reader (
 import CreateAttributeDto (
     AttributeRefCreatedDto, 
     CreateAttributeRefEventDto (..),
-    toAttributeRefDomain,
+    attributeRefDtoToDomain,
     fromAttributeRefCreated
     )
 import CreateAttributePublicTypes (
@@ -152,9 +152,9 @@ type WriteCreateSubCategoryEvents =
 
 
 
----------------------------------------
+---------------------------------------------------------------------------------------
 -- Declare Lost Item
----------------------------------------
+---------------------------------------------------------------------------------------
 
 
 
@@ -165,53 +165,57 @@ readOneDeclaredLostItem = undefined
 
 
 
----------------------------------------
---- Category
----------------------------------------
+---------------------------------------------------------------------------------------
+-- Category
+---------------------------------------------------------------------------------------
 
 
 
 
-readOneCategoryWithReaderT :: Int32 -> String -> ExceptT WorkflowError (ReaderT Connection IO) Category
+readOneCategoryWithReaderT :: Int32 
+                                -> String 
+                                -> ExceptT WorkflowError (ReaderT Connection IO) Category
 readOneCategoryWithReaderT eventNum streamId = do
-  conn <- ask -- gives you the environment which in this case is a String
-  rs <- liftIO $ readEventsForward conn (StreamName $ pack streamId) streamStart eventNum NoResolveLink Nothing >>= wait
-  case rs of
-    ReadSuccess sl@(Slice resolvedEvents mm) -> do
-      let recordedEvts1 = mapMaybe resolvedEventRecord resolvedEvents
-      let pairs = eventDataPair <$> recordedEvts1
-      let events = eventDataPairTypes <$> pairs
-      let reducedEvent = rebuildCategoryDto events
-      liftEither . mapDataBaseErr . toCategoryDomain $ reducedEvent
-    e -> liftEither . mapDataBaseErr . Left . DataBaseError $ "Read Category failure: " <> show e
-  where
-    eventDataPair recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
-    eventDataPairTypes ::
-      (Data.Text.Internal.Text, Data.ByteString.Internal.ByteString) ->
-      CreateCategoryEventDto
-    eventDataPairTypes (evtName, strEventData)
-      | evtName == "CreatedCategory" =
-        let rs = fromMaybe (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe CategoryCreatedDto)
-         in CatgrCreated rs
-      | evtName == "SubCategoriesAdded" =
-        let rs = fromMaybe (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe SubCategoriesAddedDto)
-         in SubCatgrsAdded rs
+  conn <- ask 
+  rs <- liftIO $ readEventsForward conn 
+                                   (StreamName $ pack streamId) 
+                                   streamStart 
+                                   eventNum 
+                                   NoResolveLink Nothing >>= wait
+  case rs of ReadSuccess (Slice resolvedEvents _) -> do
+                let recordedEvts = mapMaybe resolvedEventRecord resolvedEvents
+                let pairs = eventDataPair <$> recordedEvts
+                let events = eventDataPairTypes <$> pairs
+                let reducedEvent = rebuildCategoryDto events
+                liftEither . mapDataBaseErr . toCategoryDomain $ reducedEvent
+             e -> liftEither . mapDataBaseErr . Left . DataBaseError $ "Read Category failure: " <> show e
+  where eventDataPair :: RecordedEvent -> (Text, ByteString)
+        eventDataPair recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
+        eventDataPairTypes ::(Text, ByteString) -> CreateCategoryEventDto
+        eventDataPairTypes (evtName, strEventData)
+            | evtName == "CreatedCategory" =
+                let rs = fromMaybe (error "Inconsitant data from event store") 
+                                   (decode . fromStrict $ strEventData :: Maybe CategoryCreatedDto)
+                in CatgrCreated rs
+            | evtName == "SubCategoriesAdded" =
+                let rs = fromMaybe (error "Inconsitant data from event store") 
+                                   (decode . fromStrict $ strEventData :: Maybe SubCategoriesAddedDto)
+                in SubCatgrsAdded rs
 
-
-    applyDtoEvent :: CreateCategoryEventDto -> CreateCategoryEventDto -> CreateCategoryEventDto
-    applyDtoEvent (CatgrCreated acc) (CatgrCreated elm) = CatgrCreated acc
-    applyDtoEvent (CatgrCreated acc) (SubCatgrsAdded subs) =
-      let crtSubs = subCategrs acc
-          addedSubs = sub <$> subs
-       in CatgrCreated $ acc {subCategrs = crtSubs ++ addedSubs}
-    rebuildCategoryDto :: [CreateCategoryEventDto] -> CreateCategoryEventDto
-    rebuildCategoryDto = foldr1 applyDtoEvent
-    toCategoryDomain :: CreateCategoryEventDto -> Either DataBaseError Category
-    toCategoryDomain (CatgrCreated catgrDto) =
-      let res = catgrDtoToDomain catgrDto
-       in case res of
-            Left erroMsg -> Left . DataBaseError $ erroMsg
-            Right result -> return result
+        applyDtoEvent :: CreateCategoryEventDto -> CreateCategoryEventDto -> CreateCategoryEventDto
+        applyDtoEvent (CatgrCreated acc) (CatgrCreated _) = CatgrCreated acc
+        applyDtoEvent (CatgrCreated acc) (SubCatgrsAdded subs) =
+            let crtSubs = subCategrs acc
+                addedSubs = sub <$> subs
+            in CatgrCreated $ acc {subCategrs = crtSubs <> addedSubs}
+        rebuildCategoryDto :: [CreateCategoryEventDto] -> CreateCategoryEventDto
+        rebuildCategoryDto = foldr1 applyDtoEvent
+        toCategoryDomain :: CreateCategoryEventDto -> Either DataBaseError Category
+        toCategoryDomain (CatgrCreated catgrDto) =
+            let res = catgrDtoToDomain catgrDto
+            in case res of
+                    Left erroMsg -> Left . DataBaseError $ erroMsg
+                    Right result -> return result
 
 
 
@@ -229,46 +233,52 @@ readOneCategory num id = do
 
 
 
----------------------------------------
---- AttributeRef
----------------------------------------
+
+---------------------------------------------------------------------------------------
+-- AttributeRef
+---------------------------------------------------------------------------------------
 
 
 
 
 
-readOneAttributeRefWithReaderT :: Int32 -> String -> ExceptT WorkflowError (ReaderT Connection IO) AttributeRef
+readOneAttributeRefWithReaderT :: Int32 
+                                    -> String 
+                                    -> ExceptT WorkflowError (ReaderT Connection IO) AttributeRef
 readOneAttributeRefWithReaderT evtNum streamId = do
   conn <- ask
-  rs <- liftIO $ readEventsForward conn (StreamName $ pack streamId) streamStart evtNum NoResolveLink Nothing >>= wait
-  case rs of
-    ReadSuccess (Slice resolvedEvents _) -> do
-      let recordedEvts = mapMaybe resolvedEventRecord resolvedEvents
-      let pairs = eventDataPair1 <$> recordedEvts
-      let events = eventDataPairTypes1 <$> pairs
-      let reducedEvent = rebuildAttributeRefDtoDto1 events
-      liftEither . mapDataBaseErr . toAttributeRefDomain1 $ reducedEvent
-    e -> liftEither . mapDataBaseErr . Left . DataBaseError $ "Read AttributeRef failure: " <> show e
+  rs <- liftIO $ readEventsForward conn 
+                                   (StreamName $ pack streamId) 
+                                   streamStart 
+                                   evtNum 
+                                   NoResolveLink Nothing >>= wait
+  case rs of ReadSuccess (Slice resolvedEvents _) -> do
+                let recordedEvts = mapMaybe resolvedEventRecord resolvedEvents
+                let pairs = eventDataPair <$> recordedEvts
+                let events = eventDataPairTypes <$> pairs
+                let reducedEvent = rebuildAttributeRefDtoDto events
+                liftEither . mapDataBaseErr . toAttributeRefDomain $ reducedEvent
+             e -> liftEither . mapDataBaseErr . Left . DataBaseError $ "Read AttributeRef failure: " <> show e
   where
-    eventDataPair1 recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
-    eventDataPairTypes1 ::
-      (Data.Text.Internal.Text, Data.ByteString.Internal.ByteString) ->
-      CreateAttributeRefEventDto
-    eventDataPairTypes1 (evtName, strEventData)
-      | evtName == "CreatedAttribute" =
-        let rs = fromMaybe (error "Inconsitant data from event store") (decode . fromStrict $ strEventData :: Maybe AttributeRefCreatedDto)
-         in CR rs
-      | otherwise = error "invalid event"
-    applyDtoEvent1 :: CreateAttributeRefEventDto -> CreateAttributeRefEventDto -> CreateAttributeRefEventDto
-    applyDtoEvent1 (CR acc) (CR elm) = CR acc
-    rebuildAttributeRefDtoDto1 :: [CreateAttributeRefEventDto] -> CreateAttributeRefEventDto
-    rebuildAttributeRefDtoDto1 = foldr1 applyDtoEvent1
-    toAttributeRefDomain1 :: CreateAttributeRefEventDto -> Either DataBaseError AttributeRef
-    toAttributeRefDomain1 (CR catt) =
-      let res = toAttributeRefDomain catt
-       in case res of
-            Left erroMsg -> Left . DataBaseError $ erroMsg
-            Right result -> return result
+        eventDataPair :: RecordedEvent -> (Text, ByteString)
+        eventDataPair recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
+        eventDataPairTypes :: (Text, ByteString) -> CreateAttributeRefEventDto
+        eventDataPairTypes (evtName, strEventData)
+            | evtName == "CreatedAttribute" =
+                let rs = fromMaybe (error "Inconsitant data from event store") 
+                                   (decode . fromStrict $ strEventData :: Maybe AttributeRefCreatedDto)
+                in CR rs
+            | otherwise = error "invalid event"
+        applyDtoEvent :: CreateAttributeRefEventDto -> CreateAttributeRefEventDto -> CreateAttributeRefEventDto
+        applyDtoEvent (CR acc) (CR elm) = CR acc
+        rebuildAttributeRefDtoDto :: [CreateAttributeRefEventDto] -> CreateAttributeRefEventDto
+        rebuildAttributeRefDtoDto = foldr1 applyDtoEvent
+        toAttributeRefDomain :: CreateAttributeRefEventDto -> Either DataBaseError AttributeRef
+        toAttributeRefDomain (CR catt) =
+            let res = attributeRefDtoToDomain catt
+            in case res of
+                    Left erroMsg -> Left . DataBaseError $ erroMsg
+                    Right result -> return result
 
 
 
@@ -294,40 +304,38 @@ readOneAttributeRef num id = do
 
 
 
----------------------------------------
+---------------------------------------------------------------------------------------
 -- Declare Lost Item
----------------------------------------
+---------------------------------------------------------------------------------------
 
 
 
 
 
-writeDeclaredLostItemEventsWithReaderT :: LocalStreamId -> [DeclareLostItemEvent] -> ReaderT Connection IO ()
-writeDeclaredLostItemEventsWithReaderT streamId evts =
-  do
+writeDeclaredLostItemEventsWithReaderT :: LocalStreamId 
+                                            -> [DeclareLostItemEvent] 
+                                            -> ReaderT Connection IO ()
+writeDeclaredLostItemEventsWithReaderT streamId evts = do
     connec <- ask
     let persistableEvts = toEvent <$> evts
-    as <- liftIO $ sendEvents connec (StreamName $ pack streamId) anyVersion persistableEvts Nothing
+    as <- liftIO $ sendEvents connec 
+                              (StreamName $ pack streamId) 
+                              anyVersion 
+                              persistableEvts 
+                              Nothing
     _ <- liftIO $ wait as
     liftIO $ shutdown connec
     liftIO $ waitTillClosed connec
-  where
-    toEvent (LostItemDeclared lid) =
-      let lidDto = fromLostItemDeclared lid
-          --- TODO this needs some serious clean up
-          --- TODO this needs some serious clean up
-          --- TODO this needs some serious clean up
-          lidDtoN = lidDto {itemAttributes = [], itemLocations = []}
-       in --- TODO this needs some serious clean up
-          --- TODO this needs some serious clean up
-          --- TODO this needs some serious clean up
-          createEvent "LostItemDeclared" Nothing $ withJson lidDtoN
-    toEvent (LocationsAdded lcsa) =
-      let lcsaDto = fromLocationsAdded lcsa
-       in createEvent "LocationsAdded" Nothing $ withJson lcsaDto
-    toEvent (AttributesAdded attrsa) =
-      let attrsaDto = fromAttributesAdded attrsa
-       in createEvent "AttributesAdded" Nothing $ withJson attrsaDto
+  where toEvent (LostItemDeclared lid) =
+            let lidDto = fromLostItemDeclared lid
+                lidDtoN = lidDto {itemAttributes = [], itemLocations = []} in
+            createEvent "LostItemDeclared" Nothing $ withJson lidDtoN
+        toEvent (LocationsAdded lcsa) =
+            let lcsaDto = fromLocationsAdded lcsa in
+            createEvent "LocationsAdded" Nothing $ withJson lcsaDto
+        toEvent (AttributesAdded attrsa) =
+            let attrsaDto = fromAttributesAdded attrsa in
+            createEvent "AttributesAdded" Nothing $ withJson attrsaDto
 
 
 
@@ -343,30 +351,38 @@ writeDeclaredLostItemEvents id evts = do
 
 
 
----------------------------------------
+---------------------------------------------------------------------------------------
 -- Create RootCategory
----------------------------------------
+---------------------------------------------------------------------------------------
 
 
 
 
 
-writeCreateRootCategoryEventsWithReaderT :: LocalStreamId -> [CreateCategoryEvent] -> ReaderT Connection IO ()
-writeCreateRootCategoryEventsWithReaderT streamId evts =
-  do
+writeCreateRootCategoryEventsWithReaderT :: LocalStreamId 
+                                            -> [CreateCategoryEvent] 
+                                            -> ReaderT Connection IO ()
+writeCreateRootCategoryEventsWithReaderT streamId evts =   do
     conn <- ask
     let persistableEvtss = toEvent <$> evts
-    as <- liftIO $ sendEvents conn (StreamName $ pack streamId) anyVersion persistableEvtss Nothing
+    as <- liftIO $ sendEvents conn 
+                              (StreamName $ pack streamId) 
+                              anyVersion 
+                              persistableEvtss 
+                              Nothing
     _ <- liftIO $ wait as
     liftIO $ shutdown conn
     liftIO $ waitTillClosed conn
-  where
-    toEvent (CategoryCreated createdCatgr) =
-      let createdCategoryDto = fromCategoryCreated createdCatgr
-       in createEvent "CreatedCategory" Nothing $ withJson createdCategoryDto
-    toEvent (SubCategoriesAdded subCatgrsAdded) =
-      let addedSubCatgrDtos = fromSubCategoriesAdded subCatgrsAdded
-       in createEvent "SubCategoriesAdded" Nothing $ withJson addedSubCatgrDtos
+  where toEvent (CategoryCreated createdCatgr) =
+            let createdCategoryDto = fromCategoryCreated createdCatgr in
+            createEvent "CreatedCategory" Nothing $ withJson createdCategoryDto
+        toEvent (SubCategoriesAdded subCatgrsAdded) =
+            let addedSubCatgrDtos = fromSubCategoriesAdded subCatgrsAdded in
+            createEvent "SubCategoriesAdded" Nothing $ withJson addedSubCatgrDtos
+
+
+
+
 
 writeCreateRootCategoryEvents :: LocalStreamId -> [CreateCategoryEvent] -> IO ()
 writeCreateRootCategoryEvents id evts = do
@@ -378,30 +394,37 @@ writeCreateRootCategoryEvents id evts = do
 
 
 
----------------------------------------
+---------------------------------------------------------------------------------------
 -- Create SubCategory
----------------------------------------
+---------------------------------------------------------------------------------------
 
 
 
 
 
-writeCreateSubCategoryEventsWithReaderT :: LocalStreamId -> [CreateCategoryEvent] -> ReaderT Connection IO ()
-writeCreateSubCategoryEventsWithReaderT streamId evts =
-  do
+writeCreateSubCategoryEventsWithReaderT :: LocalStreamId 
+                                            -> [CreateCategoryEvent] 
+                                            -> ReaderT Connection IO ()
+writeCreateSubCategoryEventsWithReaderT streamId evts = do
     conn <- ask
     let persistableEvts = toEvent <$> evts
-    as <- liftIO $ sendEvents conn (StreamName $ pack streamId) anyVersion persistableEvts Nothing
-    _ <- liftIO $ wait as
-    liftIO $ shutdown conn
-    liftIO $ waitTillClosed conn
-  where
-    toEvent (CategoryCreated createdSubCat) =
-      let createdCategoryDto = fromCategoryCreated createdSubCat
-       in createEvent "CreatedCategory" Nothing $ withJson createdCategoryDto
-    toEvent (SubCategoriesAdded subCatgrsAdded) =
-      let addedSubCatgrDtos = fromSubCategoriesAdded subCatgrsAdded
-       in createEvent "SubCategoriesAdded" Nothing $ withJson addedSubCatgrDtos
+    as <- liftIO $ sendEvents conn 
+                              (StreamName $ pack streamId) 
+                              anyVersion 
+                              persistableEvts 
+                              Nothing
+    _ <- liftIO . wait $ as
+    liftIO . shutdown $ conn
+    liftIO . waitTillClosed $ conn
+  where toEvent (CategoryCreated createdSubCat) =
+            let createdCategoryDto = fromCategoryCreated createdSubCat in
+            createEvent "CreatedCategory" Nothing $ withJson createdCategoryDto
+        toEvent (SubCategoriesAdded subCatgrsAdded) =
+            let addedSubCatgrDtos = fromSubCategoriesAdded subCatgrsAdded in
+            createEvent "SubCategoriesAdded" Nothing $ withJson addedSubCatgrDtos
+
+
+
 
 writeCreateSubCategoryEvents :: LocalStreamId -> [CreateCategoryEvent] -> IO ()
 writeCreateSubCategoryEvents id evts = do
@@ -413,28 +436,38 @@ writeCreateSubCategoryEvents id evts = do
 
 
 
----------------------------------------
+---------------------------------------------------------------------------------------
 -- Create AttributeRef
----------------------------------------
+---------------------------------------------------------------------------------------
 
 
 
 
 
-writeCreateAttributeRefEventsWithReaderT :: LocalStreamId -> CreateAttributeEvent -> ReaderT Connection IO ()
-writeCreateAttributeRefEventsWithReaderT streamId (AttributeRefCreated createdAttribute) =
-  do
+writeCreateAttributeRefEventsWithReaderT :: LocalStreamId 
+                                            -> CreateAttributeEvent 
+                                            -> ReaderT Connection IO ()
+writeCreateAttributeRefEventsWithReaderT streamId 
+                                         (AttributeRefCreated createdAttribute) = do
     conn <- ask
     let createdAttributeDto = fromAttributeRefCreated createdAttribute
-        createdAttributeEvent = createEvent "CreatedAttribute" Nothing $ withJson createdAttributeDto
-    -- id = code createdAttributeDto
-    as <- liftIO $ sendEvent conn (StreamName $ pack streamId) anyVersion createdAttributeEvent Nothing
+        createdAttributeEvent = createEvent "CreatedAttribute" 
+                                            Nothing 
+                                            $ withJson createdAttributeDto
+    as <- liftIO $ sendEvent conn 
+                             (StreamName $ pack streamId) 
+                             anyVersion 
+                             createdAttributeEvent 
+                             Nothing
     _ <- liftIO $ wait as
     liftIO $ shutdown conn
     liftIO $ waitTillClosed conn
 
+
+
+
 writeCreateAttributeRefEvents :: LocalStreamId -> CreateAttributeEvent -> IO ()
-writeCreateAttributeRefEvents id evts = do
+writeCreateAttributeRefEvents streamId evts = do
   conn <- connect defaultSettings (Static "localhost" 1113)
-  let uwrpReader = runReaderT $ writeCreateAttributeRefEventsWithReaderT id evts
+  let uwrpReader = runReaderT $ writeCreateAttributeRefEventsWithReaderT streamId evts
   uwrpReader conn

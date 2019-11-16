@@ -230,9 +230,8 @@ readOneCategoryWithReaderT eventNum streamId = do
         toCategoryDomain :: CreateCategoryEventDto -> Either DataBaseError Category
         toCategoryDomain (CatgrCreated catgrDto) =
             let res = catgrDtoToDomain catgrDto
-            in case res of
-                    Left erroMsg -> Left . DataBaseError $ erroMsg
-                    Right result -> return result
+            in case res of Left erroMsg -> Left . DataBaseError $ erroMsg
+                           Right result -> return result
 
 
 

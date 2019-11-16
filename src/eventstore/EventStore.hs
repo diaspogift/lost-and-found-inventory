@@ -155,7 +155,7 @@ type WriteCreateRootCategoryEvents =
 
 
 
-  
+
 type WriteCreateSubCategoryEvents =
   LocalStreamId -> [CreateCategoryEvent] -> IO ()
 
@@ -276,8 +276,7 @@ readOneAttributeRefWithReaderT evtNum streamId = do
                 let reducedEvent = rebuildAttributeRefDtoDto events
                 liftEither . mapDataBaseErr . toAttributeRefDomain $ reducedEvent
              e -> liftEither . mapDataBaseErr . Left . DataBaseError $ "Read AttributeRef failure: " <> show e
-  where
-        eventDataPair :: RecordedEvent -> (Text, ByteString)
+  where eventDataPair :: RecordedEvent -> (Text, ByteString)
         eventDataPair recordedEvt = (recordedEventType recordedEvt, recordedEventData recordedEvt)
         eventDataPairTypes :: (Text, ByteString) -> CreateAttributeRefEventDto
         eventDataPairTypes (evtName, strEventData)
@@ -287,7 +286,7 @@ readOneAttributeRefWithReaderT evtNum streamId = do
                 in CR rs
             | otherwise = error "invalid event"
         applyDtoEvent :: CreateAttributeRefEventDto -> CreateAttributeRefEventDto -> CreateAttributeRefEventDto
-        applyDtoEvent (CR acc) (CR elm) = CR acc
+        applyDtoEvent (CR acc) (CR _) = CR acc
         rebuildAttributeRefDtoDto :: [CreateAttributeRefEventDto] -> CreateAttributeRefEventDto
         rebuildAttributeRefDtoDto = foldr1 applyDtoEvent
         toAttributeRefDomain :: CreateAttributeRefEventDto -> Either DataBaseError AttributeRef
@@ -402,9 +401,9 @@ writeCreateRootCategoryEventsWithReaderT streamId evts =   do
 
 
 writeCreateRootCategoryEvents :: LocalStreamId -> [CreateCategoryEvent] -> IO ()
-writeCreateRootCategoryEvents id evts = do
+writeCreateRootCategoryEvents streamId evts = do
   conn <- connect defaultSettings (Static "localhost" 1113)
-  let uwrpReader = runReaderT $ writeCreateRootCategoryEventsWithReaderT id evts
+  let uwrpReader = runReaderT $ writeCreateRootCategoryEventsWithReaderT streamId evts
   uwrpReader conn
 
 

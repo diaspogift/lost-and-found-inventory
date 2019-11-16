@@ -297,10 +297,10 @@ createEvents cat =
 
 
 createSubCatgory :: [Category]
-                        -> Maybe Category
-                        -> UnvalidatedSubCategory
-                        -> UnvalidatedCategoryId
-                        -> Either WorkflowError [CreateCategoryEvent]
+                    -> Maybe Category
+                    -> UnvalidatedSubCategory
+                    -> UnvalidatedCategoryId
+                    -> Either WorkflowError [CreateCategoryEvent]
 createSubCatgory referredSubCatgrs
                  referencedParentCatgr
                  unvalidatedCategory 

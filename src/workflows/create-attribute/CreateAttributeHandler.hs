@@ -23,7 +23,7 @@ import EventStore
     readOneCategory,
     writeCreateAttributeRefEvents)
 import InventorySystemCommands 
-    ( InventoryCommand (..),
+    (InventoryCommand (..),
     CreateAttributeRefCmd
     )
 

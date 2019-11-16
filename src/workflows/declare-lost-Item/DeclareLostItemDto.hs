@@ -338,8 +338,8 @@ toUnvalidatedContactInformation =
 
 
 
-toContactInformation ::
-  ContactInformationDto -> Either ErrorMessage Cct.ContactInformation
+toContactInformation :: ContactInformationDto 
+                        -> Either ErrorMessage Cct.ContactInformation
 toContactInformation dto = do
     add <- (crtOptPstAddrss . address) dto
     contact <- toContactMethod (email dto, primaryTel dto, secondaryTel dto)
@@ -354,55 +354,47 @@ toContactInformation dto = do
 toContactMethod :: (String, String, String) 
                     -> Either ErrorMessage Cct.ContactMethod
 toContactMethod (givenEmail, givenPrimTel, givenSecTel)
-  -- no email but both prim and sec phone given
   | null givenEmail
       && Cct.notNull givenPrimTel
-      && Cct.notNull givenSecTel =
-    do
+      && Cct.notNull givenSecTel = do
       primTel <- crtTel givenPrimTel
       secTel <- crtOptTel givenSecTel
       return $ Cct.PhoneOnly primTel secTel
-  -- no email but only prim phone given
+
   | null givenEmail
       && Cct.notNull givenPrimTel
-      && null givenSecTel =
-    do
+      && null givenSecTel = do
       primTel <- crtTel givenPrimTel
       return $ Cct.PhoneOnly primTel Nothing
-  -- just email given
+
   | Cct.notNull givenEmail
       && null givenPrimTel
-      && null givenSecTel =
-    do
+      && null givenSecTel = do
       email <- crtEmailAddress givenEmail
       return $ Cct.EmailOnly email
-  -- email and prim phone given
+
   | Cct.notNull givenEmail
       && Cct.notNull givenPrimTel
-      && null givenSecTel =
-    do
+      && null givenSecTel = do
       primTel <- crtTel givenPrimTel
       email <- crtEmailAddress givenEmail
-      return $
-        Cct.EmailAndPhone Cct.BothContactInfo
-          { Cct.bothContactInfoEmail = email,
-            Cct.bothContactInfoPrimTel = primTel,
-            Cct.bothContactInfoSndTel = Nothing
-          }
-  -- email, prim and sec phones given
+      return $ Cct.EmailAndPhone Cct.BothContactInfo
+                { Cct.bothContactInfoEmail = email,
+                  Cct.bothContactInfoPrimTel = primTel,
+                  Cct.bothContactInfoSndTel = Nothing
+                }
+                
   | Cct.notNull givenEmail
       && Cct.notNull givenPrimTel
-      && Cct.notNull givenSecTel =
-    do
+      && Cct.notNull givenSecTel = do
       primTel <- crtTel givenPrimTel
       email <- crtEmailAddress givenEmail
       secTel <- crtOptTel givenSecTel
-      return $
-        Cct.EmailAndPhone Cct.BothContactInfo
-          { Cct.bothContactInfoEmail = email,
-            Cct.bothContactInfoPrimTel = primTel,
-            Cct.bothContactInfoSndTel = secTel
-          }
+      return $ Cct.EmailAndPhone Cct.BothContactInfo
+                { Cct.bothContactInfoEmail = email,
+                  Cct.bothContactInfoPrimTel = primTel,
+                  Cct.bothContactInfoSndTel = secTel
+                }
   | otherwise = error "Invalid contact information"
 
 

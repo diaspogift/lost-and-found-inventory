@@ -117,8 +117,14 @@ type LocalStreamId = String
 type ReadOneCategory =
   Int32 -> LocalStreamId -> IO (Either WorkflowError Category)
 
+
+
+
 type ReadOneDeclaredLostItem =
   Int32 -> LostItemId -> IO (Either WorkflowError DeclaredLostItem)
+
+
+
 
 type ReadOneAttributeRef =
   Int32 -> LocalStreamId -> IO (Either WorkflowError AttributeRef)
@@ -130,15 +136,26 @@ type ReadOneAttributeRef =
 ---
 ---
 
+
+
 type WriteDeclaredLostItemEvents =
   LocalStreamId -> [DeclareLostItemEvent] -> IO ()
+
+
+
 
 type WriteCreateAttributeRefEvents =
   LocalStreamId -> CreateAttributeEvent -> IO ()
 
+
+
+
 type WriteCreateRootCategoryEvents =
   LocalStreamId -> [CreateCategoryEvent] -> IO ()
 
+
+
+  
 type WriteCreateSubCategoryEvents =
   LocalStreamId -> [CreateCategoryEvent] -> IO ()
 

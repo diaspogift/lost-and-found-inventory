@@ -117,12 +117,11 @@ catgrDtoToDomain dto = do
                           categoryDescription = descpt,
                           categoryRelatedSubCategories = Data.Set.fromList subs
                         }
-            _ ->
-              do prntId <- crtCatgrId strPrntId
-                 prntCd <- crtCatgrCd strPrntCd
-                 let parentInfo = ParentInfo prntId prntCd
-                 return $ SubCategory catgrInfo (Just parentInfo)
-              where catgrInfo = CategoryInfo
+            _ -> do prntId <- crtCatgrId strPrntId
+                    prntCd <- crtCatgrCd strPrntCd
+                    let parentInfo = ParentInfo prntId prntCd
+                    return $ SubCategory catgrInfo (Just parentInfo)
+                 where catgrInfo = CategoryInfo
                         { categoryId = id,
                           categoryCode = code,
                           categoryEnablementStatus = enblmntStts,
@@ -214,8 +213,7 @@ toSubCatgrs = fmap uwrpCatgrId . toList . categoryRelatedSubCategories
 
 
 fromSubCategoriesAdded :: SubCategoriesAdded -> SubCategoriesAddedDto
-fromSubCategoriesAdded =
-  fmap toSubCategoriesAddedDto
+fromSubCategoriesAdded = fmap toSubCategoriesAddedDto
   where toSubCategoriesAddedDto AddedSubCategory {..} =
           AddedSubCategoryDto
             { parent = uwrpCatgrId addedSubCategoryParent,

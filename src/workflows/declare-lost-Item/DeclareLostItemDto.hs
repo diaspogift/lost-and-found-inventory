@@ -214,12 +214,11 @@ instance FromJSON AttributeDto
 
 toUnvalidatedAttribute :: AttributeDto -> UnvalidatedAttribute
 toUnvalidatedAttribute =
-  UnvalidatedAttribute
-    <$> attrCode
-    <*> attrName
-    <*> attrDescription
-    <*> attrValue
-    <*> attrUnit
+  UnvalidatedAttribute  <$> attrCode
+                        <*> attrName
+                        <*> attrDescription
+                        <*> attrValue
+                        <*> attrUnit
 
 
 
@@ -383,7 +382,7 @@ toContactMethod (givenEmail, givenPrimTel, givenSecTel)
                   Cct.bothContactInfoPrimTel = primTel,
                   Cct.bothContactInfoSndTel = Nothing
                 }
-                
+
   | Cct.notNull givenEmail
       && Cct.notNull givenPrimTel
       && Cct.notNull givenSecTel = do

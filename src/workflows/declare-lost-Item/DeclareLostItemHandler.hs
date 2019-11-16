@@ -98,10 +98,7 @@ type NextId = IO UnvalidatedLostItemId
 
 checkAdministrativeAreaInfoValid ::AdministrativeMap -> CheckAdministrativeAreaInfoValid
 checkAdministrativeAreaInfoValid (AdministrativeMap regions) (strReg, strDiv, strSub)
-  | null strReg && null strDiv && null strSub =
-    Right Nothing
-  
-    
+    | null strReg && null strDiv && null strSub = Right Nothing
     | otherwise = do reg <- toRegion strReg
                      div <- toDivision strDiv
                      sub <- toSubDivision strSub

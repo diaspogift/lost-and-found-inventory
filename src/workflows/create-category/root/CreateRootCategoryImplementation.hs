@@ -178,9 +178,8 @@ checkRefSubCatgrsValid catgrs =
             in case singletonCatgr of
                     [catgr] -> checkIsSubAndEnabled catId catgr
                     _ -> Left $ DomainError "referenced sub category not found"
-            where
-                toCatgrId (RootCategory catgrInfo) = categoryId catgrInfo
-                toCatgrId (SubCategory catgrInfo _) = categoryId catgrInfo
+            where toCatgrId (RootCategory catgrInfo) = categoryId catgrInfo
+                  toCatgrId (SubCategory catgrInfo _) = categoryId catgrInfo
 
 
 

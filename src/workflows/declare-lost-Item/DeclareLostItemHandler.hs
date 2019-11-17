@@ -148,7 +148,7 @@ checkAttributeInfoValid refferedAttributes uattr ulositem =
 
 
 checkContactInfoValid :: CheckContactInfoValid
-checkContactInfoValid = return
+checkContactInfoValid = return -- TODO:  I need a proper phone validator service
 
 
 
@@ -207,10 +207,10 @@ declareLostItemHandler  loadAdministrativeAreaMap
 
     do let strCatgryId = uliCategoryId unvalidatedLostItem
        adminAreaMap <- loadAdministrativeAreaMap "Cameroun"
-       referencedCatgr  <- ExceptT $ liftIO $ readOneCategory 10 strCatgryId       
-       refAttributes <- ExceptT $ liftIO 
-                                $ fmap sequence 
-                                $ traverse (readOneAttributeRef 10) 
+       referencedCatgr  <- ExceptT . liftIO $ readOneCategory 10 strCatgryId       
+       refAttributes <- ExceptT . liftIO 
+                                . fmap sequence 
+                                . traverse (readOneAttributeRef 10) 
                                 $ uattrCode <$> uliattributes unvalidatedLostItem
        declarationTime <- liftIO getCurrentTime
        lostItemUuid <- liftIO nextId

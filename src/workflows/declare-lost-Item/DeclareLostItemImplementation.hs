@@ -412,9 +412,8 @@ creatteLostItem = DeclaredLostItem  <$> validatedLostItemId
           toContactInformation :: ValidatedContactInformation 
                                -> ContactInformation
           toContactInformation =
-            ContactInformation
-                <$> vcontactInfoAddress
-                <*> vcontactInfoMethod
+            ContactInformation <$> vcontactInfoAddress
+                               <*> vcontactInfoMethod
 
           toAttribute :: ValidatedAttribute -> Attribute
           toAttribute valAttr =

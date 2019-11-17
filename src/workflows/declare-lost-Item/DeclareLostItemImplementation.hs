@@ -252,8 +252,8 @@ validateUnvalidatedLostItem checkAdministrativeAreaInfoValid
             owner = toOwner checkContactInfoValid . uowner $ unvalidatedLostItem
 
             toLostItemLocation :: CheckAdministrativeAreaInfoValid
-                                    -> UnvalidatedLocation
-                                    -> Either ValidationError ValidatedLocation
+                               -> UnvalidatedLocation
+                               -> Either ValidationError ValidatedLocation
             toLostItemLocation checkAdministrativeAreaInfoValid u =
                 do  adminArea <- toCheckedValidAdminArea (uadminArea u) checkAdministrativeAreaInfoValid
                     cityOrVillage <- toCityOrVillage (ucity u, uvillage u)
@@ -267,15 +267,15 @@ validateUnvalidatedLostItem checkAdministrativeAreaInfoValid
                         }
 
             toCheckedValidAdminArea :: (String, String, String)
-                                        -> CheckAdministrativeAreaInfoValid
-                                        -> Either ValidationError (Maybe (Region, Division, SubDivision))
+                                    -> CheckAdministrativeAreaInfoValid
+                                    -> Either ValidationError (Maybe (Region, Division, SubDivision))
             toCheckedValidAdminArea (reg, divs, sub) checkAdministrativeAreaInfoValid =
                 mapValidationError $ checkAdministrativeAreaInfoValid (reg, divs, sub)
 
             toValidatedAttribute :: CheckAttributeInfoValid
-                                    -> UnvalidatedLostItem
-                                    -> UnvalidatedAttribute
-                                    -> Either ValidationError ValidatedAttribute
+                                 -> UnvalidatedLostItem
+                                 -> UnvalidatedAttribute
+                                 -> Either ValidationError ValidatedAttribute
             toValidatedAttribute checkAttributeInfoValid ulostitem uattr =
                 mapValidationError $ checkAttributeInfoValid uattr ulostitem
 
@@ -399,23 +399,18 @@ creatteLostItem = DeclaredLostItem  <$> validatedLostItemId
                                     <*> validatedLostItemName
                                     <*> validatedLostItemCategoryId
                                     <*> validatedLostItemDescription
-                                    <*> fromList
-                                        . fmap toLocation
-                                        . toList
-                                        . validatedLostItemLocations
+                                    <*> toLostItemLocations
                                     <*> validatedLostItemDateTimeSpan
                                     <*> validatedLostItemRegistrTime
-                                    <*> fromList
-                                        . fmap toAttribute
-                                        . toList
-                                        . validatedLostItemAttributes
+                                    <*> toLostItemAttributes
                                     <*> toPerson . validatedLostItemOwner
     where toPerson :: ValidatedPerson -> Person
           toPerson = Person <$> vpersonId
                             <*> toContactInformation . vpersonContact
                             <*> vpersonFullName
           
-          toContactInformation :: ValidatedContactInformation -> ContactInformation
+          toContactInformation :: ValidatedContactInformation 
+                               -> ContactInformation
           toContactInformation =
             ContactInformation
                 <$> vcontactInfoAddress
@@ -439,6 +434,15 @@ creatteLostItem = DeclaredLostItem  <$> validatedLostItemId
                 locationNeighborhood = vneighborhood vLoc,
                 locationAddresses = vlocationAddresses vLoc
                 }
+
+          toLostItemAttributes = fromList 
+                                 . fmap toAttribute 
+                                 . toList 
+                                 . validatedLostItemAttributes
+          toLostItemLocations = fromList 
+                                 . fmap toLocation 
+                                 . toList 
+                                 . validatedLostItemLocations
 
 
 

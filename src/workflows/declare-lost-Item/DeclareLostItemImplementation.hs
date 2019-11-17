@@ -643,8 +643,8 @@ declareLostItem checkAdminAreaInfoValid
                 referencedCategory 
                 unvalidatedLostItem 
                 lostItemCreationTime
-                unValidatedlostItemUuid =
-    do validatedLostItem <- 
+                unValidatedlostItemUuid = do
+       validatedLostItem <- 
             mapValidationErr $
                 validateUnvalidatedLostItem 
                     checkAdminAreaInfoValid                        

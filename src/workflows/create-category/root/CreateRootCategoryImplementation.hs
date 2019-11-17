@@ -137,8 +137,8 @@ type CreateEvents =
 
 
 validateUnvalidatedCategory :: UnvalidatedRootCategory
-                                -> UnvalidatedCategoryId
-                                -> Either ValidationError ValidatedRootCategory
+                            -> UnvalidatedCategoryId
+                            -> Either ValidationError ValidatedRootCategory
 validateUnvalidatedCategory ucatgr ucatgrId =
   ValidatedRootCategory 
     <$> catgrId 
@@ -242,9 +242,9 @@ createEvents cat =
 
 
 createRootCatgory :: [Category]
-                    -> UnvalidatedRootCategory
-                    -> UnvalidatedCategoryId
-                    -> Either WorkflowError [CreateCategoryEvent]
+                  -> UnvalidatedRootCategory
+                  -> UnvalidatedCategoryId
+                  -> Either WorkflowError [CreateCategoryEvent]
 createRootCatgory referredSubCatgrs
                   unvalidatedCategory
                   unValidatedCatgrId =

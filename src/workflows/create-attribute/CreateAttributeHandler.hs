@@ -79,9 +79,9 @@ nextId = let randomId = nextRandom in fmap (fmap toUpper . toString) randomId
 
 
 createAttributeRefHandler :: WriteCreateAttributeRefEvents
-                                -> NextId
-                                -> CreateAttributeRefCmd
-                                -> ExceptT WorkflowError IO [CreateAttributeEvent]
+                          -> NextId
+                          -> CreateAttributeRefCmd
+                          -> ExceptT WorkflowError IO [CreateAttributeEvent]
 createAttributeRefHandler   writeCreateAttributeRefEvents
                             nextId
                             (Command unvalidatedAttributeRef curTime userId) =
@@ -114,6 +114,6 @@ createAttributeRefHandler   writeCreateAttributeRefEvents
 
 
 publicCreateAttributeRefHandler :: CreateAttributeRefCmd 
-                                    -> ExceptT WorkflowError IO [CreateAttributeEvent]
+                                -> ExceptT WorkflowError IO [CreateAttributeEvent]
 publicCreateAttributeRefHandler = createAttributeRefHandler writeCreateAttributeRefEvents
                                                             nextId

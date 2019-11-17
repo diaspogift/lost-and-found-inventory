@@ -133,8 +133,8 @@ type CreateEvents =
 
 
 validateUnvalidatedCategory :: UnvalidatedSubCategory
-                                -> UnvalidatedCategoryId
-                                -> Either ValidationError ValidatedSubCategory
+                            -> UnvalidatedCategoryId
+                            -> Either ValidationError ValidatedSubCategory
 validateUnvalidatedCategory ucatgr ucatgrId =
     do catgrId <- toCategoryId ucatgrId
        catgrCd <- toCategoryCode . usubCategoryCode $ ucatgr
@@ -174,8 +174,8 @@ validateUnvalidatedCategory ucatgr ucatgrId =
 --- TODO: I should probably use a fold here
 
 checkRefSubCatgrsValid :: [Category]
-                            -> ValidatedSubCategory
-                            -> Either DomainError [CategoryId]
+                       -> ValidatedSubCategory
+                       -> Either DomainError [CategoryId]
 checkRefSubCatgrsValid catgrs =
   traverse (checkRefSubCatgrValid catgrs) . toList . vsubCatgrRelatedSubCatgrs
   where checkRefSubCatgrValid :: [Category] -> CategoryId -> Either DomainError CategoryId
@@ -213,8 +213,8 @@ checkRefPrntCatgrEnabled Nothing = return Nothing
 
 
 checkRefPrntCatgrNotInSubs :: Maybe Category 
-                                -> ValidatedSubCategory 
-                                -> Either DomainError Bool
+                           -> ValidatedSubCategory 
+                           -> Either DomainError Bool
 checkRefPrntCatgrNotInSubs Nothing vSubCatgr =
   return True
 checkRefPrntCatgrNotInSubs (Just (RootCategory prntCatgr)) vSubCatgr =
@@ -292,10 +292,10 @@ createEvents cat =
 
 
 createSubCatgory :: [Category]
-                    -> Maybe Category
-                    -> UnvalidatedSubCategory
-                    -> UnvalidatedCategoryId
-                    -> Either WorkflowError [CreateCategoryEvent]
+                 -> Maybe Category
+                 -> UnvalidatedSubCategory
+                 -> UnvalidatedCategoryId
+                 -> Either WorkflowError [CreateCategoryEvent]
 createSubCatgory referredSubCatgrs
                  referencedParentCatgr
                  unvalidatedCategory 

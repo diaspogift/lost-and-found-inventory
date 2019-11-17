@@ -78,10 +78,10 @@ nextId = let id = nextRandom in fmap (fmap toUpper . toString) id
 
 
 createSubCategoryHandler :: ReadOneCategory
-                            -> WriteCreateSubCategoryEvents
-                            -> NextId 
-                            -> CreateSubCategoryCmd 
-                            -> ExceptT WorkflowError IO [CreateCategoryEvent]
+                         -> WriteCreateSubCategoryEvents
+                         -> NextId 
+                         -> CreateSubCategoryCmd 
+                         -> ExceptT WorkflowError IO [CreateCategoryEvent]
 createSubCategoryHandler readOneCategory 
                          writeEventToStore 
                          nextId
@@ -124,7 +124,7 @@ createSubCategoryHandler readOneCategory
 
 
 publicCreateSubCategoryHandler :: CreateSubCategoryCmd
-                                    -> ExceptT WorkflowError IO [CreateCategoryEvent]
+                               -> ExceptT WorkflowError IO [CreateCategoryEvent]
 publicCreateSubCategoryHandler = createSubCategoryHandler readOneCategory
                                                           writeCreateSubCategoryEvents
                                                           nextId

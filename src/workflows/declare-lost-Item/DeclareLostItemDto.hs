@@ -327,7 +327,7 @@ instance FromJSON ContactInformationDto
 
 
 toUnvalidatedContactInformation :: ContactInformationDto 
-                                    -> UnvalidatedContactInformation
+                                -> UnvalidatedContactInformation
 toUnvalidatedContactInformation =
   UnvalidatedContactInformation <$> email
                                 <*> address
@@ -338,7 +338,7 @@ toUnvalidatedContactInformation =
 
 
 toContactInformation :: ContactInformationDto 
-                        -> Either ErrorMessage Cct.ContactInformation
+                     -> Either ErrorMessage Cct.ContactInformation
 toContactInformation dto = do
     add <- (crtOptPstAddrss . address) dto
     contact <- toContactMethod (email dto, primaryTel dto, secondaryTel dto)
@@ -681,7 +681,7 @@ type RespDclLstItemWorkflow = [DeclareLostItemEventResponse]
 
 
 fromDclLstItmEvtDomain :: DeclareLostItemEvent 
-                            -> DeclareLostItemEventResponse
+                       -> DeclareLostItemEventResponse
 fromDclLstItmEvtDomain evt =
   case evt of
     LostItemDeclared lid ->

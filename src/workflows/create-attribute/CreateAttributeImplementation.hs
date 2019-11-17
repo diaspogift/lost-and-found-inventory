@@ -119,8 +119,8 @@ checkRefCatgrEnabled (SubCategory CategoryInfo {categoryEnablementStatus = enblm
 
 
 validateUnvalidatedAttributeRef :: UnvalidatedAttributeRef 
-                                    -> UnvalidatedAttributeCode 
-                                    -> Either ValidationError ValidatedAttributeRef
+                                -> UnvalidatedAttributeCode 
+                                -> Either ValidationError ValidatedAttributeRef
 validateUnvalidatedAttributeRef uattrRef uattrCd =
     ValidatedAttributeRef <$> code 
                           <*> name 
@@ -203,9 +203,9 @@ createAttrRefCreatedEvt declaredLostItem = declaredLostItem
 
 
 createAttributeReference :: UnvalidatedAttributeRef
-                            -> UnvalidatedAttributeCode
-                            -> [Category]
-                            -> Either WorkflowError [CreateAttributeEvent]
+                         -> UnvalidatedAttributeCode
+                         -> [Category]
+                         -> Either WorkflowError [CreateAttributeEvent]
 createAttributeReference unvalidatedAttributeRef
                          unValidatedlostItemUuid
                          referencedCategories =

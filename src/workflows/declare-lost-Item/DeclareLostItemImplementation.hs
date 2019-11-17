@@ -218,12 +218,12 @@ data SendResult
 
 
 validateUnvalidatedLostItem :: CheckAdministrativeAreaInfoValid
-                                -> CheckContactInfoValid
-                                -> CheckAttributeInfoValid
-                                -> UnvalidatedLostItem
-                                -> UTCTime
-                                -> UnvalidatedLostItemId
-                                -> Either ValidationError ValidatedLostItem
+                            -> CheckContactInfoValid
+                            -> CheckAttributeInfoValid
+                            -> UnvalidatedLostItem
+                            -> UTCTime
+                            -> UnvalidatedLostItemId
+                            -> Either ValidationError ValidatedLostItem
     
 validateUnvalidatedLostItem checkAdministrativeAreaInfoValid
                             checkContactInfoValid
@@ -458,8 +458,8 @@ creatteLostItem = DeclaredLostItem  <$> validatedLostItemId
 
 
 checkRefCatgrEnabled :: ValidatedLostItem 
-                        -> Category 
-                        -> Either DomainError ValidatedLostItem
+                     -> Category 
+                     -> Either DomainError ValidatedLostItem
 checkRefCatgrEnabled vli (RootCategory refCatgr)
   | validatedLostItemCategoryId vli == categoryId refCatgr =
     case categoryEnablementStatus refCatgr of
@@ -494,9 +494,9 @@ checkRefCatgrEnabled vli (SubCategory refCatgr _)
 
 
 acknowledgemenDeclaredLostItem :: CreateDeclarationAcknowledgment
-                                    -> (DeclarationAcknowledgment -> SendResult) 
-                                    -> DeclaredLostItem
-                                    -> Maybe DeclarationAcknowledgmentSent
+                               -> (DeclarationAcknowledgment -> SendResult) 
+                               -> DeclaredLostItem
+                               -> Maybe DeclarationAcknowledgmentSent
 acknowledgemenDeclaredLostItem
   crtDeclarationAcknowledgment
   sendAcknowledgment
@@ -530,8 +530,8 @@ acknowledgemenDeclaredLostItem
 
 
 createEvents :: DeclaredLostItem 
-                -> Maybe DeclarationAcknowledgmentSent 
-                -> [DeclareLostItemEvent]
+             -> Maybe DeclarationAcknowledgmentSent 
+             -> [DeclareLostItemEvent]
 createEvents declaredLosItem optionDeclarationAcknowledgmentSent =
   let acknoledgmentEvents =
         maybeToList 
@@ -622,15 +622,15 @@ crtAttrbtesAddedEvent = toList . lostItemAttributes
 
 
 declareLostItem :: CheckAdministrativeAreaInfoValid 
-                    -> CheckAttributeInfoValid 
-                    -> CheckContactInfoValid 
-                    -> CreateDeclarationAcknowledgment
-                    -> (DeclarationAcknowledgment -> SendResult)
-                    -> Category
-                    -> UnvalidatedLostItem 
-                    -> UTCTime
-                    -> UnvalidatedLostItemId 
-                    -> Either WorkflowError [DeclareLostItemEvent]
+                -> CheckAttributeInfoValid 
+                -> CheckContactInfoValid 
+                -> CreateDeclarationAcknowledgment
+                -> (DeclarationAcknowledgment -> SendResult)
+                -> Category
+                -> UnvalidatedLostItem 
+                -> UTCTime
+                -> UnvalidatedLostItemId 
+                -> Either WorkflowError [DeclareLostItemEvent]
 declareLostItem checkAdminAreaInfoValid 
                 checkAttributeInfoValid 
                 checkContactInfoValid

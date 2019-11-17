@@ -80,10 +80,10 @@ nextId = let randomId = nextRandom in fmap (fmap toUpper . toString) randomId
 
 
 createRootCategoryHandler :: ReadOneCategory 
-                                -> WriteCreateRootCategoryEvents
-                                -> NextId
-                                -> CreateRootCategoryCmd
-                                -> ExceptT WorkflowError IO [CreateCategoryEvent]
+                          -> WriteCreateRootCategoryEvents
+                          -> NextId
+                          -> CreateRootCategoryCmd
+                          -> ExceptT WorkflowError IO [CreateCategoryEvent]
 
 createRootCategoryHandler readOneCategory
                           writeCreateRootCategoryEvents
@@ -115,7 +115,7 @@ createRootCategoryHandler readOneCategory
 
 
 publicCreateRootCategoryHandler :: CreateRootCategoryCmd 
-                                    -> ExceptT WorkflowError IO [CreateCategoryEvent]
+                                -> ExceptT WorkflowError IO [CreateCategoryEvent]
 publicCreateRootCategoryHandler = createRootCategoryHandler readOneCategory
                                                             writeCreateRootCategoryEvents
                                                             nextId

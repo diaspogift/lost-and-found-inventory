@@ -118,7 +118,7 @@ checkAdministrativeAreaInfoValid (AdministrativeMap regions) (strReg, strDiv, st
 
 
 
-checkAttributeInfoValid ::[AttributeRef] ->CheckAttributeInfoValid
+checkAttributeInfoValid ::[AttributeRef] -> CheckAttributeInfoValid
 checkAttributeInfoValid refferedAttributes uattr ulositem =
   do let foundAttribute = filter (isAttributesEqualTo uattr) refferedAttributes
      case foundAttribute of
@@ -190,12 +190,12 @@ nextId = let randomId = nextRandom in fmap (fmap toUpper . toString) randomId
 
 
 declareLostItemHandler :: LoadAdministrativeAreaMap 
-                            -> ReadOneCategory 
-                            -> ReadOneAttributeRef 
-                            -> WriteDeclaredLostItemEvents 
-                            -> NextId 
-                            -> DeclareLostItemCmd 
-                            -> ExceptT WorkflowError IO [DeclareLostItemEvent]
+                       -> ReadOneCategory 
+                       -> ReadOneAttributeRef 
+                       -> WriteDeclaredLostItemEvents 
+                       -> NextId 
+                       -> DeclareLostItemCmd 
+                       -> ExceptT WorkflowError IO [DeclareLostItemEvent]
 declareLostItemHandler  loadAdministrativeAreaMap
                         readOneCategory
                         readOneAttributeRef
@@ -249,7 +249,7 @@ declareLostItemHandler  loadAdministrativeAreaMap
 
 
 publicDeclareLostItemHandler :: DeclareLostItemCmd 
-                                -> ExceptT WorkflowError IO [DeclareLostItemEvent]
+                             -> ExceptT WorkflowError IO [DeclareLostItemEvent]
 publicDeclareLostItemHandler = declareLostItemHandler loadAdministrativeAreaMap
                                                       readOneCategory
                                                       readOneAttributeRef

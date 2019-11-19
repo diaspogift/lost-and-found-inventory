@@ -1,8 +1,7 @@
-module CreateSubCategoryPublicTypes where
+module Workflow.CreateCategory.Root.PublicTypes where
 
-import Common.CompoundTypes
 import Common.SimpleTypes
-import CreateCategoryCommonPublicTypes
+import Workflow.CreateCategory.Common.PublicTypes
 
 
 
@@ -23,13 +22,12 @@ import CreateCategoryCommonPublicTypes
 
 
 
-data UnvalidatedSubCategory
-  = UnvalidatedSubCategory
-      { usubCategoryCode :: String,
-        usubCategoryDescription :: String,
-        usubCategoryParentIdandCd :: (String, String),
-        usubCatgrEnablementStatus :: String,
-        usubCatgrRelatedsubCatgrs :: [String]
+data UnvalidatedRootCategory
+  = UnvalidatedRootCategory
+      { urootCategoryCode :: String,
+        urootCategoryDescription :: String,
+        urootCategoryEnablement :: String,
+        urootCatgrRelatedsubCatgrs :: [String]
       }
   deriving (Eq, Ord, Show)
 
@@ -43,5 +41,5 @@ data UnvalidatedSubCategory
 
 
 
-type CreateSubCategory =
-  UnvalidatedSubCategory -> Either WorkflowError [CreateCategoryEvent]
+type CreateRootCategory =
+  UnvalidatedRootCategory -> Either WorkflowError [CreateCategoryEvent]

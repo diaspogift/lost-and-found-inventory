@@ -3,7 +3,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module CreateCategoryCommonDto where
+module Workflow.CreateCategory.Common.Dto where
 
 import Common.CompoundTypes
     (AttributeRef (..),
@@ -17,8 +17,8 @@ import Common.CompoundTypes
     )
 import Common.Dtos
 import Common.SimpleTypes
-import CreateCategoryCommonPublicTypes
-import CreateRootCategoryPublicTypes
+import Workflow.CreateCategory.Common.PublicTypes
+import Workflow.CreateCategory.Common.PublicTypes
 import CreateSubCategoryPublicTypes
 import Data.Aeson
     (ToJSON, FromJSON, ToJSONKey)

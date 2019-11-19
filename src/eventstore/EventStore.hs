@@ -40,7 +40,7 @@ import CreateAttributeDto (
 import CreateAttributePublicTypes (
     CreateAttributeEvent (..)
     )
-import CreateCategoryCommonDto (
+import Workflow.CreateCategory.Common.Dto (
     CreateCategoryEventDto (..),
     CategoryCreatedDto,
     SubCategoriesAddedDto,
@@ -49,7 +49,7 @@ import CreateCategoryCommonDto (
     fromCategoryCreated,
     fromSubCategoriesAdded
     )
-import CreateCategoryCommonPublicTypes (
+import Workflow.CreateCategory.Common.PublicTypes (
     CategoryCreated,
     SubCategoriesAdded,
     CreateCategoryEvent (..)

@@ -11,7 +11,7 @@ import Control.Monad.Except
     (ExceptT (..),
     liftEither,
     liftIO)
-import CreateCategoryCommonPublicTypes
+import Workflow.CreateCategory.Common.PublicTypes
 import CreateSubCategoryImplementation
     (createSubCatgory)
 import CreateSubCategoryPublicTypes

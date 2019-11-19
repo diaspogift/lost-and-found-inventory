@@ -1,4 +1,4 @@
-module CreateCategoryCommonPublicTypes where
+module Workflow.CreateCategory.Common.PublicTypes where
 
 import Common.CompoundTypes
 import Common.SimpleTypes

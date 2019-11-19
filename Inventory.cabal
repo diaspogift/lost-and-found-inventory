@@ -20,13 +20,14 @@ library
 
                      , src/cmdshandler
 
-                     , src/Workflow/declare-lost-item
+                     , src/Workflow/DeclareLostItem
 
-                     , src/Workflow/create-attribute
+                     , src/Workflow/CreateAttribute
 
-                     , src/Workflow/create-category
-                     , src/Workflow/create-category/root
-                     , src/Workflow/create-category/sub
+                     , src/Workflow/CreateCategory
+                     , src/Workflow/CreateCategory/Common
+                     , src/Workflow/CreateCategory/Root
+                     , src/Workflow/CreateCategory/Sub
 
                      , src/eventstore
 
@@ -49,9 +50,9 @@ library
                      , CreateAttributeHandler
 
                      , CreateCategoryDto
-                     , CreateCategoryCommonPublicTypes
+                     , Workflow.CreateCategory.Common.PublicTypes
 
-                     , CreateRootCategoryPublicTypes
+                     , Workflow.CreateCategory.Common.PublicTypes
                      , CreateRootCategoryImplementation
                      , CreateRootCategoryHandler
 

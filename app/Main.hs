@@ -8,9 +8,10 @@ import DeclareLostItemPublicTypes
 import DeclareLostItemImplementation
 import DeclareLostItemHandler
 
-import CreateRootCategoryPublicTypes
-import CreateRootCategoryImplementation
-import CreateRootCategoryHandler
+import Workflow.CreateCategory.Common.PublicTypes
+import Workflow.CreateCategory.Root.PublicTypes
+import Workflow.CreateCategory.Root.Implementation
+import Workflow.CreateCategory.Root.Handler
 
 import InventorySystemCommands
 import InventorySystemCommandsHandler

@@ -7,10 +7,10 @@ import CreateAttributePublicTypes (
     UnvalidatedAttributeRef, 
     CreateAttributeEvent
     )
-import CreateCategoryCommonPublicTypes (
+import Workflow.CreateCategory.Common.PublicTypes (
     CreateCategoryEvent
     )
-import CreateRootCategoryPublicTypes (
+import Workflow.CreateCategory.Root.PublicTypes (
     UnvalidatedRootCategory
     )
 import CreateSubCategoryPublicTypes (

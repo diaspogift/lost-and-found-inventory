@@ -14,9 +14,9 @@ import Common.SimpleTypes
 import Control.Monad.Except
 import CreateAttributeDto
 import CreateAttributePublicTypes
-import CreateCategoryCommonDto
-import CreateRootCategoryDto
-import CreateRootCategoryPublicTypes
+import Workflow.CreateCategory.Common.Dto
+import Workflow.CreateCategory.Root.Dto
+import Workflow.CreateCategory.Common.PublicTypes
 import CreateSubCategoryDto
 import CreateSubCategoryPublicTypes
 import Data.Aeson (ToJSON, FromJSON)

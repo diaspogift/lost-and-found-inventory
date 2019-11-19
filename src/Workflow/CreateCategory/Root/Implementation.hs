@@ -1,6 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module CreateRootCategoryImplementation where
+module Workflow.CreateCategory.Root.Implementation where
 
 import Common.CompoundTypes
     (AttributeRef (..),
@@ -15,8 +15,8 @@ import Common.CompoundTypes
     createSubCategoryAddedEvt
     )
 import Common.SimpleTypes
-import CreateCategoryCommonPublicTypes
-import CreateRootCategoryPublicTypes
+import Workflow.CreateCategory.Common.PublicTypes
+import Workflow.CreateCategory.Root.PublicTypes
 import Data.Either.Combinators 
     (mapLeft)
 import Data.Set 

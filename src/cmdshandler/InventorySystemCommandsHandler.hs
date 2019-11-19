@@ -14,10 +14,10 @@ import CreateAttributeHandler (
 import CreateAttributePublicTypes (
     CreateAttributeEvent
     )
-import CreateCategoryCommonPublicTypes (
+import Workflow.CreateCategory.Common.PublicTypes (
     CreateCategoryEvent
     )
-import CreateRootCategoryHandler (
+import Workflow.CreateCategory.Root.Handler (
     publicCreateRootCategoryHandler
     )
 import CreateSubCategoryHandler (

@@ -15,7 +15,7 @@ import Common.CompoundTypes
     createSubCategoryAddedEvt
     )
 import Common.SimpleTypes
-import CreateCategoryCommonPublicTypes
+import Workflow.CreateCategory.Common.PublicTypes
 import CreateSubCategoryPublicTypes
 import Data.Either.Combinators 
     (mapLeft)

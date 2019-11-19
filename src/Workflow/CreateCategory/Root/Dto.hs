@@ -3,9 +3,10 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module CreateRootCategoryDto where
+module Workflow.CreateCategory.Root.Dto where
 
-import CreateRootCategoryPublicTypes
+import Workflow.CreateCategory.Common.PublicTypes
+import Workflow.CreateCategory.Root.PublicTypes
 import Data.Aeson
     (ToJSON,
     FromJSON)
@@ -66,5 +67,5 @@ toUnvalidatedRootCategory CreateRootCategoryForm {..} =
 
     
 -------------------------------------------------------------------------------
--- Common DTOs in CreateCategoryCommonDto module
+-- Common DTOs in Workflow.CreateCategory.Common.Dto module
 -- ----------------------------------------------------------------------------

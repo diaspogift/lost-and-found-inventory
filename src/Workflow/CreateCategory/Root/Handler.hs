@@ -1,19 +1,16 @@
-module CreateRootCategoryHandler where
+module Workflow.CreateCategory.Root.Handler where
 
 import Common.CompoundTypes
 import Common.SimpleTypes
---import CreateAttributeDto
-
--- Internal
-
 import Control.Monad.Except 
     (ExceptT (..),
     liftEither,
     liftIO)
-import CreateCategoryCommonPublicTypes
-import CreateRootCategoryImplementation
+import Workflow.CreateCategory.Root.PublicTypes
+import Workflow.CreateCategory.Root.Dto
+import Workflow.CreateCategory.Root.Implementation
     (createRootCatgory)
-import CreateRootCategoryPublicTypes
+import Workflow.CreateCategory.Common.PublicTypes
 import Data.Char 
     (toUpper)
 import Data.UUID 

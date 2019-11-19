@@ -1,8 +1,8 @@
 module CreateAttributeHandler where
 
-import CommonCompoundTypes
+import Common.CompoundTypes
     (Category)
-import CommonSimpleTypes
+import Common.SimpleTypes
 import Control.Monad.Except 
     (ExceptT (..),
     liftEither,

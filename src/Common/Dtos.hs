@@ -2,9 +2,9 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module CommonDtos where
+module Common.Dtos where
 
-import CommonSimpleTypes (
+import Common.SimpleTypes (
     WorkflowError (..),
     ValidationError (..),
     DomainError (..),

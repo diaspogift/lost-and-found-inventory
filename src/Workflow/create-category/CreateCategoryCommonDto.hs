@@ -5,7 +5,7 @@
 
 module CreateCategoryCommonDto where
 
-import CommonCompoundTypes
+import Common.CompoundTypes
     (AttributeRef (..),
     Category (..),
     CategoryInfo (..),
@@ -15,8 +15,8 @@ import CommonCompoundTypes
     toEnablementStatus,
     fromEnblmntStatus
     )
-import CommonDtos
-import CommonSimpleTypes
+import Common.Dtos
+import Common.SimpleTypes
 import CreateCategoryCommonPublicTypes
 import CreateRootCategoryPublicTypes
 import CreateSubCategoryPublicTypes

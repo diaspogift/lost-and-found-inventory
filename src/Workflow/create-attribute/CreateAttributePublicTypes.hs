@@ -1,8 +1,8 @@
 module CreateAttributePublicTypes where
 
-import CommonCompoundTypes
+import Common.CompoundTypes
     (AttributeRef)
-import CommonSimpleTypes
+import Common.SimpleTypes
 
 
 

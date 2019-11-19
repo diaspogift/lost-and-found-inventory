@@ -5,8 +5,8 @@
 
 module DeclareLostItemHandler where
 
-import CommonCompoundTypes
-import CommonSimpleTypes
+import Common.CompoundTypes
+import Common.SimpleTypes
 import Control.Monad.Except
     (ExceptT (..),
     liftEither,

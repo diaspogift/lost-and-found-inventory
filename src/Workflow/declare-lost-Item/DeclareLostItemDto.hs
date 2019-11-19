@@ -4,9 +4,9 @@
 
 module DeclareLostItemDto where
 
-import qualified CommonCompoundTypes as Cct
-import CommonDtos
-import CommonSimpleTypes
+import qualified Common.CompoundTypes as Cct
+import Common.Dtos
+import Common.SimpleTypes
 import Data.Aeson 
     (ToJSON, FromJSON, ToJSONKey, toEncoding)
 import Data.Map 

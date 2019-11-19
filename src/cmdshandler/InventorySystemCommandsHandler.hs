@@ -1,6 +1,6 @@
 module InventorySystemCommandsHandler where
 
-import CommonSimpleTypes (
+import Common.SimpleTypes (
     WorkflowError
     )
 import Control.Monad.Except (

@@ -1,12 +1,12 @@
 module CreateAttributeImplementation where
 
-import CommonCompoundTypes
+import Common.CompoundTypes
     (AttributeRef (..),
     Category (..),
     CategoryInfo (..),
     EnablementStatus (..)
     )
-import CommonSimpleTypes
+import Common.SimpleTypes
 import CreateAttributePublicTypes
 import Data.Either.Combinators
     (mapLeft)

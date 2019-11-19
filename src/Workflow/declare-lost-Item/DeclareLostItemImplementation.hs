@@ -1,7 +1,7 @@
 module DeclareLostItemImplementation where
 
-import CommonCompoundTypes
-import CommonSimpleTypes
+import Common.CompoundTypes
+import Common.SimpleTypes
 import Data.Either.Combinators 
     (mapLeft)
 import Data.Maybe 

@@ -2,7 +2,7 @@
 
 module CreateRootCategoryImplementation where
 
-import CommonCompoundTypes
+import Common.CompoundTypes
     (AttributeRef (..),
     Category (..),
     CategoryInfo (..),
@@ -14,7 +14,7 @@ import CommonCompoundTypes
     createCategoryCreatedEvt,
     createSubCategoryAddedEvt
     )
-import CommonSimpleTypes
+import Common.SimpleTypes
 import CreateCategoryCommonPublicTypes
 import CreateRootCategoryPublicTypes
 import Data.Either.Combinators 

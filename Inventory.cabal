@@ -16,17 +16,17 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   
-                     , src/sharedtypes
+                     , src/Common
 
                      , src/cmdshandler
 
-                     , src/workflows/declare-lost-item
+                     , src/Workflow/declare-lost-item
 
-                     , src/workflows/create-attribute
+                     , src/Workflow/create-attribute
 
-                     , src/workflows/create-category
-                     , src/workflows/create-category/root
-                     , src/workflows/create-category/sub
+                     , src/Workflow/create-category
+                     , src/Workflow/create-category/root
+                     , src/Workflow/create-category/sub
 
                      , src/eventstore
 
@@ -35,8 +35,8 @@ library
                      , src/authorization
                      
 
-  exposed-modules:     CommonSimpleTypes
-                     , CommonCompoundTypes
+  exposed-modules:     Common.SimpleTypes
+                     , Common.CompoundTypes
 
                      , DeclareLostItemPublicTypes
                      , DeclareLostItemImplementation

@@ -4,14 +4,14 @@
 -- String literal when a Text is needed.
 module EventStore where
 
-import CommonCompoundTypes (
+import Common.CompoundTypes (
         Category,
         AttributeRef
         )
-import CommonDtos (
+import Common.Dtos (
         sub
         )
-import CommonSimpleTypes (
+import Common.SimpleTypes (
         DataBaseError (..),
         LostItemId,
         WorkflowError (..),

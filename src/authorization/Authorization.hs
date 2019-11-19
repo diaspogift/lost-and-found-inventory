@@ -6,7 +6,7 @@ import Authentication (
     lostItemOwnedByPrincipal, 
     checkPrincipalIsInRole
     )
-import CommonSimpleTypes (
+import Common.SimpleTypes (
     LostItemId
     )
 

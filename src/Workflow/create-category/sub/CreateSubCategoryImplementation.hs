@@ -1,7 +1,7 @@
 module CreateSubCategoryImplementation where
 
 
-import CommonCompoundTypes
+import Common.CompoundTypes
     (AttributeRef (..),
     Category (..),
     CategoryInfo (..),
@@ -14,7 +14,7 @@ import CommonCompoundTypes
     createCategoryCreatedEvt,
     createSubCategoryAddedEvt
     )
-import CommonSimpleTypes
+import Common.SimpleTypes
 import CreateCategoryCommonPublicTypes
 import CreateSubCategoryPublicTypes
 import Data.Either.Combinators 

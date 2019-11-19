@@ -1,7 +1,7 @@
 module CreateCategoryCommonPublicTypes where
 
-import CommonCompoundTypes
-import CommonSimpleTypes
+import Common.CompoundTypes
+import Common.SimpleTypes
 
 
 

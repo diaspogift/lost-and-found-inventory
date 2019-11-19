@@ -1,8 +1,8 @@
 module Main where
 
 
-import CommonSimpleTypes
-import CommonCompoundTypes
+import Common.SimpleTypes
+import Common.CompoundTypes
 
 import DeclareLostItemPublicTypes
 import DeclareLostItemImplementation

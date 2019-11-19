@@ -1,6 +1,6 @@
 module InventorySystemCommands where
 
-import CommonSimpleTypes (
+import Common.SimpleTypes (
     WorkflowError
     )
 import CreateAttributePublicTypes (

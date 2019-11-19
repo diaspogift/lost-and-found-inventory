@@ -1,4 +1,4 @@
-module CommonSimpleTypes
+module Common.SimpleTypes
   ( LostItemId,
     FoundItemId,
     DateTimeSpan,

@@ -7,11 +7,11 @@ import Authorization (
     onlyForSameId, 
     onlyForAdmins
     )
-import CommonCompoundTypes (
+import Common.CompoundTypes (
     Category, 
     AttributeRef
     )
-import CommonSimpleTypes (
+import Common.SimpleTypes (
     LostItemId, 
     UserId, 
     CategoryId, 

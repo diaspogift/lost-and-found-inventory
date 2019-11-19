@@ -1,6 +1,6 @@
-module CommonCompoundTypes where
+module Common.CompoundTypes where
 
-import CommonSimpleTypes 
+import Common.SimpleTypes 
 import Data.Char (
     toLower
     )

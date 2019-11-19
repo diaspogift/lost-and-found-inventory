@@ -9,8 +9,8 @@ module InventoryAPI
   )
 where
 
-import CommonDtos
-import CommonSimpleTypes
+import Common.Dtos
+import Common.SimpleTypes
 import Control.Monad.Except
 import CreateAttributeDto
 import CreateAttributePublicTypes

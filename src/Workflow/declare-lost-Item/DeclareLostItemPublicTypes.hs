@@ -1,7 +1,7 @@
 module DeclareLostItemPublicTypes where
 
-import CommonCompoundTypes
-import CommonSimpleTypes
+import Common.CompoundTypes
+import Common.SimpleTypes
 import Data.Set 
     (Set)
 import Data.Time 

@@ -1,6 +1,6 @@
 module Authentication where
 
-import CommonSimpleTypes
+import Common.SimpleTypes
   ( DomainError (..),
     LostItemId,
     UserId,

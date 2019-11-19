@@ -18,11 +18,11 @@ import Data.UUID
 import Data.UUID.V4 
     (nextRandom)
 import Database.EventStore
-import EventStore 
+import Persistence.EventStore 
     (WriteCreateAttributeRefEvents,
     readOneCategory,
     writeCreateAttributeRefEvents)
-import InventorySystemCommands 
+import Inventory.System.Commands 
     (InventoryCommand (..),
     CreateAttributeRefCmd
     )

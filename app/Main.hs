@@ -13,8 +13,8 @@ import Workflow.CreateCategory.Root.PublicTypes
 import Workflow.CreateCategory.Root.Implementation
 import Workflow.CreateCategory.Root.Handler
 
-import InventorySystemCommands
-import InventorySystemCommandsHandler
+import Inventory.System.Commands
+import Inventory.System.CommandsHandler
 import InventoryAPI
 
 import Control.Monad.Except

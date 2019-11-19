@@ -24,7 +24,7 @@ import Data.Int (
 import Workflow.DeclareLostItem.PublicTypes (
     DeclaredLostItem
     )
-import EventStore (
+import Persistence.EventStore (
     readOneDeclaredLostItem
     )
 

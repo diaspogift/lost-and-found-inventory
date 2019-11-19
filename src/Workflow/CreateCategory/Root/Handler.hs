@@ -18,13 +18,13 @@ import Data.UUID
 import Data.UUID.V4 
     (nextRandom)
 import Database.EventStore
-import EventStore 
+import Persistence.EventStore 
     (ReadOneCategory, 
     WriteCreateRootCategoryEvents,
     readOneCategory,
     writeCreateRootCategoryEvents
     )
-import InventorySystemCommands 
+import Inventory.System.Commands 
     (InventoryCommand (..), CreateRootCategoryCmd)
 
 

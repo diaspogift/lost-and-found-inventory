@@ -1,95 +1,89 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- That library uses `Text` pervasively. This pragma permits to use
--- String literal when a Text is needed.
-module EventStore where
 
-import Common.CompoundTypes (
-        Category,
-        AttributeRef
-        )
-import Common.Dtos (
-        sub
-        )
-import Common.SimpleTypes (
-        DataBaseError (..),
-        LostItemId,
-        WorkflowError (..),
-        mapDataBaseErr,
+module Persistence.EventStore where
 
-        )
-import Control.Concurrent.Async (
-    wait
+import Common.CompoundTypes 
+    ( Category
+    , AttributeRef
     )
-import Control.Monad.Except (
-        ExceptT (..),
-        liftEither,
-        runExceptT
-        )
-import Control.Monad.Reader (
-        ReaderT (..),
-        liftIO,
-        ask
-        )
-import Workflow.CreateAttribute.Dtos (
-    AttributeRefCreatedDto, 
-    CreateAttributeRefEventDto (..),
-    attributeRefDtoToDomain,
-    fromAttributeRefCreated
+import Common.Dtos (sub)
+import Common.SimpleTypes 
+    ( DataBaseError (..)
+    , LostItemId
+    , WorkflowError (..)
+    , mapDataBaseErr
     )
-import Workflow.CreateAttribute.PublicTypes (
-    CreateAttributeEvent (..)
+import Control.Concurrent.Async (wait)
+import Control.Monad.Except 
+    ( ExceptT (..)
+    , liftEither
+    , runExceptT
     )
-import Workflow.CreateCategory.Common.Dto (
-    CreateCategoryEventDto (..),
-    CategoryCreatedDto,
-    SubCategoriesAddedDto,
-    subCategrs,
-    catgrDtoToDomain,
-    fromCategoryCreated,
-    fromSubCategoriesAdded
+import Control.Monad.Reader 
+    ( ReaderT (..)
+    , liftIO
+    , ask
     )
-import Workflow.CreateCategory.Common.PublicTypes (
-    CategoryCreated,
-    SubCategoriesAdded,
-    CreateCategoryEvent (..)
+import Workflow.CreateAttribute.Dtos 
+    ( AttributeRefCreatedDto
+    , CreateAttributeRefEventDto (..)
+    , attributeRefDtoToDomain
+    , fromAttributeRefCreated
     )
-import Data.Aeson (
-    decode
+import Workflow.CreateAttribute.PublicTypes 
+    ( CreateAttributeEvent (..)
     )
-import Data.ByteString.Internal (
-    ByteString
+import Workflow.CreateCategory.Common.Dto
+    ( CreateCategoryEventDto (..)
+    , CategoryCreatedDto
+    , SubCategoriesAddedDto
+    , subCategrs
+    , catgrDtoToDomain
+    , fromCategoryCreated
+    , fromSubCategoriesAdded
     )
-import Data.ByteString.Lazy.Char8 (
-    fromStrict
+import Workflow.CreateCategory.Common.PublicTypes 
+    ( CategoryCreated
+    , SubCategoriesAdded
+    , CreateCategoryEvent (..)
     )
-import Data.Either.Combinators (
-    mapLeft
+import Data.Aeson 
+    (decode
     )
-import Data.Int (
-    Int32
+import Data.ByteString.Internal     
+    (ByteString
     )
-import Data.Maybe (
-    fromMaybe,
-    mapMaybe
+import Data.ByteString.Lazy.Char8 
+    (fromStrict
     )
-import Data.Text (
-    pack
+import Data.Either.Combinators 
+    (mapLeft
     )
-import Data.Text.Internal (
-    Text
+import Data.Int 
+    (Int32
+    )
+import Data.Maybe 
+    ( fromMaybe
+    , mapMaybe
+    )
+import Data.Text 
+    (pack
+    )
+import Data.Text.Internal 
+    (Text
     )
 import Database.EventStore
-import Workflow.DeclareLostItem.Dtos (
-    itemAttributes,
-    itemLocations,
-    fromLostItemDeclared,
-    fromLocationsAdded,
-    fromAttributesAdded
+import Workflow.DeclareLostItem.Dtos 
+    ( itemAttributes
+    , itemLocations
+    , fromLostItemDeclared
+    , fromLocationsAdded
+    , fromAttributesAdded
     )
-import Workflow.DeclareLostItem.PublicTypes (
-    DeclaredLostItem,
-    DeclareLostItemEvent (..)
+import Workflow.DeclareLostItem.PublicTypes 
+    ( DeclaredLostItem
+    , DeclareLostItemEvent (..)
     )
 
 

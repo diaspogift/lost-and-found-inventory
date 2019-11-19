@@ -1,4 +1,4 @@
-module InventorySystemCommandsHandler where
+module Inventory.System.CommandsHandler where
 
 import Common.SimpleTypes (
     WorkflowError
@@ -29,7 +29,7 @@ import Workflow.DeclareLostItem.Handler (
 import Workflow.DeclareLostItem.PublicTypes (
     DeclareLostItemEvent
     )
-import InventorySystemCommands (
+import Inventory.System.Commands (
     InventoryError (..), 
     InventoryEvent (..), 
     LostAndFoundInventoryCmd (..)

@@ -18,7 +18,7 @@ library
   
                      , src/Common
 
-                     , src/cmdshandler
+                     , src/Inventory/System
 
                      , src/Workflow/DeclareLostItem
 
@@ -29,7 +29,7 @@ library
                      , src/Workflow/CreateCategory/Root
                      , src/Workflow/CreateCategory/Sub
 
-                     , src/eventstore
+                     , src/Persistence
 
                      , src/capabilities
                      , src/authentication
@@ -65,7 +65,7 @@ library
                      , InventorySystemCommandsHandler
 
 
-                     , EventStore
+                     , Persitence.EventStore
                      , Capabilities
                      , Authentication
                      , Authorization

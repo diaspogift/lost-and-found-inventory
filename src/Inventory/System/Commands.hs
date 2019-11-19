@@ -1,4 +1,4 @@
-module InventorySystemCommands where
+module Inventory.System.Commands where
 
 import Common.SimpleTypes (
     WorkflowError

@@ -22,13 +22,13 @@ import Data.UUID
 import Data.UUID.V4 
     (nextRandom)
 import Database.EventStore
-import EventStore 
+import Persistence.EventStore 
     (ReadOneCategory, 
     WriteCreateSubCategoryEvents,
     readOneCategory,
     writeCreateSubCategoryEvents
     )
-import InventorySystemCommands 
+import Inventory.System.Commands 
     (InventoryCommand (..), CreateSubCategoryCmd)
 
 

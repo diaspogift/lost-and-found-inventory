@@ -25,8 +25,8 @@ import Data.ByteString.Lazy.Char8
 import Workflow.DeclareLostItem.Dtos
 import Workflow.DeclareLostItem.PublicTypes
 import GHC.Generics
-import InventorySystemCommands
-import InventorySystemCommandsHandler
+import Inventory.System.Commands
+import Inventory.System.CommandsHandler
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Servant

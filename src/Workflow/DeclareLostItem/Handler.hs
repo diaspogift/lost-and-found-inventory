@@ -23,7 +23,7 @@ import Data.UUID.V4
 import Database.EventStore
 import Workflow.DeclareLostItem.Implementation
 import Workflow.DeclareLostItem.PublicTypes
-import EventStore 
+import Persistence.EventStore 
     (ReadOneCategory,
     ReadOneAttributeRef,
     WriteDeclaredLostItemEvents,
@@ -31,7 +31,7 @@ import EventStore
     readOneAttributeRef,
     writeDeclaredLostItemEvents
     )
-import InventorySystemCommands 
+import Inventory.System.Commands 
     (InventoryCommand (..),
     DeclareLostItemCmd
     )

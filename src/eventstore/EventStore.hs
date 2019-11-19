@@ -31,13 +31,13 @@ import Control.Monad.Reader (
         liftIO,
         ask
         )
-import CreateAttributeDto (
+import Workflow.CreateAttribute.Dtos (
     AttributeRefCreatedDto, 
     CreateAttributeRefEventDto (..),
     attributeRefDtoToDomain,
     fromAttributeRefCreated
     )
-import CreateAttributePublicTypes (
+import Workflow.CreateAttribute.PublicTypes (
     CreateAttributeEvent (..)
     )
 import Workflow.CreateCategory.Common.Dto (

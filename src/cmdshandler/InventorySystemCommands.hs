@@ -3,7 +3,7 @@ module InventorySystemCommands where
 import Common.SimpleTypes (
     WorkflowError
     )
-import CreateAttributePublicTypes (
+import Workflow.CreateAttribute.PublicTypes (
     UnvalidatedAttributeRef, 
     CreateAttributeEvent
     )

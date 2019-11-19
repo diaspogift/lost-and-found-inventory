@@ -1,4 +1,4 @@
-module CreateAttributePublicTypes where
+module Workflow.CreateAttribute.PublicTypes where
 
 import Common.CompoundTypes
     (AttributeRef)

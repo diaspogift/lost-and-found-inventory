@@ -8,10 +8,10 @@ import Control.Monad.Except (
     liftIO, 
     runExceptT
     )
-import CreateAttributeHandler (
+import Workflow.CreateAttribute.Handler (
     publicCreateAttributeRefHandler
     )
-import CreateAttributePublicTypes (
+import Workflow.CreateAttribute.PublicTypes (
     CreateAttributeEvent
     )
 import Workflow.CreateCategory.Common.PublicTypes (

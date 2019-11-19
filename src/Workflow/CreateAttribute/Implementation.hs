@@ -1,4 +1,4 @@
-module CreateAttributeImplementation where
+module Workflow.CreateAttribute.Implementation where
 
 import Common.CompoundTypes
     (AttributeRef (..),
@@ -7,7 +7,7 @@ import Common.CompoundTypes
     EnablementStatus (..)
     )
 import Common.SimpleTypes
-import CreateAttributePublicTypes
+import Workflow.CreateAttribute.PublicTypes
 import Data.Either.Combinators
     (mapLeft)
 import Util 

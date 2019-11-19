@@ -3,13 +3,13 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module CreateAttributeDto where
+module Workflow.CreateAttribute.Dtos where
 
 import Common.CompoundTypes 
     (AttributeRef (..)
     )
 import Common.SimpleTypes 
-import CreateAttributePublicTypes 
+import Workflow.CreateAttribute.PublicTypes 
     (UnvalidatedAttributeRef (..),
     AttributeRefCreated,
     CreateAttributeEvent (..)

@@ -12,8 +12,8 @@ where
 import Common.Dtos
 import Common.SimpleTypes
 import Control.Monad.Except
-import CreateAttributeDto
-import CreateAttributePublicTypes
+import Workflow.CreateAttribute.Dtos
+import Workflow.CreateAttribute.PublicTypes
 import Workflow.CreateCategory.Common.Dto
 import Workflow.CreateCategory.Root.Dto
 import Workflow.CreateCategory.Common.PublicTypes

@@ -1,4 +1,4 @@
-module CreateAttributeHandler where
+module Workflow.CreateAttribute.Handler where
 
 import Common.CompoundTypes
     (Category)
@@ -8,9 +8,9 @@ import Control.Monad.Except
     liftEither,
     liftIO
     )
-import CreateAttributeImplementation 
+import Workflow.CreateAttribute.Implementation 
     (createAttributeReference)
-import CreateAttributePublicTypes
+import Workflow.CreateAttribute.PublicTypes
 import Data.Char 
     (toUpper)
 import Data.UUID 

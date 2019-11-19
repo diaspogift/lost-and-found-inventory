@@ -190,8 +190,8 @@ readOneDeclaredLostItem = undefined
 
 
 readOneCategoryWithReaderT :: Int32 
-                                -> String 
-                                -> ExceptT WorkflowError (ReaderT Connection IO) Category
+                           -> String 
+                           -> ExceptT WorkflowError (ReaderT Connection IO) Category
 readOneCategoryWithReaderT eventNum streamId = do
   conn <- ask 
   rs <- liftIO $ readEventsForward conn 

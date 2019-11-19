@@ -20,7 +20,7 @@ import Workflow.CreateCategory.Common.PublicTypes (
 import Workflow.CreateCategory.Root.Handler (
     publicCreateRootCategoryHandler
     )
-import CreateSubCategoryHandler (
+import Workflow.CreateCategory.Sub.Handler (
     publicCreateSubCategoryHandler
     )
 import Workflow.DeclareLostItem.Handler (

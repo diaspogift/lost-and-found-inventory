@@ -1,4 +1,4 @@
-module CreateSubCategoryImplementation where
+module Workflow.CreateCategory.Sub.Implementation where
 
 
 import Common.CompoundTypes
@@ -16,7 +16,7 @@ import Common.CompoundTypes
     )
 import Common.SimpleTypes
 import Workflow.CreateCategory.Common.PublicTypes
-import CreateSubCategoryPublicTypes
+import Workflow.CreateCategory.Sub.PublicTypes
 import Data.Either.Combinators 
     (mapLeft)
 import Data.Set 

@@ -13,7 +13,7 @@ import Workflow.CreateCategory.Common.PublicTypes (
 import Workflow.CreateCategory.Root.PublicTypes (
     UnvalidatedRootCategory
     )
-import CreateSubCategoryPublicTypes (
+import Workflow.CreateCategory.Sub.PublicTypes (
     UnvalidatedSubCategory
     )
 import Workflow.DeclareLostItem.PublicTypes (

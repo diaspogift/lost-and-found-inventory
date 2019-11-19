@@ -1,4 +1,4 @@
-module CreateSubCategoryHandler where
+module Workflow.CreateCategory.Sub.Handler where
 
 import Common.CompoundTypes
 import Common.SimpleTypes
@@ -12,9 +12,9 @@ import Control.Monad.Except
     liftEither,
     liftIO)
 import Workflow.CreateCategory.Common.PublicTypes
-import CreateSubCategoryImplementation
+import Workflow.CreateCategory.Sub.Implementation
     (createSubCatgory)
-import CreateSubCategoryPublicTypes
+import Workflow.CreateCategory.Sub.PublicTypes
 import Data.Char 
     (toUpper)
 import Data.UUID 

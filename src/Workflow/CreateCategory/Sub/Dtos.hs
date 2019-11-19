@@ -3,9 +3,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module CreateSubCategoryDto where
+module Workflow.CreateCategory.Sub.Dtos where
 
-import CreateSubCategoryPublicTypes
+import Workflow.CreateCategory.Sub.PublicTypes
 import Data.Aeson 
     (ToJSON, FromJSON)
 import GHC.Generics 

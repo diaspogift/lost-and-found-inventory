@@ -18,8 +18,8 @@ import Common.CompoundTypes
 import Common.Dtos
 import Common.SimpleTypes
 import Workflow.CreateCategory.Common.PublicTypes
-import Workflow.CreateCategory.Common.PublicTypes
-import CreateSubCategoryPublicTypes
+import Workflow.CreateCategory.Root.PublicTypes
+import Workflow.CreateCategory.Sub.PublicTypes
 import Data.Aeson
     (ToJSON, FromJSON, ToJSONKey)
 import Data.Map 

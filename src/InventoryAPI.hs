@@ -17,8 +17,8 @@ import Workflow.CreateAttribute.PublicTypes
 import Workflow.CreateCategory.Common.Dto
 import Workflow.CreateCategory.Root.Dto
 import Workflow.CreateCategory.Common.PublicTypes
-import CreateSubCategoryDto
-import CreateSubCategoryPublicTypes
+import Workflow.CreateCategory.Sub.Dtos
+import Workflow.CreateCategory.Sub.PublicTypes
 import Data.Aeson (ToJSON, FromJSON)
 import Data.Aeson.TH
 import Data.ByteString.Lazy.Char8

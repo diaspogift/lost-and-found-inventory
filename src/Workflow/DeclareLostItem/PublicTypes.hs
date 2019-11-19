@@ -1,4 +1,4 @@
-module DeclareLostItemPublicTypes where
+module Workflow.DeclareLostItem.PublicTypes where
 
 import Common.CompoundTypes
 import Common.SimpleTypes

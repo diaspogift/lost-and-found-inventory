@@ -80,14 +80,14 @@ import Data.Text.Internal (
     Text
     )
 import Database.EventStore
-import DeclareLostItemDto (
+import Workflow.DeclareLostItem.Dtos (
     itemAttributes,
     itemLocations,
     fromLostItemDeclared,
     fromLocationsAdded,
     fromAttributesAdded
     )
-import DeclareLostItemPublicTypes (
+import Workflow.DeclareLostItem.PublicTypes (
     DeclaredLostItem,
     DeclareLostItemEvent (..)
     )

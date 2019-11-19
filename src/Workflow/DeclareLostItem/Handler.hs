@@ -3,7 +3,7 @@
 -- That library uses `Text` pervasively. This pragma permits to use
 -- String literal when a Text is needed.
 
-module DeclareLostItemHandler where
+module Workflow.DeclareLostItem.Handler where
 
 import Common.CompoundTypes
 import Common.SimpleTypes
@@ -21,8 +21,8 @@ import Data.UUID
 import Data.UUID.V4 
     (nextRandom)
 import Database.EventStore
-import DeclareLostItemImplementation
-import DeclareLostItemPublicTypes
+import Workflow.DeclareLostItem.Implementation
+import Workflow.DeclareLostItem.PublicTypes
 import EventStore 
     (ReadOneCategory,
     ReadOneAttributeRef,

@@ -16,7 +16,7 @@ import Workflow.CreateCategory.Root.PublicTypes (
 import CreateSubCategoryPublicTypes (
     UnvalidatedSubCategory
     )
-import DeclareLostItemPublicTypes (
+import Workflow.DeclareLostItem.PublicTypes (
     UnvalidatedLostItem, 
     DeclareLostItemEvent
     )

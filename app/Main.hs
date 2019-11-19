@@ -4,9 +4,9 @@ module Main where
 import Common.SimpleTypes
 import Common.CompoundTypes
 
-import DeclareLostItemPublicTypes
-import DeclareLostItemImplementation
-import DeclareLostItemHandler
+import Workflow.DeclareLostItem.PublicTypes
+import Workflow.DeclareLostItem.Implementation
+import Workflow.DeclareLostItem.Handler
 
 import Workflow.CreateCategory.Common.PublicTypes
 import Workflow.CreateCategory.Root.PublicTypes

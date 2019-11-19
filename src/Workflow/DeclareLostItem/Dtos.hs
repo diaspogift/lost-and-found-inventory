@@ -2,7 +2,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module DeclareLostItemDto where
+module Workflow.DeclareLostItem.Dtos where
 
 import qualified Common.CompoundTypes as Cct
 import Common.Dtos
@@ -15,7 +15,7 @@ import Data.Set
     (Set, toList)
 import Data.Time 
     (UTCTime,)
-import DeclareLostItemPublicTypes
+import Workflow.DeclareLostItem.PublicTypes
 import GHC.Generics 
     (Generic)
 import Prelude hiding 

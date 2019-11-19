@@ -22,8 +22,8 @@ import CreateSubCategoryPublicTypes
 import Data.Aeson (ToJSON, FromJSON)
 import Data.Aeson.TH
 import Data.ByteString.Lazy.Char8
-import DeclareLostItemDto
-import DeclareLostItemPublicTypes
+import Workflow.DeclareLostItem.Dtos
+import Workflow.DeclareLostItem.PublicTypes
 import GHC.Generics
 import InventorySystemCommands
 import InventorySystemCommandsHandler

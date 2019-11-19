@@ -23,10 +23,10 @@ import Workflow.CreateCategory.Root.Handler (
 import CreateSubCategoryHandler (
     publicCreateSubCategoryHandler
     )
-import DeclareLostItemHandler (
+import Workflow.DeclareLostItem.Handler (
     publicDeclareLostItemHandler
     )
-import DeclareLostItemPublicTypes (
+import Workflow.DeclareLostItem.PublicTypes (
     DeclareLostItemEvent
     )
 import InventorySystemCommands (

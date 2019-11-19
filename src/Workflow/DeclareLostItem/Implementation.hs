@@ -1,4 +1,4 @@
-module DeclareLostItemImplementation where
+module Workflow.DeclareLostItem.Implementation where
 
 import Common.CompoundTypes
 import Common.SimpleTypes
@@ -10,7 +10,7 @@ import Data.Set
     (Set, toList, fromList)
 import Data.Time 
     (UTCTime)
-import DeclareLostItemPublicTypes
+import Workflow.DeclareLostItem.PublicTypes
 import Util 
     (singleton)
 

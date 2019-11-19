@@ -21,7 +21,7 @@ import Common.SimpleTypes (
 import Data.Int (
     Int32
     )
-import DeclareLostItemPublicTypes (
+import Workflow.DeclareLostItem.PublicTypes (
     DeclaredLostItem
     )
 import EventStore (

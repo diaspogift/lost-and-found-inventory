@@ -9,9 +9,9 @@ The goal of this project is to set up an electronic platform allowing the public
 
 1.  Declare Lost Items 
 2.  Register Found Items
-3.  Match Lost and Found Item and notify the stakeholders
+3.  Match Lost / Found Items and notify the stakeholders
 4.  Search Lost Items
-5.  Connect users with the information needed to recover their lost and found items
+5.  Connect users with the information needed to recover their lost / found items
 
 
 ```
@@ -59,6 +59,8 @@ Give a little demo?
 Explaination on how to run the automated tests for this system go here
 
 ### Break down into end to end tests
+
+Property testing?
 
 Explaination of what these tests test and why go here
 
